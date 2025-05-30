@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python3
 """
 DigiHub Telegram Bot - Integration for digital services marketplace
@@ -8,7 +7,8 @@ import logging
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any, Union
 
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
+from dotenv import load_dotenv
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ParseMode, WebAppInfo
 from telegram.ext import (
     Updater,
     CommandHandler,
@@ -18,6 +18,10 @@ from telegram.ext import (
     CallbackContext,
     ConversationHandler,
 )
+
+# Load environment variables from .env file
+load_dotenv()
+web_app_url = os.getenv('WEBAPP_URL', 'http://localhost:8080')
 
 # Enable logging
 logging.basicConfig(
@@ -71,8 +75,9 @@ def start(update: Update, context: CallbackContext) -> int:
     # and link their Telegram account if needed
     
     keyboard = [
-        [InlineKeyboardButton("My Orders", callback_data='my_orders')],
-        [InlineKeyboardButton("Messages", callback_data='messages')],
+        [InlineKeyboardButton("Открыть маркетплейс", web_app=WebAppInfo(url=web_app_url))],
+        [InlineKeyboardButton("Мои заказы", callback_data='my_orders')],
+        [InlineKeyboardButton("Сообщения", callback_data='messages')],
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     

@@ -12,6 +12,17 @@ dist
 dist-ssr
 *.local
 
+# Environment files
+.env
+.env.*
+**/.env
+telegram_bot/.env
+telegram_bot/.env.*
+
+# Example env
+.env.example
+telegram_bot/.env.example
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
