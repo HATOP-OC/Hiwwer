@@ -1,5 +1,10 @@
-# Logs
-logs
+# Node.js
+node_modules/
+dist/
+build/
+.cache/
+.next/
+out/
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -7,29 +12,105 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
+# Vite
+.vite/
 
-# Environment files
+# TypeScript
+*.tsbuildinfo
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+.venv/
+.venv*
+venv/
+venv*
+
+# Environment
 .env
 .env.*
-**/.env
-telegram_bot/.env
-telegram_bot/.env.*
-
-# Example env
+.env.local
 .env.example
-telegram_bot/.env.example
+**/.env
+**/.env.*
 
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
+# Docker
+*.pid
+docker-compose.override.yml
+*.sock
+# Docker named volumes
+hiwwer_postgres_data/
+
+# Database
+*.sqlite3
+database/*.sqlite
+database/*.db
+
+# System
 .DS_Store
+Thumbs.db
+*.swp
+*.swo
+*.swn
+*.bak
+*.tmp
+
+# VSCode/JetBrains
+.vscode/
+!.vscode/extensions.json
+.idea/
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
-*.sw?
+*.user
+
+# OS
+.DS_Store
+Icon?
+
+# Telegram bot
+telegram_bot/.env
+telegram_bot/.env.*
+telegram_bot/__pycache__/
+
+# Logs
+logs/
+*.log
+
+# Misc
+*.tgz
+*.zip
+*.tar.gz
+*.tgz
+*.7z
+*.rar
+*.bak
+*.tmp
+
+# Public
+public/*.tmp
+public/*.bak
+
+# Ignore lock files except package.json
+bun.lockb
+yarn.lock
+pnpm-lock.yaml
+package-lock.json
+
+# Ignore test coverage
+coverage/
+
+# Ignore local scripts
+start-db-improved.sh
+
+# Ignore generated docs
+*.html
+
+# Ignore local data
+*.local
+
+# End of file

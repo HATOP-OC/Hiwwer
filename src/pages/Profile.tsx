@@ -50,7 +50,7 @@ export default function Profile() {
       <Layout>
         <div className="container max-w-4xl py-16">
           <div className="text-center">
-            <h1 className="text-2xl font-bold">Please log in to view your profile</h1>
+            <h1 className="text-2xl font-bold">Будь ласка, увійдіть для перегляду профілю</h1>
           </div>
         </div>
       </Layout>
@@ -60,10 +60,10 @@ export default function Profile() {
   const handleSave = async () => {
     try {
       // В реальному додатку тут буде API запит
-      toast.success('Profile updated successfully');
+      toast.success('Профіль успішно оновлено');
       setIsEditing(false);
     } catch (error) {
-      toast.error('Failed to update profile');
+      toast.error('Помилка оновлення профілю');
     }
   };
 
@@ -94,9 +94,9 @@ export default function Profile() {
       <div className="container max-w-4xl py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground">My Profile</h1>
+          <h1 className="text-3xl font-bold text-foreground">Мій профіль</h1>
           <p className="text-muted-foreground mt-2">
-            Manage your account settings and public profile
+            Керуйте налаштуваннями акаунту та публічним профілем
           </p>
         </div>
 

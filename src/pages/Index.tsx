@@ -9,122 +9,98 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Search, CheckCircle, ArrowRight, Star } from 'lucide-react';
 
-// Mock data for featured services
-const featuredServices = [
+// Презентаційні послуги для демонстрації можливостей платформи
+const showcaseServices = [
   {
-    id: '1',
-    title: 'Professional Logo Design',
-    description: 'Get a custom logo design for your business with unlimited revisions.',
+    id: 'showcase-1',
+    title: 'Креативний Дизайн',
+    description: 'Професійний дизайн для вашого бренду від досвідчених креативних спеціалістів.',
     category: 'design',
-    tags: ['Logo', 'Branding', 'Creative'],
-    price: 49.99,
+    tags: ['Логотипи', 'Брендинг', 'UI/UX'],
+    price: 'від 50',
     currency: 'USD',
-    deliveryTime: 2,
-    performer: {
-      id: '101',
-      name: 'Alex Designer',
-      avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=250&h=250&fit=crop',
-      rating: 4.8
-    },
-    rating: 4.8,
-    reviewCount: 124,
-    image: 'https://images.unsplash.com/photo-1559028012-481c04fa702d?w=500&h=350&fit=crop'
+    deliveryTime: '1-3 дні',
+    rating: '4.9',
+    reviewCount: 'Багато позитивних відгуків',
+    image: 'https://images.unsplash.com/photo-1581291518857-4e27b48ff24e?w=500&h=350&fit=crop&q=80'
   },
   {
-    id: '2',
-    title: 'Website Development',
-    description: 'Custom website development using React, Next.js, and Tailwind CSS.',
+    id: 'showcase-2',
+    title: 'Веб-розробка',
+    description: 'Сучасні веб-додатки та сайти з використанням найновіших технологій.',
     category: 'development',
-    tags: ['React', 'Next.js', 'Web'],
-    price: 199.99,
+    tags: ['React', 'Next.js', 'TypeScript'],
+    price: 'від 200',
     currency: 'USD',
-    deliveryTime: 7,
-    performer: {
-      id: '102',
-      name: 'Maria Dev',
-      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=250&h=250&fit=crop',
-      rating: 4.9
-    },
-    rating: 4.9,
-    reviewCount: 87,
-    image: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=500&h=350&fit=crop'
+    deliveryTime: '5-14 днів',
+    rating: '4.8',
+    reviewCount: 'Високі оцінки клієнтів',
+    image: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=500&h=350&fit=crop&q=80'
   },
   {
-    id: '3',
-    title: 'SEO Optimization',
-    description: 'Boost your website ranking with professional SEO optimization.',
+    id: 'showcase-3',
+    title: 'Цифровий Маркетинг',
+    description: 'Ефективні маркетингові стратегії для росту вашого бізнесу.',
     category: 'marketing',
-    tags: ['SEO', 'Marketing', 'Ranking'],
-    price: 99.99,
+    tags: ['SEO', 'SMM', 'Реклама'],
+    price: 'від 100',
     currency: 'USD',
-    deliveryTime: 5,
-    performer: {
-      id: '103',
-      name: 'John SEO',
-      avatar: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=250&h=250&fit=crop',
-      rating: 4.7
-    },
-    rating: 4.7,
-    reviewCount: 63,
-    image: 'https://images.unsplash.com/photo-1571171637578-41bc2dd41cd2?w=500&h=350&fit=crop'
+    deliveryTime: '3-7 днів',
+    rating: '4.7',
+    reviewCount: 'Доведена ефективність',
+    image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=500&h=350&fit=crop&q=80'
   },
   {
-    id: '4',
-    title: 'Content Writing',
-    description: 'Professional content writing for your blog, website, or social media.',
+    id: 'showcase-4',
+    title: 'Контент-створення',
+    description: 'Якісний контент для ваших проектів та соціальних мереж.',
     category: 'writing',
-    tags: ['Writing', 'Content', 'Blog'],
-    price: 29.99,
+    tags: ['Тексти', 'Блоги', 'Копірайтинг'],
+    price: 'від 30',
     currency: 'USD',
-    deliveryTime: 3,
-    performer: {
-      id: '104',
-      name: 'Emma Writer',
-      avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=250&h=250&fit=crop',
-      rating: 4.6
-    },
-    rating: 4.6,
-    reviewCount: 98,
-    image: 'https://images.unsplash.com/photo-1455390582262-044cdead277a?w=500&h=350&fit=crop'
+    deliveryTime: '1-2 дні',
+    rating: '4.6',
+    reviewCount: 'Швидко та якісно',
+    image: 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=500&h=350&fit=crop&q=80'
   }
 ];
 
-// Mock data for categories
-const categories = [
-  { id: '1', name: 'Design', icon: '🎨' },
-  { id: '2', name: 'Development', icon: '💻' },
-  { id: '3', name: 'Writing', icon: '✍️' },
-  { id: '4', name: 'Marketing', icon: '📈' },
-  { id: '5', name: 'Video', icon: '🎥' },
-  { id: '6', name: 'Music', icon: '🎵' },
-  { id: '7', name: 'Business', icon: '💼' },
-  { id: '8', name: 'Lifestyle', icon: '🌱' }
+// Популярні категорії послуг
+const serviceCategories = [
+  { id: '1', name: 'Дизайн', icon: '🎨', description: 'Креативні рішення' },
+  { id: '2', name: 'Розробка', icon: '💻', description: 'Веб та мобільні додатки' },
+  { id: '3', name: 'Тексти', icon: '✍️', description: 'Якісний контент' },
+  { id: '4', name: 'Маркетинг', icon: '📈', description: 'Просування бізнесу' },
+  { id: '5', name: 'Відео', icon: '🎥', description: 'Відеопродукція' },
+  { id: '6', name: 'Аудіо', icon: '🎵', description: 'Звукові рішення' },
+  { id: '7', name: 'Бізнес', icon: '💼', description: 'Консалтинг' },
+  { id: '8', name: 'Навчання', icon: '📚', description: 'Освітні послуги' }
 ];
 
-// Mock data for how it works
-const steps = [
+// Як працює платформа Hiwwer
+const workflowSteps = [
   {
     id: '1',
-    title: 'Find a Service',
-    description: 'Browse through our marketplace to find the perfect service for your needs.',
+    title: 'Знайдіть послугу',
+    description: 'Оберіть потрібну послугу з широкого асортименту талановитих виконавців.',
     icon: '🔍'
   },
   {
     id: '2',
-    title: 'Place an Order',
-    description: 'Submit your requirements and make a payment to begin the project.',
+    title: 'Оформте замовлення',
+    description: 'Опишіть ваші вимоги і безпечно здійсніть оплату.',
     icon: '📋'
   },
   {
     id: '3',
-    title: 'Get Updates via Telegram',
-    description: 'Receive real-time notifications and updates through our Telegram bot.',
+    title: 'Отримуйте оновлення',
+    description: 'Слідкуйте за прогресом через зручний Telegram-бот.',
     icon: '📱'
   },
   {
     id: '4',
-    title: 'Review and Approve',
-    description: 'Review the delivered work and request revisions if needed.',
+    title: 'Отримайте результат',
+    description: 'Перевірте роботу і запросіть правки за потреби.',
     icon: '✅'
   }
 ];
@@ -138,17 +114,17 @@ export default function Index() {
       <section className="relative bg-gradient-to-br from-brand-blue to-brand-darkBlue text-white py-16">
         <div className="container mx-auto px-4 flex flex-col items-center text-center">
           <h1 className="text-4xl md:text-6xl font-bold mb-6 animate-fade-in">
-            Find the Perfect Digital Service
+            Знайдіть ідеальну цифрову послугу
           </h1>
           <p className="text-xl md:text-2xl mb-8 max-w-2xl opacity-90 animate-slide-in">
-            Connect with expert performers and get your projects done with Telegram integration
+            Підключайтесь до експертів та реалізовуйте проекти з інтеграцією Telegram
           </p>
           
           <div className="w-full max-w-md mb-8">
             <div className="relative">
               <Input
                 type="text"
-                placeholder="Search for services..."
+                placeholder="Шукайте послуги..."
                 className="pl-10 pr-4 py-6 rounded-full bg-white/10 backdrop-blur-sm border-white/20 text-white placeholder:text-white/70"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -158,25 +134,25 @@ export default function Index() {
           </div>
           
           <Button size="lg" asChild className="rounded-full px-8 bg-brand-amber hover:bg-brand-amber/90 text-white">
-            <Link to="/services">Browse Services</Link>
+            <Link to="/services">Переглянути послуги</Link>
           </Button>
           
           <div className="mt-12 flex flex-wrap justify-center gap-4">
             <div className="flex items-center">
               <CheckCircle className="text-brand-amber mr-2 h-5 w-5" />
-              <span>Quality Work</span>
+              <span>Якісна робота</span>
             </div>
             <div className="flex items-center">
               <CheckCircle className="text-brand-amber mr-2 h-5 w-5" />
-              <span>Secure Payments</span>
+              <span>Безпечні платежі</span>
             </div>
             <div className="flex items-center">
               <CheckCircle className="text-brand-amber mr-2 h-5 w-5" />
-              <span>Telegram Updates</span>
+              <span>Telegram оновлення</span>
             </div>
             <div className="flex items-center">
               <CheckCircle className="text-brand-amber mr-2 h-5 w-5" />
-              <span>24/7 Support</span>
+              <span>24/7 підтримка</span>
             </div>
           </div>
         </div>
@@ -185,14 +161,15 @@ export default function Index() {
       {/* Categories Section */}
       <section className="py-16 bg-background">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold mb-8 text-center">Popular Categories</h2>
+          <h2 className="text-3xl font-bold mb-8 text-center">Популярні категорії</h2>
           
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4">
-            {categories.map(category => (
+            {serviceCategories.map(category => (
               <Link to={`/services?category=${category.name.toLowerCase()}`} key={category.id}>
-                <div className="bg-card hover-card rounded-lg p-4 flex flex-col items-center justify-center text-center h-32">
-                  <div className="text-3xl mb-2">{category.icon}</div>
-                  <h3 className="font-medium">{category.name}</h3>
+                <div className="bg-card hover-card rounded-lg p-4 flex flex-col items-center justify-center text-center h-32 group transition-all duration-300">
+                  <div className="text-3xl mb-2 group-hover:scale-110 transition-transform duration-300">{category.icon}</div>
+                  <h3 className="font-medium mb-1">{category.name}</h3>
+                  <p className="text-xs text-muted-foreground">{category.description}</p>
                 </div>
               </Link>
             ))}
@@ -204,41 +181,37 @@ export default function Index() {
       <section className="py-16 bg-muted/50">
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center mb-8">
-            <h2 className="text-3xl font-bold">Featured Services</h2>
+            <h2 className="text-3xl font-bold">Рекомендовані послуги</h2>
             <Button variant="outline" asChild>
               <Link to="/services">
-                View All <ArrowRight className="ml-2 h-4 w-4" />
+                Переглянути всі <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {featuredServices.map(service => (
+            {showcaseServices.map(service => (
               <Link to={`/services/${service.id}`} key={service.id}>
-                <Card className="overflow-hidden hover-card border">
-                  <div className="aspect-video relative">
+                <Card className="overflow-hidden hover-card border group transition-all duration-300 hover:shadow-lg">
+                  <div className="aspect-video relative overflow-hidden">
                     <img 
                       src={service.image} 
                       alt={service.title}
-                      className="object-cover w-full h-full"
+                      className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
                     />
                     <div className="absolute bottom-2 right-2">
-                      <Badge className="bg-brand-teal hover:bg-brand-teal">
-                        {service.price.toFixed(2)} {service.currency}
+                      <Badge className="bg-brand-teal hover:bg-brand-teal text-white">
+                        {service.price} {service.currency}
                       </Badge>
                     </div>
                   </div>
                   <CardContent className="p-4">
-                    <div className="flex items-center mb-3">
-                      <Avatar className="h-6 w-6 mr-2">
-                        <AvatarImage src={service.performer.avatar} alt={service.performer.name} />
-                        <AvatarFallback>{service.performer.name.substring(0, 2).toUpperCase()}</AvatarFallback>
-                      </Avatar>
-                      <span className="text-sm">{service.performer.name}</span>
-                      <div className="ml-auto flex items-center text-amber-500">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center text-amber-500">
                         <Star className="fill-amber-500 stroke-amber-500 h-4 w-4" />
-                        <span className="ml-1 text-sm">{service.rating}</span>
+                        <span className="ml-1 text-sm font-semibold">{service.rating}</span>
                       </div>
+                      <span className="text-xs text-muted-foreground">{service.deliveryTime}</span>
                     </div>
                     
                     <h3 className="font-bold mb-2 line-clamp-1">{service.title}</h3>
@@ -264,16 +237,16 @@ export default function Index() {
       {/* How It Works Section */}
       <section className="py-16 bg-background">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold mb-12 text-center">How It Works</h2>
+          <h2 className="text-3xl font-bold mb-12 text-center">Як це працює</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {steps.map((step, index) => (
-              <div key={step.id} className="flex flex-col items-center text-center">
+            {workflowSteps.map((step, index) => (
+              <div key={step.id} className="flex flex-col items-center text-center relative">
                 <div className="text-4xl mb-4">{step.icon}</div>
                 <div className="text-2xl font-bold mb-2 text-primary">{step.title}</div>
                 <p className="text-muted-foreground">{step.description}</p>
                 
-                {index < steps.length - 1 && (
+                {index < workflowSteps.length - 1 && (
                   <div className="hidden lg:block absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-1/2">
                     <ArrowRight className="h-6 w-6 text-muted-foreground/30" />
                   </div>
@@ -284,7 +257,7 @@ export default function Index() {
           
           <div className="flex justify-center mt-12">
             <Button size="lg" asChild>
-              <Link to="/register">Get Started</Link>
+              <Link to="/register">Почати роботу</Link>
             </Button>
           </div>
         </div>
@@ -295,34 +268,34 @@ export default function Index() {
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center">
             <div className="md:w-1/2 mb-8 md:mb-0">
-              <h2 className="text-3xl font-bold mb-4">Seamless Telegram Integration</h2>
+              <h2 className="text-3xl font-bold mb-4">Безшовна інтеграція з Telegram</h2>
               <p className="text-lg mb-6 opacity-90">
-                Stay updated on your orders and communicate with performers directly through our Telegram bot.
-                Receive notifications, manage orders, and chat with performers - all without leaving Telegram.
+                Слідкуйте за замовленнями та спілкуйтесь з виконавцями безпосередньо через наш Telegram-бот.
+                Отримуйте сповіщення, керуйте замовленнями та спілкуйтесь - все не виходячи з Telegram.
               </p>
               
               <ul className="space-y-3 mb-8">
                 <li className="flex items-center">
                   <CheckCircle className="mr-2 h-5 w-5 text-brand-amber" />
-                  <span>Real-time order notifications</span>
+                  <span>Миттєві сповіщення про замовлення</span>
                 </li>
                 <li className="flex items-center">
                   <CheckCircle className="mr-2 h-5 w-5 text-brand-amber" />
-                  <span>Direct chat with clients/performers</span>
+                  <span>Прямий чат з клієнтами/виконавцями</span>
                 </li>
                 <li className="flex items-center">
                   <CheckCircle className="mr-2 h-5 w-5 text-brand-amber" />
-                  <span>Order status updates</span>
+                  <span>Оновлення статусу замовлень</span>
                 </li>
                 <li className="flex items-center">
                   <CheckCircle className="mr-2 h-5 w-5 text-brand-amber" />
-                  <span>Deadline reminders</span>
+                  <span>Нагадування про дедлайни</span>
                 </li>
               </ul>
               
               <Button size="lg" asChild className="bg-brand-amber hover:bg-brand-amber/90 text-white">
                 <Link to="https://t.me/hiwwer_bot" target="_blank">
-                  Connect Telegram
+                  Підключити Telegram
                 </Link>
               </Button>
             </div>
@@ -335,41 +308,41 @@ export default function Index() {
                   </div>
                   <div className="ml-3">
                     <div className="font-bold">Hiwwer Bot</div>
-                    <div className="text-xs opacity-70">Online</div>
+                    <div className="text-xs opacity-70">Онлайн</div>
                   </div>
                 </div>
                 
-                {/* Mock chat messages */}
+                {/* Презентаційний чат */}
                 <div className="space-y-3 mb-4">
                   <div className="flex flex-col">
                     <div className="bg-blue-600 text-white p-2 rounded-t-lg rounded-r-lg self-start max-w-[80%]">
-                      Welcome to Hiwwer Bot! I'll help you manage your orders and communicate with performers.
+                      Вітаємо в Hiwwer Bot! Я допоможу вам керувати замовленнями та спілкуватися з виконавцями.
                     </div>
-                    <span className="text-xs opacity-50 mt-1">Hiwwer Bot, 10:45 AM</span>
+                    <span className="text-xs opacity-50 mt-1">Hiwwer Bot, 10:45</span>
                   </div>
                   
                   <div className="flex flex-col">
                     <div className="bg-white/20 p-2 rounded-t-lg rounded-l-lg self-end max-w-[80%]">
-                      Hi! I'd like to check my order status.
+                      Привіт! Хочу перевірити статус замовлення.
                     </div>
-                    <span className="text-xs opacity-50 mt-1 self-end">You, 10:46 AM</span>
+                    <span className="text-xs opacity-50 mt-1 self-end">Ви, 10:46</span>
                   </div>
                   
                   <div className="flex flex-col">
                     <div className="bg-blue-600 text-white p-2 rounded-t-lg rounded-r-lg self-start max-w-[80%]">
-                      Your order #12345 is in progress. The performer has completed 60% of the work and will deliver on time.
+                      Ваше замовлення виконується згідно плану. Очікуваний термін завершення - завтра.
                     </div>
-                    <span className="text-xs opacity-50 mt-1">Hiwwer Bot, 10:47 AM</span>
+                    <span className="text-xs opacity-50 mt-1">Hiwwer Bot, 10:47</span>
                   </div>
                 </div>
                 
                 <div className="flex">
                   <Input 
                     type="text" 
-                    placeholder="Type a message..." 
+                    placeholder="Напишіть повідомлення..." 
                     className="mr-2 bg-white/10 border-white/20 placeholder:text-white/50 text-white"
                   />
-                  <Button size="sm" className="bg-brand-amber hover:bg-brand-amber/90">Send</Button>
+                  <Button size="sm" className="bg-brand-amber hover:bg-brand-amber/90">Відправити</Button>
                 </div>
               </div>
             </div>
@@ -380,20 +353,20 @@ export default function Index() {
       {/* Call to Action */}
       <section className="py-16 bg-background">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
+          <h2 className="text-3xl font-bold mb-4">Готові почати?</h2>
           <p className="text-lg mb-8 max-w-2xl mx-auto text-muted-foreground">
-            Join Hiwwer today and connect with talented performers or offer your skills to clients worldwide.
+            Приєднуйтесь до Hiwwer сьогодні та знаходьте талановитих виконавців або пропонуйте свої навички клієнтам по всьому світу.
           </p>
           
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <Button size="lg" asChild>
               <Link to="/register?role=client">
-                I Need a Service
+                Мені потрібна послуга
               </Link>
             </Button>
             <Button size="lg" variant="outline" asChild>
               <Link to="/register?role=performer">
-                I Want to Offer Services
+                Хочу надавати послуги
               </Link>
             </Button>
           </div>

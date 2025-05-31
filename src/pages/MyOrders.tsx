@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import Layout from '@/components/Layout/Layout';
 import { Button } from '@/components/ui/button';
@@ -38,6 +39,7 @@ import {
   PlusCircle
 } from 'lucide-react';
 
+// Приклад структури замовлення для типізації
 interface Order {
   id: string;
   title: string;
@@ -63,118 +65,21 @@ interface Order {
   unreadMessages: number;
 }
 
-// Мок-дані замовлень
-const mockOrders: Order[] = [
-  {
-    id: '1',
-    title: 'Professional Logo Design',
-    description: 'Need a modern logo for my startup company. Looking for something clean and professional.',
-    status: 'in_progress',
-    price: 299,
-    currency: 'USD',
-    deadline: new Date('2024-02-15'),
-    createdAt: new Date('2024-01-20'),
-    client: {
-      id: 'c1',
-      name: 'John Smith',
-      avatar: '/placeholder.svg',
-      rating: 4.8
-    },
-    performer: {
-      id: 'p1',
-      name: 'Alice Designer',
-      avatar: '/placeholder.svg',
-      rating: 4.9
-    },
-    category: 'Design',
-    unreadMessages: 2
-  },
-  {
-    id: '2',
-    title: 'Website Development',
-    description: 'E-commerce website for selling handmade crafts. Need responsive design and payment integration.',
-    status: 'pending',
-    price: 1500,
-    currency: 'USD',
-    deadline: new Date('2024-03-01'),
-    createdAt: new Date('2024-01-25'),
-    client: {
-      id: 'c2',
-      name: 'Sarah Johnson',
-      avatar: '/placeholder.svg',
-      rating: 4.6
-    },
-    performer: {
-      id: 'p2',
-      name: 'Mike Developer',
-      avatar: '/placeholder.svg',
-      rating: 4.7
-    },
-    category: 'Development',
-    unreadMessages: 0
-  },
-  {
-    id: '3',
-    title: 'Social Media Content',
-    description: 'Monthly social media content creation for Instagram and Facebook.',
-    status: 'completed',
-    price: 450,
-    currency: 'USD',
-    deadline: new Date('2024-01-31'),
-    createdAt: new Date('2024-01-01'),
-    client: {
-      id: 'c3',
-      name: 'David Wilson',
-      avatar: '/placeholder.svg',
-      rating: 4.5
-    },
-    performer: {
-      id: 'p3',
-      name: 'Emma Marketer',
-      avatar: '/placeholder.svg',
-      rating: 4.8
-    },
-    category: 'Marketing',
-    unreadMessages: 0
-  },
-  {
-    id: '4',
-    title: 'Mobile App UI Design',
-    description: 'UI/UX design for a fitness tracking mobile application.',
-    status: 'revision',
-    price: 800,
-    currency: 'USD',
-    deadline: new Date('2024-02-20'),
-    createdAt: new Date('2024-01-15'),
-    client: {
-      id: 'c4',
-      name: 'Lisa Brown',
-      avatar: '/placeholder.svg',
-      rating: 4.7
-    },
-    performer: {
-      id: 'p4',
-      name: 'Tom Designer',
-      avatar: '/placeholder.svg',
-      rating: 4.6
-    },
-    category: 'Design',
-    unreadMessages: 1
-  }
-];
+// Пусті дані для демонстрації (будуть завантажуватися з бази даних)
+const userOrders: Order[] = [];
 
 export default function MyOrders() {
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [orders] = useState<Order[]>(mockOrders);
+  const [orders] = useState<Order[]>(userOrders);
 
   if (!user) {
     return (
       <Layout>
         <div className="container max-w-4xl py-16">
           <div className="text-center">
-            <h1 className="text-2xl font-bold">Please log in to view your orders</h1>
+            <h1 className="text-2xl font-bold">Будь ласка, увійдіть для перегляду замовлень</h1>
           </div>
         </div>
       </Layout>
@@ -326,14 +231,14 @@ export default function MyOrders() {
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-foreground">My Orders</h1>
+              <h1 className="text-3xl font-bold text-foreground">Мої замовлення</h1>
               <p className="text-muted-foreground mt-2">
-                Manage your orders and track their progress
+                Керуйте вашими замовленнями та слідкуйте за прогресом
               </p>
             </div>
             <Button>
               <PlusCircle className="h-4 w-4 mr-2" />
-              Create New Order
+              Створити замовлення
             </Button>
           </div>
         </div>
@@ -346,7 +251,7 @@ export default function MyOrders() {
                 <Package className="h-8 w-8 text-blue-500" />
                 <div>
                   <div className="text-2xl font-bold">{orders.length}</div>
-                  <div className="text-sm text-muted-foreground">Total Orders</div>
+                  <div className="text-sm text-muted-foreground">Всього замовлень</div>
                 </div>
               </div>
             </CardContent>
@@ -358,7 +263,7 @@ export default function MyOrders() {
                 <Clock className="h-8 w-8 text-yellow-500" />
                 <div>
                   <div className="text-2xl font-bold">{getOrdersByStatus('in_progress').length}</div>
-                  <div className="text-sm text-muted-foreground">In Progress</div>
+                  <div className="text-sm text-muted-foreground">В роботі</div>
                 </div>
               </div>
             </CardContent>
@@ -370,7 +275,7 @@ export default function MyOrders() {
                 <CheckCircle className="h-8 w-8 text-green-500" />
                 <div>
                   <div className="text-2xl font-bold">{getOrdersByStatus('completed').length}</div>
-                  <div className="text-sm text-muted-foreground">Completed</div>
+                  <div className="text-sm text-muted-foreground">Завершені</div>
                 </div>
               </div>
             </CardContent>
@@ -382,7 +287,7 @@ export default function MyOrders() {
                 <TrendingUp className="h-8 w-8 text-purple-500" />
                 <div>
                   <div className="text-2xl font-bold">${totalEarnings}</div>
-                  <div className="text-sm text-muted-foreground">Total Value</div>
+                  <div className="text-sm text-muted-foreground">Загальна вартість</div>
                 </div>
               </div>
             </CardContent>
@@ -394,7 +299,7 @@ export default function MyOrders() {
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
-              placeholder="Search orders..."
+              placeholder="Пошук замовлень..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
@@ -403,15 +308,15 @@ export default function MyOrders() {
           
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-48">
-              <SelectValue placeholder="Filter by status" />
+              <SelectValue placeholder="Фільтр за статусом" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Statuses</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="in_progress">In Progress</SelectItem>
-              <SelectItem value="revision">Revision</SelectItem>
-              <SelectItem value="completed">Completed</SelectItem>
-              <SelectItem value="cancelled">Cancelled</SelectItem>
+              <SelectItem value="all">Всі статуси</SelectItem>
+              <SelectItem value="pending">Очікують</SelectItem>
+              <SelectItem value="in_progress">В роботі</SelectItem>
+              <SelectItem value="revision">На доопрацюванні</SelectItem>
+              <SelectItem value="completed">Завершені</SelectItem>
+              <SelectItem value="cancelled">Скасовані</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -419,11 +324,11 @@ export default function MyOrders() {
         {/* Orders Tabs */}
         <Tabs defaultValue="all" className="space-y-6">
           <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="all">All Orders</TabsTrigger>
-            <TabsTrigger value="pending">Pending</TabsTrigger>
-            <TabsTrigger value="in_progress">In Progress</TabsTrigger>
-            <TabsTrigger value="completed">Completed</TabsTrigger>
-            <TabsTrigger value="cancelled">Cancelled</TabsTrigger>
+            <TabsTrigger value="all">Всі замовлення</TabsTrigger>
+            <TabsTrigger value="pending">Очікують</TabsTrigger>
+            <TabsTrigger value="in_progress">В роботі</TabsTrigger>
+            <TabsTrigger value="completed">Завершені</TabsTrigger>
+            <TabsTrigger value="cancelled">Скасовані</TabsTrigger>
           </TabsList>
 
           <TabsContent value="all" className="space-y-4">
@@ -434,14 +339,24 @@ export default function MyOrders() {
             ) : (
               <Card>
                 <CardContent className="py-16 text-center">
-                  <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No orders found</h3>
-                  <p className="text-muted-foreground">
-                    {searchTerm || statusFilter !== 'all' 
-                      ? 'Try adjusting your search or filters'
-                      : 'You haven\'t created any orders yet'
-                    }
-                  </p>
+                  <div className="flex flex-col items-center justify-center space-y-4">
+                    <div className="w-16 h-16 bg-gradient-to-br from-brand-blue to-brand-teal rounded-full flex items-center justify-center">
+                      <Package className="h-8 w-8 text-white" />
+                    </div>
+                    <h3 className="text-xl font-semibold">Ваші замовлення з'являться тут</h3>
+                    <p className="text-muted-foreground max-w-md">
+                      {searchTerm || statusFilter !== 'all' 
+                        ? 'Спробуйте змінити фільтри пошуку або створіть нове замовлення'
+                        : 'Почніть роботу з платформою Hiwwer та створіть ваше перше замовлення'
+                      }
+                    </p>
+                    <Button asChild className="mt-4">
+                      <Link to="/services">
+                        <PlusCircle className="mr-2 h-4 w-4" />
+                        Знайти послуги
+                      </Link>
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             )}

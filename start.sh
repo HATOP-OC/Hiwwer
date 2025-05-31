@@ -7,7 +7,7 @@ cd "$(dirname "$0")"
 echo "===== Запуск проекту Hiwwer ====="
 
 # Надання прав на виконання скриптам
-chmod +x start-db-improved.sh start-frontend.sh start-bot.sh
+chmod +x start-db.sh start-frontend.sh start-bot.sh
 
 # Функція для запуску компонента в фоновому режимі
 run_component() {
@@ -32,8 +32,13 @@ run_component() {
   fi
 }
 
-# Запуск бази даних
-./start-db-improved.sh
+# Перевірка чи контейнер БД вже існує і запущений
+if docker ps --format '{{.Names}}' | grep -q '^hiwwer-postgres$'; then
+  echo "PostgreSQL контейнер вже запущено. Пропускаємо ініціалізацію БД."
+else
+  # Запуск бази даних
+  ./start-db.sh
+fi
 
 # Запуск компонентів у фоновому режимі
 run_component "start-frontend.sh" "Frontend"
