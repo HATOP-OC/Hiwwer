@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect } from 'react';
 
 export type UserRole = 'client' | 'performer' | 'admin';
@@ -9,6 +8,7 @@ export interface User {
   email: string;
   role: UserRole;
   avatar?: string;
+  bio?: string;
   rating?: number;
   telegramId?: string;
 }
@@ -37,25 +37,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(false);
   }, []);
 
+  // Helper to generate UUID (v4)
+  const uuidv4 = () => {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+      const r = (Math.random() * 16) | 0;
+      const v = c === 'x' ? r : (r & 0x3) | 0x8;
+      return v.toString(16);
+    });
+  };
+
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      // In a real app, this would call your API
-      // For now, we'll simulate a successful login with mock data
-      const mockUser: User = {
-        id: '1',
-        name: 'John Doe',
-        email: email,
-        role: 'client',
-        avatar: '/placeholder.svg',
-        rating: 4.5
-      };
-      
-      setUser(mockUser);
-      localStorage.setItem('user', JSON.stringify(mockUser));
-    } catch (error) {
-      console.error('Login failed:', error);
-      throw error;
+      // Retrieve users list from localStorage
+      const stored = localStorage.getItem('users') || '[]';
+      const usersList: Array<User & { password: string }> = JSON.parse(stored);
+      const found = usersList.find(u => u.email === email && u.password === password);
+      if (!found) {
+        throw new Error('Invalid email or password');
+      }
+      // Remove password before storing in context
+      const { password: _, ...userData } = found;
+      setUser(userData);
+      localStorage.setItem('user', JSON.stringify(userData));
+    } catch (error: any) {
+      console.error('Login error:', error);
+      throw new Error(error.message || 'Login failed');
     } finally {
       setIsLoading(false);
     }
@@ -64,22 +71,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const register = async (name: string, email: string, password: string, role: UserRole) => {
     setIsLoading(true);
     try {
-      // In a real app, this would call your API
-      // For now, we'll simulate a successful registration with mock data
-      const mockUser: User = {
-        id: '1',
-        name: name,
-        email: email,
-        role: role,
+      // Retrieve existing users
+      const stored = localStorage.getItem('users') || '[]';
+      const usersList: Array<User & { password: string }> = JSON.parse(stored);
+      if (usersList.find(u => u.email === email)) {
+        throw new Error('Email already registered');
+      }
+      // Create new user entry
+      const newUser = {
+        id: uuidv4(),
+        name,
+        email,
+        password,
+        role,
         avatar: '/placeholder.svg',
-        rating: 0
+        rating: 0,
       };
-      
-      setUser(mockUser);
-      localStorage.setItem('user', JSON.stringify(mockUser));
-    } catch (error) {
-      console.error('Registration failed:', error);
-      throw error;
+      usersList.push(newUser);
+      localStorage.setItem('users', JSON.stringify(usersList));
+      // Store user in context without password
+      const { password: _, ...userData } = newUser;
+      setUser(userData);
+      localStorage.setItem('user', JSON.stringify(userData));
+    } catch (error: any) {
+      console.error('Register error:', error);
+      throw new Error(error.message || 'Registration failed');
     } finally {
       setIsLoading(false);
     }

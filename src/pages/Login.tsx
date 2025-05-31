@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Layout from '@/components/Layout/Layout';
@@ -36,8 +35,9 @@ export default function Login() {
       toast.success('Login successful');
       navigate('/');
     } catch (error: any) {
-      setError(error.message || 'Failed to login');
-      toast.error('Login failed');
+      const msg = error.message || 'Failed to login';
+      setError(msg);
+      toast.error(msg);
     } finally {
       setIsLoading(false);
     }
@@ -108,6 +108,9 @@ export default function Login() {
             </div>
             
             <form onSubmit={handleSubmit} className="space-y-4">
+              {error && (
+                <div className="text-sm text-destructive">{error}</div>
+              )}
               <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
