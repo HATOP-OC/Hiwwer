@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Скрипт для запуска фронтенд-сервера проекта DigiHub
+# Скрипт для запуска фронтенд-сервера проекта Hiwwer
 set -euo pipefail
 
 cd "$(dirname "$0")"

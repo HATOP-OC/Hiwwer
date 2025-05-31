@@ -321,7 +321,7 @@ export default function Index() {
               </ul>
               
               <Button size="lg" asChild className="bg-brand-amber hover:bg-brand-amber/90 text-white">
-                <Link to="https://t.me/digihub_bot" target="_blank">
+                <Link to="https://t.me/hiwwer_bot" target="_blank">
                   Connect Telegram
                 </Link>
               </Button>
@@ -334,7 +334,7 @@ export default function Index() {
                     <span className="text-xl">🤖</span>
                   </div>
                   <div className="ml-3">
-                    <div className="font-bold">DigiHub Bot</div>
+                    <div className="font-bold">Hiwwer Bot</div>
                     <div className="text-xs opacity-70">Online</div>
                   </div>
                 </div>
@@ -343,9 +343,9 @@ export default function Index() {
                 <div className="space-y-3 mb-4">
                   <div className="flex flex-col">
                     <div className="bg-blue-600 text-white p-2 rounded-t-lg rounded-r-lg self-start max-w-[80%]">
-                      Welcome to DigiHub Bot! I'll help you manage your orders and communicate with performers.
+                      Welcome to Hiwwer Bot! I'll help you manage your orders and communicate with performers.
                     </div>
-                    <span className="text-xs opacity-50 mt-1">DigiHub Bot, 10:45 AM</span>
+                    <span className="text-xs opacity-50 mt-1">Hiwwer Bot, 10:45 AM</span>
                   </div>
                   
                   <div className="flex flex-col">
@@ -359,7 +359,7 @@ export default function Index() {
                     <div className="bg-blue-600 text-white p-2 rounded-t-lg rounded-r-lg self-start max-w-[80%]">
                       Your order #12345 is in progress. The performer has completed 60% of the work and will deliver on time.
                     </div>
-                    <span className="text-xs opacity-50 mt-1">DigiHub Bot, 10:47 AM</span>
+                    <span className="text-xs opacity-50 mt-1">Hiwwer Bot, 10:47 AM</span>
                   </div>
                 </div>
                 
@@ -382,7 +382,7 @@ export default function Index() {
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
           <p className="text-lg mb-8 max-w-2xl mx-auto text-muted-foreground">
-            Join DigiHub today and connect with talented performers or offer your skills to clients worldwide.
+            Join Hiwwer today and connect with talented performers or offer your skills to clients worldwide.
           </p>
           
           <div className="flex flex-col sm:flex-row justify-center gap-4">

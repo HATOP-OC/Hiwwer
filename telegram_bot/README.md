@@ -1,11 +1,11 @@
 
-# DigiHub Telegram Bot
+# Hiwwer Telegram Bot
 
-This Telegram bot integrates with the DigiHub digital services marketplace to provide real-time notifications, order management, and chat functionality.
+This Telegram bot integrates with the Hiwwer digital services marketplace to provide real-time notifications, order management, and chat functionality.
 
 ## Features
 
-- **User Authentication**: Link Telegram accounts with DigiHub user accounts
+- **User Authentication**: Link Telegram accounts with Hiwwer user accounts
 - **Order Management**: View order details, status updates, and deadlines
 - **Real-time Chat**: Communicate directly with clients or performers
 - **Notifications**: Receive alerts for new orders, messages, status changes, and approaching deadlines
@@ -32,7 +32,7 @@ This Telegram bot integrates with the DigiHub digital services marketplace to pr
 For production deployment:
 
 1. Set up a proper webhook instead of using polling
-2. Connect to DigiHub's API for real-time data
+2. Connect to Hiwwer's API for real-time data
 3. Implement proper database storage instead of in-memory mock data
 4. Add authentication and security measures
 5. Use environment variables for all sensitive configuration
@@ -44,9 +44,9 @@ For production deployment:
 - `/chat` - Access your conversations
 - `/help` - Show help message
 
-## Integration with DigiHub
+## Integration with Hiwwer
 
-The bot connects to DigiHub's backend API to:
+The bot connects to Hiwwer's backend API to:
 - Verify user identities
 - Fetch order data
 - Update order statuses

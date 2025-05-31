@@ -9,7 +9,7 @@ export default function Footer() {
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
-            <h3 className="text-lg font-semibold mb-4">DigiHub</h3>
+            <h3 className="text-lg font-semibold mb-4">Hiwwer</h3>
             <p className="text-sm text-muted-foreground">
               Your one-stop platform for digital services with seamless Telegram integration.
             </p>
@@ -81,7 +81,7 @@ export default function Footer() {
         
         <div className="mt-8 border-t pt-6 flex flex-col md:flex-row gap-4 justify-between">
           <p className="text-sm text-muted-foreground">
-            © {currentYear} DigiHub. All rights reserved.
+            © {currentYear} Hiwwer. All rights reserved.
           </p>
           
           <div className="flex gap-4">

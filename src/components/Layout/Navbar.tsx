@@ -25,7 +25,7 @@ export default function Navbar() {
       <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center gap-6">
           <Link to="/" className="flex items-center space-x-2">
-            <span className="font-bold text-2xl text-brand-blue">DigiHub</span>
+            <span className="font-bold text-2xl text-brand-blue">Hiwwer</span>
           </Link>
           
           <nav className="hidden md:flex gap-6">

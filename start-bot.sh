@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Скрипт для запуска Telegram-бота проекта DigiHub
+# Скрипт для запуска Telegram-бота проекта Hiwwer
 set -euo pipefail
 
 cd "$(dirname "$0")"/telegram_bot

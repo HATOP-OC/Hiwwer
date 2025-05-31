@@ -1,8 +1,8 @@
 
-# DigiHub API Documentation
+# Hiwwer API Documentation
 
 ## Base URL
-`https://api.digihub.example.com/v1`
+`https://api.hiwwer.example.com/v1`
 
 ## Authentication
 All API endpoints require authentication using JWT tokens, except for public endpoints like service listing and searching.
@@ -92,7 +92,7 @@ Authorization: Bearer {jwt_token}
   "name": "John Doe",
   "email": "john@example.com",
   "role": "client",
-  "avatar_url": "https://digihub.example.com/avatars/john.jpg",
+  "avatar_url": "https://hiwwer.example.com/avatars/john.jpg",
   "bio": "I need graphic design services for my startup",
   "rating": 4.5,
   "telegram_connected": true,
@@ -108,7 +108,7 @@ Authorization: Bearer {jwt_token}
 {
   "name": "John Doe",
   "bio": "I need graphic design services for my startup",
-  "avatar_url": "https://digihub.example.com/avatars/john.jpg"
+  "avatar_url": "https://hiwwer.example.com/avatars/john.jpg"
 }
 ```
 
@@ -142,7 +142,7 @@ Authorization: Bearer {jwt_token}
         "id": "223e4567-e89b-12d3-a456-426614174000",
         "name": "Alice Designer",
         "rating": 4.8,
-        "avatar_url": "https://digihub.example.com/avatars/alice.jpg"
+        "avatar_url": "https://hiwwer.example.com/avatars/alice.jpg"
       },
       "category": {
         "id": "323e4567-e89b-12d3-a456-426614174000",
@@ -154,8 +154,8 @@ Authorization: Bearer {jwt_token}
         {"id": "523e4567-e89b-12d3-a456-426614174000", "name": "Branding"}
       ],
       "images": [
-        "https://digihub.example.com/services/logo1.jpg",
-        "https://digihub.example.com/services/logo2.jpg"
+        "https://hiwwer.example.com/services/logo1.jpg",
+        "https://hiwwer.example.com/services/logo2.jpg"
       ],
       "created_at": "2023-01-10T12:00:00Z"
     }
@@ -187,7 +187,7 @@ Authorization: Bearer {jwt_token}
     "id": "223e4567-e89b-12d3-a456-426614174000",
     "name": "Alice Designer",
     "rating": 4.8,
-    "avatar_url": "https://digihub.example.com/avatars/alice.jpg",
+    "avatar_url": "https://hiwwer.example.com/avatars/alice.jpg",
     "bio": "Professional graphic designer with 5+ years experience"
   },
   "category": {
@@ -200,8 +200,8 @@ Authorization: Bearer {jwt_token}
     {"id": "523e4567-e89b-12d3-a456-426614174000", "name": "Branding"}
   ],
   "images": [
-    "https://digihub.example.com/services/logo1.jpg",
-    "https://digihub.example.com/services/logo2.jpg"
+    "https://hiwwer.example.com/services/logo1.jpg",
+    "https://hiwwer.example.com/services/logo2.jpg"
   ],
   "created_at": "2023-01-10T12:00:00Z",
   "reviews": [
@@ -212,7 +212,7 @@ Authorization: Bearer {jwt_token}
       "client": {
         "id": "723e4567-e89b-12d3-a456-426614174000",
         "name": "Bob Client",
-        "avatar_url": "https://digihub.example.com/avatars/bob.jpg"
+        "avatar_url": "https://hiwwer.example.com/avatars/bob.jpg"
       },
       "created_at": "2023-02-15T14:30:00Z"
     }
@@ -234,8 +234,8 @@ Authorization: Bearer {jwt_token}
   "delivery_time": 3,
   "tags": ["423e4567-e89b-12d3-a456-426614174000", "523e4567-e89b-12d3-a456-426614174000"],
   "images": [
-    "https://digihub.example.com/services/logo1.jpg",
-    "https://digihub.example.com/services/logo2.jpg"
+    "https://hiwwer.example.com/services/logo1.jpg",
+    "https://hiwwer.example.com/services/logo2.jpg"
   ]
 }
 ```
@@ -262,9 +262,9 @@ Authorization: Bearer {jwt_token}
   "delivery_time": 2,
   "tags": ["423e4567-e89b-12d3-a456-426614174000", "523e4567-e89b-12d3-a456-426614174000"],
   "images": [
-    "https://digihub.example.com/services/logo1.jpg",
-    "https://digihub.example.com/services/logo2.jpg",
-    "https://digihub.example.com/services/logo3.jpg"
+    "https://hiwwer.example.com/services/logo1.jpg",
+    "https://hiwwer.example.com/services/logo2.jpg",
+    "https://hiwwer.example.com/services/logo3.jpg"
   ]
 }
 ```
@@ -306,7 +306,7 @@ Authorization: Bearer {jwt_token}
 {
   "id": "823e4567-e89b-12d3-a456-426614174000",
   "message": "Order created successfully",
-  "payment_url": "https://digihub.example.com/payment/823e4567-e89b-12d3-a456-426614174000"
+  "payment_url": "https://hiwwer.example.com/payment/823e4567-e89b-12d3-a456-426614174000"
 }
 ```
 
@@ -339,7 +339,7 @@ Authorization: Bearer {jwt_token}
     {
       "id": "923e4567-e89b-12d3-a456-426614174000",
       "file_name": "requirements.pdf",
-      "file_url": "https://digihub.example.com/attachments/requirements.pdf",
+      "file_url": "https://hiwwer.example.com/attachments/requirements.pdf",
       "file_size": 1024000,
       "file_type": "application/pdf",
       "uploaded_by": "723e4567-e89b-12d3-a456-426614174000",
@@ -417,7 +417,7 @@ file: [binary file data]
 {
   "id": "923e4567-e89b-12d3-a456-426614174000",
   "file_name": "requirements.pdf",
-  "file_url": "https://digihub.example.com/attachments/requirements.pdf",
+  "file_url": "https://hiwwer.example.com/attachments/requirements.pdf",
   "file_size": 1024000,
   "file_type": "application/pdf"
 }
@@ -457,7 +457,7 @@ file: [binary file data]
       "sender": {
         "id": "723e4567-e89b-12d3-a456-426614174000",
         "name": "Bob Client",
-        "avatar_url": "https://digihub.example.com/avatars/bob.jpg"
+        "avatar_url": "https://hiwwer.example.com/avatars/bob.jpg"
       },
       "content": "How is the logo design coming along?",
       "read": true,
@@ -469,7 +469,7 @@ file: [binary file data]
       "sender": {
         "id": "223e4567-e89b-12d3-a456-426614174000",
         "name": "Alice Designer",
-        "avatar_url": "https://digihub.example.com/avatars/alice.jpg"
+        "avatar_url": "https://hiwwer.example.com/avatars/alice.jpg"
       },
       "content": "It's going well! I'll share a draft tomorrow.",
       "read": false,
@@ -499,7 +499,7 @@ file: [binary file data]
 {
   "id": "c23e4567-e89b-12d3-a456-426614174000",
   "file_name": "logo_draft.png",
-  "file_url": "https://digihub.example.com/attachments/logo_draft.png",
+  "file_url": "https://hiwwer.example.com/attachments/logo_draft.png",
   "file_size": 512000,
   "file_type": "image/png"
 }
@@ -541,7 +541,7 @@ file: [binary file data]
       "client": {
         "id": "723e4567-e89b-12d3-a456-426614174000",
         "name": "Bob Client",
-        "avatar_url": "https://digihub.example.com/avatars/bob.jpg"
+        "avatar_url": "https://hiwwer.example.com/avatars/bob.jpg"
       },
       "created_at": "2023-03-05T10:00:00Z"
     }

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-DigiHub Telegram Bot - Integration for digital services marketplace
+Hiwwer Telegram Bot - Integration for digital services marketplace
 """
 import os
 import logging
@@ -82,7 +82,7 @@ def start(update: Update, context: CallbackContext) -> int:
     reply_markup = InlineKeyboardMarkup(keyboard)
     
     update.message.reply_text(
-        f'Hello {user.first_name}! Welcome to DigiHub Bot.\n\n'
+        f'Hello {user.first_name}! Welcome to Hiwwer Bot.\n\n'
         f'I can help you manage your orders and communicate with clients/performers.',
         reply_markup=reply_markup
     )
@@ -93,7 +93,7 @@ def start(update: Update, context: CallbackContext) -> int:
 def help_command(update: Update, context: CallbackContext) -> None:
     """Send a message when the command /help is issued."""
     help_text = (
-        "DigiHub Bot Commands:\n\n"
+        "Hiwwer Bot Commands:\n\n"
         "/start - Start the bot and show main menu\n"
         "/myorders - View your orders\n"
         "/chat - Access your conversations\n"
@@ -398,12 +398,13 @@ def back_to_main(update: Update, context: CallbackContext) -> int:
     query.answer()
     
     keyboard = [
-        [InlineKeyboardButton("My Orders", callback_data='my_orders')],
-        [InlineKeyboardButton("Messages", callback_data='messages')],
+        [InlineKeyboardButton("Открыть маркетплейс", web_app=WebAppInfo(url=web_app_url))],
+        [InlineKeyboardButton("Мои заказы", callback_data='my_orders')],
+        [InlineKeyboardButton("Сообщения", callback_data='messages')],
     ]
     
     query.edit_message_text(
-        text="DigiHub Bot Main Menu",
+        text="Hiwwer Bot Main Menu",
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
     

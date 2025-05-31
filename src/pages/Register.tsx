@@ -74,7 +74,7 @@ export default function Register() {
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl">Create an account</CardTitle>
             <CardDescription>
-              Enter your information to create a DigiHub account
+              Enter your information to create a Hiwwer account
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4">

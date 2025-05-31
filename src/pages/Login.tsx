@@ -54,7 +54,7 @@ export default function Login() {
       <div className="container max-w-md py-16">
         <Card>
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl">Login to DigiHub</CardTitle>
+            <CardTitle className="text-2xl">Login to Hiwwer</CardTitle>
             <CardDescription>
               Enter your email and password to login to your account
             </CardDescription>
