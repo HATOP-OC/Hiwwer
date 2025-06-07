@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { ADMIN_EMAILS } from '@/config/admins';
 
 export type UserRole = 'client' | 'performer' | 'admin';
 
@@ -32,7 +33,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Check for stored user on mount
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
-      setUser(JSON.parse(storedUser));
+      const parsed: User = JSON.parse(storedUser);
+      const role = ADMIN_EMAILS.includes(parsed.email) ? 'admin' : parsed.role;
+      setUser({ ...parsed, role });
     }
     setIsLoading(false);
   }, []);
@@ -57,7 +60,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw new Error('Invalid email or password');
       }
       // Remove password before storing in context
-      const { password: _, ...userData } = found;
+      // Override role if email is in admin list
+      const { password: _, ...userDataRaw } = found;
+      const finalRole = ADMIN_EMAILS.includes(found.email) ? 'admin' : userDataRaw.role;
+      const userData = { ...userDataRaw, role: finalRole };
       setUser(userData);
       localStorage.setItem('user', JSON.stringify(userData));
     } catch (error: any) {
@@ -71,25 +77,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const register = async (name: string, email: string, password: string, role: UserRole) => {
     setIsLoading(true);
     try {
-      // Retrieve existing users
       const stored = localStorage.getItem('users') || '[]';
       const usersList: Array<User & { password: string }> = JSON.parse(stored);
       if (usersList.find(u => u.email === email)) {
         throw new Error('Email already registered');
       }
-      // Create new user entry
+      const assignedRole = ADMIN_EMAILS.includes(email) ? 'admin' : role;
       const newUser = {
         id: uuidv4(),
         name,
         email,
         password,
-        role,
+        role: assignedRole,
         avatar: '/placeholder.svg',
         rating: 0,
       };
       usersList.push(newUser);
       localStorage.setItem('users', JSON.stringify(usersList));
-      // Store user in context without password
       const { password: _, ...userData } = newUser;
       setUser(userData);
       localStorage.setItem('user', JSON.stringify(userData));
@@ -116,8 +120,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         rating: 0
       };
       
-      setUser(mockUser);
-      localStorage.setItem('user', JSON.stringify(mockUser));
+      // Override role if email matches admin list
+      const role = ADMIN_EMAILS.includes(mockUser.email) ? 'admin' : mockUser.role;
+      const userData = { ...mockUser, role };
+      setUser(userData);
+      localStorage.setItem('user', JSON.stringify(userData));
     } catch (error) {
       console.error('Telegram login failed:', error);
       throw error;

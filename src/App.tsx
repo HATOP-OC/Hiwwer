@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -31,6 +30,7 @@ import ContactUs from "./pages/ContactUs";
 
 // Адмін-панель
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import RequireAdmin from '@/components/RequireAdmin';
 
 const queryClient = new QueryClient();
 
@@ -66,8 +66,16 @@ const App = () => (
               <Route path="/contact-us" element={<ContactUs />} />
               
               {/* Адмін-панель */}
-              <Route path="/admin" element={<AdminDashboard />} />
-              <Route path="/admin/dashboard" element={<AdminDashboard />} />
+              <Route path="/admin" element={
+                <RequireAdmin>
+                  <AdminDashboard />
+                </RequireAdmin>
+              } />
+              <Route path="/admin/dashboard" element={
+                <RequireAdmin>
+                  <AdminDashboard />
+                </RequireAdmin>
+              } />
               
               {/* Сторінка 404 */}
               <Route path="*" element={<NotFound />} />
