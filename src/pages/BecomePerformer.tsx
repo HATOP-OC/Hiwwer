@@ -20,6 +20,7 @@ import {
   FileCheck,
   ShieldCheck
 } from 'lucide-react';
+import { submitPerformerApplication } from '@/lib/api';
 
 // Типи для форми
 interface ApplicationFormData {
@@ -53,17 +54,18 @@ export default function BecomePerformer() {
     }));
   };
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Тут буде логіка відправки форми на сервер
     setIsSubmitting(true);
-    
-    // Імітуємо відправку на сервер
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      await submitPerformerApplication(formData);
       setIsSubmitted(true);
-    }, 1500);
+    } catch (error) {
+      console.error(error);
+      // optional: show toast notification for error
+    } finally {
+      setIsSubmitting(false);
+    }
   };
   
   const nextStep = () => setStep(step + 1);

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import Layout from '@/components/Layout/Layout';
 import { Button } from '@/components/ui/button';
@@ -20,6 +20,7 @@ import {
   ChevronDown,
   ArrowRight
 } from 'lucide-react';
+import { fetchAdminDashboardStats, fetchRecentActivities, fetchSupportTickets, DashboardStats, Activity, SupportTicket } from '@/lib/api';
 
 // Статистичні картки
 const statsCards = [
@@ -154,6 +155,30 @@ const supportTickets = [
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [activities, setActivities] = useState<Activity[]>([]);
+  const [tickets, setTickets] = useState<SupportTicket[]>([]);
+  const [loadingStats, setLoadingStats] = useState(true);
+
+  useEffect(() => {
+    fetchAdminDashboardStats()
+      .then(data => setStats(data))
+      .catch(console.error)
+      .finally(() => setLoadingStats(false));
+    fetchRecentActivities()
+      .then(data => setActivities(data))
+      .catch(console.error);
+    fetchSupportTickets()
+      .then(data => setTickets(data))
+      .catch(console.error);
+  }, []);
+
+  const statsCardsDynamic = [
+    { title: 'Користувачі', value: stats?.totalUsers.toLocaleString() ?? '0', icon: <Users className="h-8 w-8" />, link: '/admin/users' },
+    { title: 'Сервіси', value: stats?.totalServices.toLocaleString() ?? '0', icon: <FileText className="h-8 w-8" />, link: '/admin/services' },
+    { title: 'Виконавці', value: stats?.totalPerformers.toLocaleString() ?? '0', icon: <Shield className="h-8 w-8" />, link: '/admin/performers' },
+    { title: 'Замовлення', value: stats?.totalOrders.toLocaleString() ?? '0', icon: <ShoppingCart className="h-8 w-8" />, link: '/admin/orders' },
+  ];
 
   // Функція для визначення кольору тренду
   const getTrendColor = (trend: string) => {
@@ -224,17 +249,17 @@ const AdminDashboard = () => {
           <TabsContent value="overview">
             {/* Картки зі статистикою */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-              {statsCards.map((card, index) => (
+              {statsCardsDynamic.map((card, index) => (
                 <Card key={index} className="overflow-hidden">
                   <CardContent className="p-6">
                     <div className="flex justify-between items-start">
                       <div>
                         <p className="text-muted-foreground">{card.title}</p>
                         <h3 className="text-3xl font-bold mt-1">{card.value}</h3>
-                        <p className={`text-sm mt-1 flex items-center ${getTrendColor(card.trend)}`}>
+                        {/* <p className={`text-sm mt-1 flex items-center ${getTrendColor(card.trend)}`}>
                           {getTrendIcon(card.trend)}
                           <span className="ml-1">{card.change} з минулого місяця</span>
-                        </p>
+                        </p> */}
                       </div>
                       <div className="bg-primary/10 p-3 rounded-full">
                         {card.icon}
@@ -297,7 +322,7 @@ const AdminDashboard = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {recentActivities.map((activity) => (
+                    {activities.map((activity) => (
                       <div key={activity.id} className="flex items-start pb-3 border-b last:border-0 last:pb-0">
                         <div className="bg-primary/10 p-2 rounded-full mr-3">
                           <Users className="h-4 w-4" />
@@ -324,7 +349,7 @@ const AdminDashboard = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {supportTickets.map((ticket) => (
+                    {tickets.map((ticket) => (
                       <div key={ticket.id} className="flex items-start pb-3 border-b last:border-0 last:pb-0">
                         <div className="bg-primary/10 p-2 rounded-full mr-3">
                           <MessageSquare className="h-4 w-4" />

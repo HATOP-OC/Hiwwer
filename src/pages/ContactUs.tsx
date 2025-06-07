@@ -19,10 +19,12 @@ import {
   ShieldAlert, 
   CreditCard
 } from 'lucide-react';
+import { sendContactMessage } from '@/lib/api.ts';
 
 const ContactUs = () => {
   const { toast } = useToast();
   const [formSubmitted, setFormSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false); // Стан для відстеження процесу відправки
   const [contactForm, setContactForm] = useState({
     name: '',
     email: '',
@@ -39,27 +41,27 @@ const ContactUs = () => {
     setContactForm(prev => ({ ...prev, subject: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Демонстраційний код для відправки форми
-    console.log('Form submitted:', contactForm);
-    
-    // Показуємо сповіщення про успішну відправку
-    toast({
-      title: "Повідомлення надіслано",
-      description: "Ми отримали ваше повідомлення і зв'яжемося з вами найближчим часом.",
-      duration: 5000,
-    });
-    
-    // Очищаємо форму та встановлюємо стан "відправлено"
-    setContactForm({
-      name: '',
-      email: '',
-      subject: 'general',
-      message: ''
-    });
-    setFormSubmitted(true);
+    setIsSubmitting(true);
+    try {
+      await sendContactMessage(contactForm);
+      toast({
+        title: 'Повідомлення надіслано',
+        description: "Ми отримали ваше повідомлення і зв'яжемося з вами найближчим часом.",
+        duration: 5000,
+      });
+      setContactForm({ name: '', email: '', subject: 'general', message: '' });
+      setFormSubmitted(true);
+    } catch (error) {
+      toast({
+        title: 'Помилка',
+        description: 'Не вдалося надіслати повідомлення. Спробуйте пізніше.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Категорії для швидких посилань
@@ -289,6 +291,7 @@ const ContactUs = () => {
                           onChange={handleChange}
                           placeholder="Введіть ваше ім'я"
                           required
+                          disabled={isSubmitting}
                           className="mt-1"
                         />
                       </div>
@@ -303,6 +306,7 @@ const ContactUs = () => {
                           onChange={handleChange}
                           placeholder="your.email@example.com"
                           required
+                          disabled={isSubmitting}
                           className="mt-1"
                         />
                       </div>
@@ -313,21 +317,22 @@ const ContactUs = () => {
                           value={contactForm.subject} 
                           onValueChange={handleRadioChange}
                           className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-2"
+                          disabled={isSubmitting}
                         >
                           <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="general" id="general" />
+                            <RadioGroupItem value="general" id="general" disabled={isSubmitting} />
                             <Label htmlFor="general" className="cursor-pointer">Загальне питання</Label>
                           </div>
                           <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="technical" id="technical" />
+                            <RadioGroupItem value="technical" id="technical" disabled={isSubmitting} />
                             <Label htmlFor="technical" className="cursor-pointer">Технічна проблема</Label>
                           </div>
                           <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="billing" id="billing" />
+                            <RadioGroupItem value="billing" id="billing" disabled={isSubmitting} />
                             <Label htmlFor="billing" className="cursor-pointer">Оплата та рахунки</Label>
                           </div>
                           <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="partnership" id="partnership" />
+                            <RadioGroupItem value="partnership" id="partnership" disabled={isSubmitting} />
                             <Label htmlFor="partnership" className="cursor-pointer">Співпраця</Label>
                           </div>
                         </RadioGroup>
@@ -343,13 +348,26 @@ const ContactUs = () => {
                           placeholder="Опишіть ваше питання або проблему детально..."
                           rows={6}
                           required
+                          disabled={isSubmitting}
                           className="mt-1"
                         />
                       </div>
                     </div>
                     
-                    <Button type="submit" className="w-full">
-                      <Send className="mr-2 h-4 w-4" /> Надіслати повідомлення
+                    <Button type="submit" className="w-full" disabled={isSubmitting}>
+                      {isSubmitting ? (
+                        <>
+                          <svg className="animate-spin h-5 w-5 mr-3 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4zm16 0a8 8 0 01-8 8v-4a4 4 0 004-4h4z"></path>
+                          </svg>
+                          Надіслати повідомлення...
+                        </>
+                      ) : (
+                        <>
+                          <Send className="mr-2 h-4 w-4" /> Надіслати повідомлення
+                        </>
+                      )}
                     </Button>
                   </form>
                 </CardContent>
