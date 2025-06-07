@@ -20,158 +20,78 @@ import {
   ChevronDown,
   ArrowRight
 } from 'lucide-react';
-import { fetchAdminDashboardStats, fetchRecentActivities, fetchSupportTickets, DashboardStats, Activity, SupportTicket } from '@/lib/api';
-
-// Статистичні картки
-const statsCards = [
-  {
-    title: 'Користувачі',
-    value: '2,845',
-    change: '+12.5%',
-    trend: 'up',
-    icon: <Users className="h-8 w-8" />,
-    link: '/admin/users'
-  },
-  {
-    title: 'Замовлення',
-    value: '1,257',
-    change: '+23.1%',
-    trend: 'up',
-    icon: <ShoppingCart className="h-8 w-8" />,
-    link: '/admin/orders'
-  },
-  {
-    title: 'Дохід',
-    value: '$45,678',
-    change: '+18.2%',
-    trend: 'up',
-    icon: <DollarSign className="h-8 w-8" />,
-    link: '/admin/finance'
-  },
-  {
-    title: 'Конверсія',
-    value: '3.2%',
-    change: '-0.4%',
-    trend: 'down',
-    icon: <TrendingUp className="h-8 w-8" />,
-    link: '/admin/analytics'
-  },
-];
-
-// Дані для статистики продажів
-const salesData = [
-  { month: 'Січень', value: 70 },
-  { month: 'Лютий', value: 55 },
-  { month: 'Березень', value: 85 },
-  { month: 'Квітень', value: 50 },
-  { month: 'Травень', value: 40 },
-  { month: 'Червень', value: 65 },
-];
-
-// Дані для категорій
-const categoryData = [
-  { name: 'Дизайн', value: 40 },
-  { name: 'Розробка', value: 30 },
-  { name: 'Маркетинг', value: 20 },
-  { name: 'Консультації', value: 10 },
-  { name: 'Інше', value: 8 },
-];
-
-// Останні дії користувачів
-const recentActivities = [
-  {
-    id: 1,
-    user: 'Олександр П.',
-    action: 'створив нове замовлення',
-    target: 'Дизайн логотипу',
-    time: '10 хв тому'
-  },
-  {
-    id: 2,
-    user: 'Марія К.',
-    action: 'стала виконавцем',
-    target: '',
-    time: '1 год тому'
-  },
-  {
-    id: 3,
-    user: 'Іван С.',
-    action: 'залишив відгук',
-    target: '★★★★★',
-    time: '3 год тому'
-  },
-  {
-    id: 4,
-    user: 'Анна Д.',
-    action: 'оновила профіль',
-    target: '',
-    time: '5 год тому'
-  },
-  {
-    id: 5,
-    user: 'Микола В.',
-    action: 'завершив замовлення',
-    target: 'Розробка веб-сайту',
-    time: '1 день тому'
-  },
-];
-
-// Останні повідомлення підтримки
-const supportTickets = [
-  {
-    id: 1,
-    user: 'Ольга Р.',
-    subject: 'Проблема з оплатою',
-    status: 'Відкрито',
-    priority: 'Високий',
-    time: '30 хв тому'
-  },
-  {
-    id: 2,
-    user: 'Сергій М.',
-    subject: 'Питання про верифікацію',
-    status: 'В обробці',
-    priority: 'Середній',
-    time: '2 год тому'
-  },
-  {
-    id: 3,
-    user: 'Юлія П.',
-    subject: 'Запит на повернення коштів',
-    status: 'В обробці',
-    priority: 'Високий',
-    time: '5 год тому'
-  },
-  {
-    id: 4,
-    user: 'Віктор К.',
-    subject: 'Технічна проблема',
-    status: 'Відкрито',
-    priority: 'Низький',
-    time: '1 день тому'
-  },
-];
+import { fetchAdminDashboardStats, fetchRecentActivities, fetchSupportTickets, fetchMonthlySales, fetchCategoryDistribution, DashboardStats, Activity, SupportTicket, MonthlySales, CategoryDistribution } from '@/lib/api';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
+  // Real data for monthly sales and category distribution
+  const [monthlySales, setMonthlySales] = useState<MonthlySales[]>([]);
+  const [loadingMonthly, setLoadingMonthly] = useState(true);
+  const [errorMonthly, setErrorMonthly] = useState<string | null>(null);
+  const [categoryDist, setCategoryDist] = useState<CategoryDistribution[]>([]);
+  const [loadingCategory, setLoadingCategory] = useState(true);
+  const [errorCategory, setErrorCategory] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('overview');
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [tickets, setTickets] = useState<SupportTicket[]>([]);
   const [loadingStats, setLoadingStats] = useState(true);
+  const [errorStats, setErrorStats] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchAdminDashboardStats()
-      .then(data => setStats(data))
-      .catch(console.error)
-      .finally(() => setLoadingStats(false));
-    fetchRecentActivities()
-      .then(data => setActivities(data))
-      .catch(console.error);
-    fetchSupportTickets()
-      .then(data => setTickets(data))
-      .catch(console.error);
+    const loadData = async () => {
+      // Load dashboard stats
+      try {
+        const dd = await fetchAdminDashboardStats();
+        setStats(dd);
+      } catch (err: any) {
+        console.error(err);
+        setErrorStats(err.message);
+      } finally {
+        setLoadingStats(false);
+      }
+      // Load monthly sales
+      try {
+        const ms = await fetchMonthlySales();
+        setMonthlySales(ms);
+      } catch (err: any) {
+        console.error(err);
+        setErrorMonthly(err.message);
+      } finally {
+        setLoadingMonthly(false);
+      }
+      // Load category distribution
+      try {
+        const cd = await fetchCategoryDistribution();
+        setCategoryDist(cd);
+      } catch (err: any) {
+        console.error(err);
+        setErrorCategory(err.message);
+      } finally {
+        setLoadingCategory(false);
+      }
+      // Load recent activities
+      try {
+        const ra = await fetchRecentActivities();
+        setActivities(ra);
+      } catch (err) {
+        console.error(err);
+      }
+      // Load support tickets
+      try {
+        const st = await fetchSupportTickets();
+        setTickets(st);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    loadData();
   }, []);
+
+  // Navigate to detailed analytics for selected month
+  const handleMonthClick = (month: string) => {
+    navigate(`/admin/analytics?month=${encodeURIComponent(month)}`);
+  };
 
   const statsCardsDynamic = [
     { title: 'Користувачі', value: stats?.totalUsers.toLocaleString() ?? '0', icon: <Users className="h-8 w-8" />, link: '/admin/users' },
@@ -248,30 +168,32 @@ const AdminDashboard = () => {
 
           <TabsContent value="overview">
             {/* Картки зі статистикою */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-              {statsCardsDynamic.map((card, index) => (
-                <Card key={index} className="overflow-hidden">
-                  <CardContent className="p-6">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <p className="text-muted-foreground">{card.title}</p>
-                        <h3 className="text-3xl font-bold mt-1">{card.value}</h3>
-                        {/* <p className={`text-sm mt-1 flex items-center ${getTrendColor(card.trend)}`}>
-                          {getTrendIcon(card.trend)}
-                          <span className="ml-1">{card.change} з минулого місяця</span>
-                        </p> */}
+            {errorStats ? (
+              <p className="text-red-500 mb-4">Помилка завантаження: {errorStats}</p>
+            ) : loadingStats ? (
+              <p className="mb-4">Завантаження статистики...</p>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                {statsCardsDynamic.map((card, index) => (
+                  <Card key={index} className="overflow-hidden">
+                    <CardContent className="p-6">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="text-muted-foreground">{card.title}</p>
+                          <h3 className="text-3xl font-bold mt-1">{card.value}</h3>
+                        </div>
+                        <div className="bg-primary/10 p-3 rounded-full">
+                          {card.icon}
+                        </div>
                       </div>
-                      <div className="bg-primary/10 p-3 rounded-full">
-                        {card.icon}
-                      </div>
-                    </div>
-                    <Button variant="link" className="px-0 mt-2" asChild>
-                      <Link to={card.link}>Детальніше</Link>
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                      <Button variant="link" className="px-0 mt-2" asChild>
+                        <Link to={card.link}>Детальніше</Link>
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
 
             {/* Графіки (спрощена версія без recharts) */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
@@ -281,15 +203,25 @@ const AdminDashboard = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {salesData.map((item, index) => (
-                      <div key={index}>
-                        <div className="flex justify-between mb-1">
-                          <span className="text-sm">{item.month}</span>
+                    {errorMonthly ? (
+                      <p className="text-red-500">Помилка завантаження: {errorMonthly}</p>
+                    ) : loadingMonthly ? (
+                      <p>Завантаження місячних даних...</p>
+                    ) : (
+                      monthlySales.map((item, index) => (
+                        <div
+                          key={index}
+                          className="cursor-pointer flex justify-between items-center"
+                          onClick={() => handleMonthClick(item.month)}
+                        >
+                          <div className="flex items-center space-x-2">
+                            <span className="text-sm underline hover:text-primary">{item.month}</span>
+                            <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                          </div>
                           <span className="text-sm font-medium">{item.value}%</span>
                         </div>
-                        <Progress value={item.value} className="h-2" />
-                      </div>
-                    ))}
+                      ))
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -300,15 +232,25 @@ const AdminDashboard = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {categoryData.map((item, index) => (
-                      <div key={index}>
-                        <div className="flex justify-between mb-1">
-                          <span className="text-sm">{item.name}</span>
-                          <span className="text-sm font-medium">{item.value}%</span>
+                    {errorCategory ? (
+                      <p className="text-red-500">Помилка завантаження: {errorCategory}</p>
+                    ) : loadingCategory ? (
+                      <p>Завантаження розподілу за категоріями...</p>
+                    ) : (
+                      categoryDist.map((item, index) => (
+                        <div
+                          key={index}
+                          className="cursor-pointer"
+                          onClick={() => navigate(`/admin/analytics?category=${encodeURIComponent(item.name)}`)}
+                        >
+                          <div className="flex justify-between mb-1">
+                            <span className="text-sm underline hover:text-primary">{item.name}</span>
+                            <span className="text-sm font-medium">{item.value}%</span>
+                          </div>
+                          <Progress value={item.value} className="h-2" />
                         </div>
-                        <Progress value={item.value} className="h-2" />
-                      </div>
-                    ))}
+                      ))
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -430,34 +372,34 @@ const AdminDashboard = () => {
 
         {/* Швидкі посилання */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-8">
-          <Button variant="outline" className="h-auto py-6 flex flex-col items-center justify-center" asChild>
-            <Link to="/admin/users">
-              <Users className="h-6 w-6 mb-2" />
-              <span>Користувачі</span>
-            </Link>
-          </Button>
-          <Button variant="outline" className="h-auto py-6 flex flex-col items-center justify-center" asChild>
-            <Link to="/admin/orders">
-              <ShoppingCart className="h-6 w-6 mb-2" />
-              <span>Замовлення</span>
-            </Link>
-          </Button>
+          {/* Dynamic quick links for key resources */}
+          {[
+            { title: 'Користувачі', icon: Users, link: '/admin/users', count: stats?.totalUsers },
+            { title: 'Сервіси', icon: FileText, link: '/admin/services', count: stats?.totalServices },
+            { title: 'Виконавці', icon: Shield, link: '/admin/performers', count: stats?.totalPerformers },
+            { title: 'Замовлення', icon: ShoppingCart, link: '/admin/orders', count: stats?.totalOrders },
+            { title: 'Підтримка', icon: MessageSquare, link: '/admin/support', count: tickets.length }
+          ].map((item, idx) => (
+            <Card key={idx} className="overflow-hidden">
+              <CardContent className="p-4">
+                <div className="flex justify-between items-center mb-2">
+                  <div className="flex items-center space-x-2">
+                    <item.icon className="h-6 w-6" />
+                    <span className="font-medium">{item.title}</span>
+                  </div>
+                  <span className="text-xl font-bold">{item.count?.toLocaleString() ?? '—'}</span>
+                </div>
+                <Button variant="link" asChild>
+                  <Link to={item.link}>Перейти</Link>
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
+          {/* Static quick links for other admin sections */}
           <Button variant="outline" className="h-auto py-6 flex flex-col items-center justify-center" asChild>
             <Link to="/admin/services">
               <FileText className="h-6 w-6 mb-2" />
               <span>Послуги</span>
-            </Link>
-          </Button>
-          <Button variant="outline" className="h-auto py-6 flex flex-col items-center justify-center" asChild>
-            <Link to="/admin/finance">
-              <DollarSign className="h-6 w-6 mb-2" />
-              <span>Фінанси</span>
-            </Link>
-          </Button>
-          <Button variant="outline" className="h-auto py-6 flex flex-col items-center justify-center" asChild>
-            <Link to="/admin/support">
-              <MessageSquare className="h-6 w-6 mb-2" />
-              <span>Підтримка</span>
             </Link>
           </Button>
           <Button variant="outline" className="h-auto py-6 flex flex-col items-center justify-center" asChild>

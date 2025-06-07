@@ -30,6 +30,7 @@ import ContactUs from "./pages/ContactUs";
 
 // Адмін-панель
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import Analytics from "./pages/admin/Analytics";
 import RequireAdmin from '@/components/RequireAdmin';
 
 const queryClient = new QueryClient();
@@ -76,8 +77,13 @@ const App = () => (
                   <AdminDashboard />
                 </RequireAdmin>
               } />
-              
-              {/* Сторінка 404 */}
+              <Route path="/admin/analytics" element={
+                <RequireAdmin>
+                  <Analytics />
+                </RequireAdmin>
+              } />
+
+               {/* Сторінка 404 */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

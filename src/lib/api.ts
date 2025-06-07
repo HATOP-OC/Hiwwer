@@ -132,10 +132,77 @@ export interface SupportTicket {
   time: string;
 }
 
+/**
+ * Fetch support tickets for admin
+ */
 export async function fetchSupportTickets(): Promise<SupportTicket[]> {
   const res = await fetch('https://api.hiwwer.example.com/v1/admin/support-tickets', {
     headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
   });
   if (!res.ok) throw new Error(`Failed to fetch support tickets: ${res.status}`);
+  return res.json();
+}
+
+// Дані для місячних продажів
+export interface MonthlySales {
+  month: string;
+  value: number;
+}
+/**
+ * Fetch monthly sales summary
+ */
+export async function fetchMonthlySales(): Promise<MonthlySales[]> {
+  const res = await fetch('https://api.hiwwer.example.com/v1/admin/sales/monthly', {
+    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+  });
+  if (!res.ok) throw new Error(`Failed to fetch monthly sales: ${res.status}`);
+  return res.json();
+}
+
+// Дані для розподілу за категоріями
+export interface CategoryDistribution {
+  name: string;
+  value: number;
+}
+/**
+ * Fetch category distribution for sales
+ */
+export async function fetchCategoryDistribution(): Promise<CategoryDistribution[]> {
+  const res = await fetch('https://api.hiwwer.example.com/v1/admin/sales/categories', {
+    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+  });
+  if (!res.ok) throw new Error(`Failed to fetch category distribution: ${res.status}`);
+  return res.json();
+}
+
+// Дані для щомісячних продажів певної категорії
+export interface CategoryMonthlySales {
+  month: string;
+  value: number;
+}
+/**
+ * Fetch monthly sales summary for a specific category
+ */
+export async function fetchCategorySalesByCategory(category: string): Promise<CategoryMonthlySales[]> {
+  const res = await fetch(`https://api.hiwwer.example.com/v1/admin/sales/category/${encodeURIComponent(category)}/monthly`, {
+    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+  });
+  if (!res.ok) throw new Error(`Failed to fetch sales for category ${category}: ${res.status}`);
+  return res.json();
+}
+
+export interface DailySales {
+  day: string;
+  value: number;
+}
+
+/**
+ * Fetch daily sales breakdown for a specific month
+ */
+export async function fetchDailySalesByMonth(month: string): Promise<DailySales[]> {
+  const res = await fetch(`https://api.hiwwer.example.com/v1/admin/sales/daily?month=${encodeURIComponent(month)}`, {
+    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+  });
+  if (!res.ok) throw new Error(`Failed to fetch daily sales for month ${month}: ${res.status}`);
   return res.json();
 }
