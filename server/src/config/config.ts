@@ -13,7 +13,8 @@ export const config = {
   // Адміністратори: список у вигляді 'email:password:name', розділений ';'
   // Наприклад: ADMIN_CREDENTIALS="admin@hiwwer.com:password123:Administrator;other@hiwwer.com:pass456:Other"
   admins: (() => {
-    const creds = process.env.ADMIN_CREDENTIALS;
+    const rawCreds = process.env.ADMIN_CREDENTIALS?.replace(/^"|"$/g, '') || '';
+    const creds = rawCreds;
     if (creds) {
       return creds.split(';').map(entry => {
         const [email, password, name] = entry.split(':');

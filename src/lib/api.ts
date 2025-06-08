@@ -1,8 +1,8 @@
 // filepath: src/lib/api.ts
 // API client functions for Digi Hub Telegram Sales
 
-// Base API URL, configurable via Vite env
-const API_BASE = import.meta.env.VITE_API_BASE_URL || '/v1';
+// Base API URL: завжди відносний шлях до проксі Vite
+const API_BASE = '/v1';
 
 export interface ContactForm {
   name: string;
@@ -103,6 +103,7 @@ export interface DashboardStats {
 }
 
 export async function fetchAdminDashboardStats(): Promise<DashboardStats> {
+  console.log('Debug: fetchAdminDashboardStats, token=', localStorage.getItem('token'));
   const res = await fetch(`${API_BASE}/admin/dashboard`, {
     headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
   });
@@ -364,5 +365,14 @@ export async function fetchDatabaseBackup(): Promise<{ url: string }> {
     headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
   });
   if (!res.ok) throw new Error(`Failed to fetch database backup: ${res.status}`);
+  return res.json();
+}
+
+/**
+ * Health check
+ */
+export async function fetchHealth(): Promise<{ status: string; timestamp: number }> {
+  const res = await fetch(`${API_BASE}/health`);
+  if (!res.ok) throw new Error(`Health check failed: ${res.status}`);
   return res.json();
 }

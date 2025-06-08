@@ -17,7 +17,15 @@ import adminRouter from './routes/admin';
 const app = express();
 
 // Middleware
-app.use(cors());
+// CORS для API: дозволяємо Authorization та Content-Type, всі методи
+app.use(cors({
+  origin: true,
+  methods: ['GET','POST','PUT','DELETE','OPTIONS'],
+  allowedHeaders: ['Content-Type','Authorization'],
+  credentials: true,
+}));
+// Preflight
+app.options('*', cors());
 app.use(bodyParser.json());
 app.use(morgan('dev'));
 

@@ -10,11 +10,17 @@ export default defineConfig(({ mode }) => ({
     // Proxy API requests to backend during development
     proxy: {
       '/v1': {
-        // Беремо URL з ENV і прибираємо суфікс '/v1'
-        target: process.env.VITE_API_BASE_URL?.replace(/\/v1$/,'') || 'http://localhost:3000',
-        changeOrigin: true,
-        secure: false,
-        // проксі передає повний шлях без модифікації
+         target: 'http://localhost:3000',
+         changeOrigin: true,
+         secure: false,
+         configure: (proxy) => {
+           proxy.on('proxyReq', (proxyReq, req) => {
+             const auth = req.headers.authorization;
+             if (auth) {
+               proxyReq.setHeader('authorization', auth);
+             }
+           });
+         },
       },
     },
   },

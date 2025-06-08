@@ -45,6 +45,24 @@ pip install -r telegram_bot/requirements.txt
 ./start-bot.sh
 ```
 
+## Розгортання та налаштування середовища розробки
+
+1. Створіть файл `.env` в корені проєкту зі змінними:
+
+```properties
+# URL бекенду (має включати префікс /v1)
+VITE_API_BASE_URL=https://<your-codespace>-3000.app.github.dev/v1
+``` 
+
+2. Для серверної частини створіть `server/.env` із:
+
+```properties
+PORT=3000
+JWT_SECRET=your_jwt_secret
+DATABASE_URL=postgresql://user:pass@localhost:5432/hiwwer_db
+ADMIN_CREDENTIALS="admin@hiwwer.com:password123:Administrator"
+```
+
 ## Структура бази даних
 
 Проект використовує PostgreSQL для зберігання даних. Основні таблиці включають:
