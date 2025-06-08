@@ -1,5 +1,4 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { ADMIN_EMAILS } from '@/config/admins';
 
 export type UserRole = 'client' | 'performer' | 'admin';
 
@@ -28,42 +27,37 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  // Використовуємо відносний шлях до API та проксі Vite
+  const API_BASE = '/v1';
 
   useEffect(() => {
     // Check for stored user on mount
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
       const parsed: User = JSON.parse(storedUser);
-      const role = ADMIN_EMAILS.includes(parsed.email) ? 'admin' : parsed.role;
-      setUser({ ...parsed, role });
+      // Використовуємо роль з токена
+      setUser(parsed);
+      // Ensure token remains
+      const token = localStorage.getItem('token');
+      if (!token) localStorage.setItem('token', '');
     }
     setIsLoading(false);
   }, []);
 
-  // Helper to generate UUID (v4)
-  const uuidv4 = () => {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
-      const r = (Math.random() * 16) | 0;
-      const v = c === 'x' ? r : (r & 0x3) | 0x8;
-      return v.toString(16);
-    });
-  };
-
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      // Retrieve users list from localStorage
-      const stored = localStorage.getItem('users') || '[]';
-      const usersList: Array<User & { password: string }> = JSON.parse(stored);
-      const found = usersList.find(u => u.email === email && u.password === password);
-      if (!found) {
-        throw new Error('Invalid email or password');
-      }
-      // Remove password before storing in context
-      // Override role if email is in admin list
-      const { password: _, ...userDataRaw } = found;
-      const finalRole = ADMIN_EMAILS.includes(found.email) ? 'admin' : userDataRaw.role;
-      const userData = { ...userDataRaw, role: finalRole };
+      // Call API for login
+      const res = await fetch(`${API_BASE}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      if (!res.ok) throw new Error('Invalid credentials');
+      const { id, name, role: apiRole, token } = await res.json();
+      // Store token and user data
+      localStorage.setItem('token', token);
+      const userData = { id, name, email, role: apiRole };
       setUser(userData);
       localStorage.setItem('user', JSON.stringify(userData));
     } catch (error: any) {
@@ -77,24 +71,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const register = async (name: string, email: string, password: string, role: UserRole) => {
     setIsLoading(true);
     try {
-      const stored = localStorage.getItem('users') || '[]';
-      const usersList: Array<User & { password: string }> = JSON.parse(stored);
-      if (usersList.find(u => u.email === email)) {
-        throw new Error('Email already registered');
-      }
-      const assignedRole = ADMIN_EMAILS.includes(email) ? 'admin' : role;
-      const newUser = {
-        id: uuidv4(),
-        name,
-        email,
-        password,
-        role: assignedRole,
-        avatar: '/placeholder.svg',
-        rating: 0,
-      };
-      usersList.push(newUser);
-      localStorage.setItem('users', JSON.stringify(usersList));
-      const { password: _, ...userData } = newUser;
+      // Використовуємо роль, яку передав бекенд
+      const assignedRole = role;
+      // Call API for register
+      const res = await fetch(`${API_BASE}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password, role: assignedRole }),
+      });
+      if (!res.ok) throw new Error('Registration failed');
+      const { id, role: apiRole, token } = await res.json();
+      // Store token and user data
+      localStorage.setItem('token', token);
+      const userData = { id, name, email, role: apiRole };
       setUser(userData);
       localStorage.setItem('user', JSON.stringify(userData));
     } catch (error: any) {
@@ -119,10 +108,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         telegramId: telegramData.id.toString(),
         rating: 0
       };
-      
-      // Override role if email matches admin list
-      const role = ADMIN_EMAILS.includes(mockUser.email) ? 'admin' : mockUser.role;
-      const userData = { ...mockUser, role };
+      const userData = mockUser; // using mock role from data
       setUser(userData);
       localStorage.setItem('user', JSON.stringify(userData));
     } catch (error) {

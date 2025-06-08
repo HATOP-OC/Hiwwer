@@ -53,13 +53,17 @@ if [ $attempt -gt $max_attempts ]; then
     exit 1
 fi
 
-# Застосування схеми бази даних
-if [ -f "database/schema.sql" ]; then
+# Імпорт схеми, якщо її ще не застосовано
+if docker exec hiwwer-postgres psql -U hiwwer_user -d hiwwer_db -tAc "SELECT 1 FROM pg_tables WHERE schemaname='public' AND tablename='users'" | grep -q 1; then
+  echo "Схема вже застосована, пропускаємо імпорт." 
+else
+  if [ -f "database/schema.sql" ]; then
     echo "Застосування схеми бази даних..."
     docker exec -i hiwwer-postgres psql -U hiwwer_user -d hiwwer_db < database/schema.sql
     echo "Схема бази даних успішно застосована!"
-else
+  else
     echo "ПОПЕРЕДЖЕННЯ: Файл schema.sql не знайдено в папці database/"
+  fi
 fi
 
 echo "===== База даних PostgreSQL готова до роботи ====="

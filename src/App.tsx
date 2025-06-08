@@ -31,7 +31,15 @@ import ContactUs from "./pages/ContactUs";
 // Адмін-панель
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import Analytics from "./pages/admin/Analytics";
+import Users from "./pages/admin/Users";
+import Performers from "./pages/admin/Performers";
+import ServicesAdmin from "./pages/admin/Services";
+import Orders from "./pages/admin/Orders";
+import Security from "./pages/admin/Security";
+import Settings from "./pages/admin/Settings";
+import Support from "./pages/admin/Support";
 import RequireAdmin from '@/components/RequireAdmin';
+import Database from './pages/admin/Database';
 
 const queryClient = new QueryClient();
 
@@ -82,6 +90,14 @@ const App = () => (
                   <Analytics />
                 </RequireAdmin>
               } />
+              <Route path="/admin/users" element={<RequireAdmin><Users /></RequireAdmin>} />
+              <Route path="/admin/performers" element={<RequireAdmin><Performers /></RequireAdmin>} />
+              <Route path="/admin/services" element={<RequireAdmin><ServicesAdmin /></RequireAdmin>} />
+              <Route path="/admin/orders" element={<RequireAdmin><Orders /></RequireAdmin>} />
+              <Route path="/admin/support" element={<RequireAdmin><Support /></RequireAdmin>} />
+              <Route path="/admin/security" element={<RequireAdmin><Security /></RequireAdmin>} />
+              <Route path="/admin/settings" element={<RequireAdmin><Settings /></RequireAdmin>} />
+              <Route path="/admin/database" element={<RequireAdmin><Database /></RequireAdmin>} />
 
                {/* Сторінка 404 */}
               <Route path="*" element={<NotFound />} />

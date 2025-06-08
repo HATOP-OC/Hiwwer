@@ -7,7 +7,7 @@ cd "$(dirname "$0")"
 echo "===== Запуск проекту Hiwwer ====="
 
 # Надання прав на виконання скриптам
-chmod +x start-db.sh start-frontend.sh start-bot.sh
+chmod +x start-db.sh start-api.sh start-frontend.sh start-bot.sh
 
 # Функція для запуску компонента в фоновому режимі
 run_component() {
@@ -41,6 +41,7 @@ else
 fi
 
 # Запуск компонентів у фоновому режимі
+run_component "start-api.sh" "API Server"
 run_component "start-frontend.sh" "Frontend"
 run_component "start-bot.sh" "Telegram Bot"
 

@@ -1,6 +1,9 @@
 // filepath: src/lib/api.ts
 // API client functions for Digi Hub Telegram Sales
 
+// Base API URL, configurable via Vite env
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '/v1';
+
 export interface ContactForm {
   name: string;
   email: string;
@@ -9,7 +12,7 @@ export interface ContactForm {
 }
 
 export async function sendContactMessage(data: ContactForm): Promise<void> {
-  const res = await fetch('https://api.hiwwer.example.com/v1/support/contact', {
+  const res = await fetch(`${API_BASE}/support/contact`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
@@ -29,7 +32,7 @@ export interface ApplicationFormData {
 }
 
 export async function submitPerformerApplication(data: ApplicationFormData): Promise<void> {
-  const res = await fetch('https://api.hiwwer.example.com/v1/performers', {
+  const res = await fetch(`${API_BASE}/performers`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
@@ -63,7 +66,7 @@ export interface Service {
 }
 
 export async function fetchServices(page = 1, limit = 10): Promise<Service[]> {
-  const res = await fetch(`https://api.hiwwer.example.com/v1/services?page=${page}&limit=${limit}`);
+  const res = await fetch(`${API_BASE}/services?page=${page}&limit=${limit}`);
   if (!res.ok) throw new Error(`Failed to fetch services: ${res.status}`);
   const json = await res.json();
   return json.services;
@@ -76,7 +79,7 @@ export interface FAQItem {
 }
 
 export async function fetchFAQ(category: 'client' | 'performer'): Promise<FAQItem[]> {
-  const res = await fetch(`https://api.hiwwer.example.com/v1/faq/${category}`);
+  const res = await fetch(`${API_BASE}/faq/${category}`);
   if (!res.ok) throw new Error(`Failed to fetch FAQ: ${res.status}`);
   return res.json();
 }
@@ -87,7 +90,7 @@ export interface Policy {
 }
 
 export async function fetchPolicy(slug: string): Promise<Policy> {
-  const res = await fetch(`https://api.hiwwer.example.com/v1/policies/${slug}`);
+  const res = await fetch(`${API_BASE}/policies/${slug}`);
   if (!res.ok) throw new Error(`Failed to fetch policy: ${res.status}`);
   return res.json();
 }
@@ -100,7 +103,7 @@ export interface DashboardStats {
 }
 
 export async function fetchAdminDashboardStats(): Promise<DashboardStats> {
-  const res = await fetch('https://api.hiwwer.example.com/v1/admin/dashboard', {
+  const res = await fetch(`${API_BASE}/admin/dashboard`, {
     headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
   });
   if (!res.ok) throw new Error(`Failed to fetch admin stats: ${res.status}`);
@@ -116,7 +119,7 @@ export interface Activity {
 }
 
 export async function fetchRecentActivities(): Promise<Activity[]> {
-  const res = await fetch('https://api.hiwwer.example.com/v1/admin/recent-activities', {
+  const res = await fetch(`${API_BASE}/admin/recent-activities`, {
     headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
   });
   if (!res.ok) throw new Error(`Failed to fetch recent activities: ${res.status}`);
@@ -136,7 +139,7 @@ export interface SupportTicket {
  * Fetch support tickets for admin
  */
 export async function fetchSupportTickets(): Promise<SupportTicket[]> {
-  const res = await fetch('https://api.hiwwer.example.com/v1/admin/support-tickets', {
+  const res = await fetch(`${API_BASE}/admin/support-tickets`, {
     headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
   });
   if (!res.ok) throw new Error(`Failed to fetch support tickets: ${res.status}`);
@@ -152,7 +155,7 @@ export interface MonthlySales {
  * Fetch monthly sales summary
  */
 export async function fetchMonthlySales(): Promise<MonthlySales[]> {
-  const res = await fetch('https://api.hiwwer.example.com/v1/admin/sales/monthly', {
+  const res = await fetch(`${API_BASE}/admin/sales/monthly`, {
     headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
   });
   if (!res.ok) throw new Error(`Failed to fetch monthly sales: ${res.status}`);
@@ -168,7 +171,7 @@ export interface CategoryDistribution {
  * Fetch category distribution for sales
  */
 export async function fetchCategoryDistribution(): Promise<CategoryDistribution[]> {
-  const res = await fetch('https://api.hiwwer.example.com/v1/admin/sales/categories', {
+  const res = await fetch(`${API_BASE}/admin/sales/categories`, {
     headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
   });
   if (!res.ok) throw new Error(`Failed to fetch category distribution: ${res.status}`);
@@ -184,7 +187,7 @@ export interface CategoryMonthlySales {
  * Fetch monthly sales summary for a specific category
  */
 export async function fetchCategorySalesByCategory(category: string): Promise<CategoryMonthlySales[]> {
-  const res = await fetch(`https://api.hiwwer.example.com/v1/admin/sales/category/${encodeURIComponent(category)}/monthly`, {
+  const res = await fetch(`${API_BASE}/admin/sales/category/${encodeURIComponent(category)}/monthly`, {
     headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
   });
   if (!res.ok) throw new Error(`Failed to fetch sales for category ${category}: ${res.status}`);
@@ -200,9 +203,166 @@ export interface DailySales {
  * Fetch daily sales breakdown for a specific month
  */
 export async function fetchDailySalesByMonth(month: string): Promise<DailySales[]> {
-  const res = await fetch(`https://api.hiwwer.example.com/v1/admin/sales/daily?month=${encodeURIComponent(month)}`, {
+  const res = await fetch(`${API_BASE}/admin/sales/daily?month=${encodeURIComponent(month)}`, {
     headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
   });
   if (!res.ok) throw new Error(`Failed to fetch daily sales for month ${month}: ${res.status}`);
+  return res.json();
+}
+
+// Admin user list
+export interface AdminUser {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+}
+
+/**
+ * Fetch list of all users (admin view)
+ */
+export async function fetchAdminUsers(): Promise<AdminUser[]> {
+  const res = await fetch(`${API_BASE}/admin/users`, {
+    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+  });
+  if (!res.ok) throw new Error(`Failed to fetch users: ${res.status}`);
+  return res.json();
+}
+
+/**
+ * Fetch list of all performers (admin view)
+ */
+export async function fetchAdminPerformers(): Promise<AdminUser[]> {
+  const res = await fetch(`${API_BASE}/admin/performers`, {
+    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+  });
+  if (!res.ok) throw new Error(`Failed to fetch performers: ${res.status}`);
+  return res.json();
+}
+
+/**
+ * Fetch list of all services (admin view)
+ */
+export async function fetchAdminServices(): Promise<Service[]> {
+  const res = await fetch(`${API_BASE}/admin/services`, {
+    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+  });
+  if (!res.ok) throw new Error(`Failed to fetch services: ${res.status}`);
+  return res.json();
+}
+
+export interface AdminOrder {
+  id: string;
+  user: string;
+  service: string;
+  amount: number;
+  status: string;
+  created_at: string;
+}
+
+/**
+ * Fetch list of all orders (admin view)
+ */
+export async function fetchAdminOrders(): Promise<AdminOrder[]> {
+  const res = await fetch(`${API_BASE}/admin/orders`, {
+    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+  });
+  if (!res.ok) throw new Error(`Failed to fetch orders: ${res.status}`);
+  return res.json();
+}
+
+// Admin settings
+export interface AdminSettings {
+  siteName: string;
+  maintenanceMode: boolean;
+}
+
+/**
+ * Fetch admin panel settings
+ */
+export async function fetchAdminSettings(): Promise<AdminSettings> {
+  const res = await fetch(`${API_BASE}/admin/settings`, {
+    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+  });
+  if (!res.ok) throw new Error(`Failed to fetch settings: ${res.status}`);
+  return res.json();
+}
+
+/**
+ * Update admin panel settings
+ */
+export async function updateAdminSettings(data: AdminSettings): Promise<void> {
+  const res = await fetch(`${API_BASE}/admin/settings`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error(`Failed to update settings: ${res.status}`);
+}
+
+export interface SecurityPolicy {
+  ipWhitelist: string[];
+  allowSelfRegistration: boolean;
+}
+
+/**
+ * Fetch security policy
+ */
+export async function fetchSecurityPolicy(): Promise<SecurityPolicy> {
+  const res = await fetch(`${API_BASE}/admin/security`, {
+    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+  });
+  if (!res.ok) throw new Error(`Failed to fetch security policy: ${res.status}`);
+  return res.json();
+}
+
+/**
+ * Update security policy
+ */
+export async function updateSecurityPolicy(data: SecurityPolicy): Promise<void> {
+  const res = await fetch(`${API_BASE}/admin/security`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error(`Failed to update security policy: ${res.status}`);
+}
+
+// Security logs
+export interface SecurityLog {
+  id: string;
+  user: string;
+  action: string;
+  time: string;
+}
+export async function fetchSecurityLogs(): Promise<SecurityLog[]> {
+  const res = await fetch(`${API_BASE}/admin/security/logs`, {
+    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+  });
+  if (!res.ok) throw new Error(`Failed to fetch security logs: ${res.status}`);
+  return res.json();
+}
+
+// Database stats
+export interface DatabaseStat {
+  table: string;
+  rowCount: number;
+}
+export async function fetchDatabaseStats(): Promise<DatabaseStat[]> {
+  const res = await fetch(`${API_BASE}/admin/database/stats`, {
+    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+  });
+  if (!res.ok) throw new Error(`Failed to fetch database stats: ${res.status}`);
+  return res.json();
+}
+
+/**
+ * Request database backup download link
+ */
+export async function fetchDatabaseBackup(): Promise<{ url: string }> {
+  const res = await fetch(`${API_BASE}/admin/database/backup`, {
+    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+  });
+  if (!res.ok) throw new Error(`Failed to fetch database backup: ${res.status}`);
   return res.json();
 }

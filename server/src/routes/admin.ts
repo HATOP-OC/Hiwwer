@@ -1,0 +1,180 @@
+import { Router, Request, Response } from 'express';
+import { query } from '../db';
+import { authenticate, authorizeAdmin } from '../middlewares/auth';
+import { format } from 'date-fns';
+
+const router = Router();
+
+// All admin routes require auth and admin
+router.use(authenticate, authorizeAdmin);
+
+// GET /v1/admin/dashboard
+router.get('/dashboard', async (req: Request, res: Response) => {
+  try {
+    const [uRes, pRes, sRes, oRes] = await Promise.all([
+      query('SELECT COUNT(*) AS count FROM users'),
+      query("SELECT COUNT(*) AS count FROM users WHERE role='performer'"),
+      query('SELECT COUNT(*) AS count FROM services'),
+      query('SELECT COUNT(*) AS count FROM orders')
+    ]);
+    const totalUsers = Number(uRes.rows[0].count);
+    const totalPerformers = Number(pRes.rows[0].count);
+    const totalServices = Number(sRes.rows[0].count);
+    const totalOrders = Number(oRes.rows[0].count);
+    res.json({ totalUsers, totalPerformers, totalServices, totalOrders });
+  } catch (err: any) {
+    console.error(err);
+    res.status(500).json({ message: 'Failed to fetch dashboard stats' });
+  }
+});
+
+// GET /v1/admin/users
+router.get('/users', async (req: Request, res: Response) => {
+  try {
+    const result = await query('SELECT id, name, email, role FROM users ORDER BY created_at DESC');
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Failed to fetch users' });
+  }
+});
+
+// GET /v1/admin/performers
+router.get('/performers', async (req: Request, res: Response) => {
+  try {
+    const result = await query("SELECT id, name, email, role FROM users WHERE role='performer' ORDER BY created_at DESC");
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Failed to fetch performers' });
+  }
+});
+
+// GET /v1/admin/services
+router.get('/services', async (req: Request, res: Response) => {
+  try {
+    const rows = await query(
+      `SELECT s.id, s.title, s.price, s.currency, u.name as performer, c.name as category
+       FROM services s
+       JOIN users u ON s.performer_id = u.id
+       JOIN service_categories c ON s.category_id = c.id
+       ORDER BY s.created_at DESC`);
+    res.json(rows.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Failed to fetch services' });
+  }
+});
+
+// GET /v1/admin/orders
+router.get('/orders', async (req: Request, res: Response) => {
+  try {
+    const rows = await query(
+      `SELECT o.id, u1.name as user, s.title as service, o.price as amount, o.status, o.created_at
+       FROM orders o
+       JOIN users u1 ON o.client_id = u1.id
+       JOIN services s ON o.service_id = s.id
+       ORDER BY o.created_at DESC`);
+    res.json(rows.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Failed to fetch orders' });
+  }
+});
+
+// GET /v1/admin/recent-activities (return last 10 orders actions)
+router.get('/recent-activities', async (req: Request, res: Response) => {
+  try {
+    const result = await query(
+      `SELECT o.id, u1.name as user, 'placed order' as action, s.title as target, o.created_at as time
+       FROM orders o
+       JOIN users u1 ON o.client_id = u1.id
+       JOIN services s ON o.service_id = s.id
+       ORDER BY o.created_at DESC LIMIT 10`);
+    const activities = result.rows.map(r => ({ id: r.id, user: r.user, action: r.action, target: r.target, time: r.time }));
+    res.json(activities);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Failed to fetch activities' });
+  }
+});
+
+// GET /v1/admin/support-tickets (stub)
+router.get('/support-tickets', async (req: Request, res: Response) => {
+  // No support_tickets table: return empty
+  res.json([]);
+});
+
+// GET /v1/admin/sales/monthly
+router.get('/sales/monthly', async (req: Request, res: Response) => {
+  try {
+    const result = await query(
+      `SELECT to_char(created_at, 'Mon YYYY') as month, SUM(price) as value
+       FROM orders
+       GROUP BY month
+       ORDER BY min(created_at)`);
+    res.json(result.rows.map(r => ({ month: r.month, value: Number(r.value) })));
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Failed to fetch monthly sales' });
+  }
+});
+
+// GET /v1/admin/sales/categories
+router.get('/sales/categories', async (req: Request, res: Response) => {
+  try {
+    const total = await query('SELECT COUNT(*) as count FROM orders');
+    const t = Number(total.rows[0].count);
+    const result = await query(
+      `SELECT c.name, COUNT(o.id) as cnt
+       FROM orders o
+       JOIN services s ON o.service_id = s.id
+       JOIN service_categories c ON s.category_id = c.id
+       GROUP BY c.name`);
+    res.json(result.rows.map(r => ({ name: r.name, value: Math.round((Number(r.cnt) / t) * 100) })));
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Failed to fetch category distribution' });
+  }
+});
+
+// GET /v1/admin/sales/daily?month=Mon YYYY
+router.get('/sales/daily', async (req: Request, res: Response) => {
+  try {
+    const month = req.query.month as string;
+    const date = new Date(month);
+    const monthNum = date.getMonth() + 1;
+    const year = date.getFullYear();
+    const result = await query(
+      `SELECT to_char(created_at, 'DD') as day, SUM(price) as value
+       FROM orders
+       WHERE EXTRACT(MONTH FROM created_at) = $1 AND EXTRACT(YEAR FROM created_at) = $2
+       GROUP BY day
+       ORDER BY day`, [monthNum, year]);
+    res.json(result.rows.map(r => ({ day: r.day, value: Number(r.value) })));
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Failed to fetch daily sales' });
+  }
+});
+
+// GET /v1/admin/sales/category/:category/monthly
+router.get('/sales/category/:category/monthly', async (req: Request, res: Response) => {
+  try {
+    const { category } = req.params;
+    const result = await query(
+      `SELECT to_char(o.created_at, 'Mon YYYY') as month, SUM(o.price) as value
+       FROM orders o
+       JOIN services s ON o.service_id = s.id
+       JOIN service_categories c ON s.category_id = c.id
+       WHERE c.name = $1
+       GROUP BY month
+       ORDER BY min(o.created_at)`, [category]);
+    res.json(result.rows.map(r => ({ month: r.month, value: Number(r.value) })));
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Failed to fetch category sales' });
+  }
+});
+
+export default router;
