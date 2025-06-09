@@ -16,6 +16,7 @@ import NotFound from "./pages/NotFound";
 // Сторінки для клієнтів
 import Services from "./pages/Services";
 import HowToOrder from "./pages/HowToOrder";
+import HowItWorks from "./pages/HowItWorks";
 import ClientFAQ from "./pages/ClientFAQ";
 
 // Сторінки для виконавців
@@ -62,6 +63,7 @@ const App = () => (
               
               {/* Сторінки для клієнтів */}
               <Route path="/services" element={<Services />} />
+              <Route path="/how-it-works" element={<HowItWorks />} />
               <Route path="/how-to-order" element={<HowToOrder />} />
               <Route path="/faq/client" element={<ClientFAQ />} />
               
