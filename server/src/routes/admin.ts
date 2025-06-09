@@ -4,11 +4,6 @@ import { authenticate, authorizeAdmin } from '../middlewares/auth';
 import { format } from 'date-fns';
 
 const router = Router();
-// Logging middleware for admin API calls
-router.use((req, res, next) => {
-  console.log(`[ADMIN API] ${req.method} ${req.originalUrl} Authorization=${req.headers.authorization || 'none'}`);
-  next();
-});
 
 // All admin routes require auth and admin
 router.use(authenticate, authorizeAdmin);
@@ -26,7 +21,6 @@ router.get('/dashboard', async (req: Request, res: Response) => {
     const totalPerformers = Number(pRes.rows[0].count);
     const totalServices = Number(sRes.rows[0].count);
     const totalOrders = Number(oRes.rows[0].count);
-    console.log(`[ADMIN/dashboard] stats totalUsers=${totalUsers}, totalPerformers=${totalPerformers}, totalServices=${totalServices}, totalOrders=${totalOrders}`);
     res.json({ totalUsers, totalPerformers, totalServices, totalOrders });
   } catch (err: any) {
     console.error(err);
@@ -38,7 +32,6 @@ router.get('/dashboard', async (req: Request, res: Response) => {
 router.get('/users', async (req: Request, res: Response) => {
   try {
     const result = await query('SELECT id, name, email, role FROM users ORDER BY created_at DESC');
-    console.log(`[ADMIN/users] fetched ${result.rows.length} users`);
     res.json(result.rows);
   } catch (err) {
     console.error(err);
@@ -50,7 +43,6 @@ router.get('/users', async (req: Request, res: Response) => {
 router.get('/performers', async (req: Request, res: Response) => {
   try {
     const result = await query("SELECT id, name, email, role FROM users WHERE role='performer' ORDER BY created_at DESC");
-    console.log(`[ADMIN/performers] fetched ${result.rows.length} performers`);
     res.json(result.rows);
   } catch (err) {
     console.error(err);
@@ -66,8 +58,8 @@ router.get('/services', async (req: Request, res: Response) => {
        FROM services s
        JOIN users u ON s.performer_id = u.id
        JOIN service_categories c ON s.category_id = c.id
-       ORDER BY s.created_at DESC`);
-    console.log(`[ADMIN/services] fetched ${rows.rows.length} services`);
+       ORDER BY s.created_at DESC`
+    );
     res.json(rows.rows);
   } catch (err) {
     console.error(err);
@@ -83,8 +75,8 @@ router.get('/orders', async (req: Request, res: Response) => {
        FROM orders o
        JOIN users u1 ON o.client_id = u1.id
        JOIN services s ON o.service_id = s.id
-       ORDER BY o.created_at DESC`);
-    console.log(`[ADMIN/orders] fetched ${rows.rows.length} orders`);
+       ORDER BY o.created_at DESC`
+    );
     res.json(rows.rows);
   } catch (err) {
     console.error(err);
@@ -100,9 +92,9 @@ router.get('/recent-activities', async (req: Request, res: Response) => {
        FROM orders o
        JOIN users u1 ON o.client_id = u1.id
        JOIN services s ON o.service_id = s.id
-       ORDER BY o.created_at DESC LIMIT 10`);
+       ORDER BY o.created_at DESC LIMIT 10`
+    );
     const activities = result.rows.map(r => ({ id: r.id, user: r.user, action: r.action, target: r.target, time: r.time }));
-    console.log(`[ADMIN/recent-activities] fetched ${activities.length} activities`);
     res.json(activities);
   } catch (err) {
     console.error(err);
@@ -112,7 +104,6 @@ router.get('/recent-activities', async (req: Request, res: Response) => {
 
 // GET /v1/admin/support-tickets (stub)
 router.get('/support-tickets', (req: Request, res: Response) => {
-  console.log('[ADMIN/support-tickets] fetched 0 tickets');
   res.json([]);
 });
 
@@ -123,9 +114,9 @@ router.get('/sales/monthly', async (req: Request, res: Response) => {
       `SELECT to_char(created_at, 'Mon YYYY') as month, SUM(price) as value
        FROM orders
        GROUP BY month
-       ORDER BY min(created_at)`);
+       ORDER BY min(created_at)`
+    );
     const data = result.rows.map(r => ({ month: r.month, value: Number(r.value) }));
-    console.log(`[ADMIN/sales/monthly] fetched ${data.length} months`);
     res.json(data);
   } catch (err) {
     console.error(err);
@@ -143,9 +134,9 @@ router.get('/sales/categories', async (req: Request, res: Response) => {
        FROM orders o
        JOIN services s ON o.service_id = s.id
        JOIN service_categories c ON s.category_id = c.id
-       GROUP BY c.name`);
+       GROUP BY c.name`
+    );
     const data = result.rows.map(r => ({ name: r.name, value: Math.round((Number(r.cnt) / t) * 100) }));
-    console.log(`[ADMIN/sales/categories] fetched ${data.length} categories`);
     res.json(data);
   } catch (err) {
     console.error(err);
@@ -190,6 +181,40 @@ router.get('/sales/category/:category/monthly', async (req: Request, res: Respon
     console.error(err);
     res.status(500).json({ message: 'Failed to fetch category sales' });
   }
+});
+
+// Admin panel settings endpoints
+router.get('/settings', (req, res) => {
+  // Return stubbed or default settings
+  res.json({ siteName: 'Digi Hub', maintenanceMode: false });
+});
+
+router.put('/settings', (req, res) => {
+  // Accept and ignore updated settings for now
+  res.sendStatus(204);
+});
+
+// Security policy endpoints
+router.get('/security', (req, res) => {
+  res.json({ ipWhitelist: [], allowSelfRegistration: false });
+});
+
+router.put('/security', (req, res) => {
+  res.sendStatus(204);
+});
+
+router.get('/security/logs', (req, res) => {
+  res.json([]); // stubbed empty logs
+});
+
+// Database endpoints
+router.get('/database/stats', (req, res) => {
+  res.json([]); // stubbed empty stats
+});
+
+router.get('/database/backup', (req, res) => {
+  // Return a dummy backup URL; replace with real backup logic later
+  res.json({ url: `${req.baseUrl}/database/backup/file.sql` });
 });
 
 export default router;

@@ -40,6 +40,7 @@ import Settings from "./pages/admin/Settings";
 import Support from "./pages/admin/Support";
 import RequireAdmin from '@/components/RequireAdmin';
 import Database from './pages/admin/Database';
+import Activity from './pages/admin/Activity';
 
 const queryClient = new QueryClient();
 
@@ -98,6 +99,7 @@ const App = () => (
               <Route path="/admin/security" element={<RequireAdmin><Security /></RequireAdmin>} />
               <Route path="/admin/settings" element={<RequireAdmin><Settings /></RequireAdmin>} />
               <Route path="/admin/database" element={<RequireAdmin><Database /></RequireAdmin>} />
+              <Route path="/admin/activity" element={<RequireAdmin><Activity /></RequireAdmin>} />
 
                {/* Сторінка 404 */}
               <Route path="*" element={<NotFound />} />
