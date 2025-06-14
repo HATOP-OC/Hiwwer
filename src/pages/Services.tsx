@@ -54,13 +54,20 @@ export default function Services() {
 
   // Завантаження послуг з API
   useEffect(() => {
+    console.log('Services: Starting to fetch services...');
     fetchServices()
       .then(data => {
+        console.log('Services: Received data:', data);
         setAllServices(data);
         setServices(data);
       })
-      .catch(console.error)
-      .finally(() => setLoading(false));
+      .catch(error => {
+        console.error('Services: Error fetching services:', error);
+      })
+      .finally(() => {
+        console.log('Services: Finished loading');
+        setLoading(false);
+      });
   }, []);
 
   // Фільтрація послуг на основі пошуку та фільтрів
@@ -387,9 +394,9 @@ export default function Services() {
                       </div>
                       <div className="flex items-center mb-3 pt-3 border-t">
                         <div className="w-6 h-6 rounded-full overflow-hidden mr-2">
-                          <img src={service.performer.avatar_url} alt={service.performer.name} className="w-full h-full object-cover" />
+                          <img src={service.performer?.avatar_url || '/placeholder.svg'} alt={service.performer?.name} className="w-full h-full object-cover" />
                         </div>
-                        <span className="text-sm">{service.performer.name}</span>
+                        <span className="text-sm">{service.performer?.name}</span>
                       </div>
                       
                       {/* Кнопки дій */}

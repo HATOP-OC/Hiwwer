@@ -66,9 +66,13 @@ export interface Service {
 }
 
 export async function fetchServices(page = 1, limit = 10): Promise<Service[]> {
+  console.log('API: fetchServices called with page:', page, 'limit:', limit);
+  console.log('API: Making request to:', `${API_BASE}/services?page=${page}&limit=${limit}`);
   const res = await fetch(`${API_BASE}/services?page=${page}&limit=${limit}`);
+  console.log('API: Response status:', res.status);
   if (!res.ok) throw new Error(`Failed to fetch services: ${res.status}`);
   const json = await res.json();
+  console.log('API: Response data:', json);
   return json.services;
 }
 

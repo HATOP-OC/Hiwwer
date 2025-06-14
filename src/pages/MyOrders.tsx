@@ -116,6 +116,7 @@ export default function MyOrders() {
   const OrderCard = ({ order }: { order: Order }) => {
     const isClient = user?.role === 'client';
     const otherParty = isClient ? order.performer : order.client;
+    const isCustomOrder = !order.performer;
     const deadline = new Date(order.deadline);
     const daysLeft = Math.ceil((deadline.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
 
@@ -160,21 +161,35 @@ export default function MyOrders() {
 
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-3">
-              <Avatar className="h-8 w-8">
-                <AvatarImage src={otherParty.avatar || '/placeholder.svg'} alt={otherParty.name} />
-                <AvatarFallback>
-                  {otherParty.name.split(' ').map(n => n[0]).join('')}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <div className="text-sm font-medium">{otherParty.name}</div>
-                <div className="flex items-center space-x-1">
-                  <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                  <span className="text-xs text-muted-foreground">
-                    {otherParty.rating?.toFixed(1) || '0.0'}
-                  </span>
+              {isCustomOrder && isClient ? (
+                <div className="flex items-center space-x-2">
+                  <div className="h-8 w-8 bg-orange-100 rounded-full flex items-center justify-center">
+                    <span className="text-sm font-medium text-orange-600">К</span>
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium text-orange-600">Кастомне замовлення</div>
+                    <div className="text-xs text-muted-foreground">Очікує виконавця</div>
+                  </div>
                 </div>
-              </div>
+              ) : otherParty ? (
+                <>
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={otherParty.avatar || '/placeholder.svg'} alt={otherParty.name} />
+                    <AvatarFallback>
+                      {otherParty.name.split(' ').map(n => n[0]).join('')}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <div className="text-sm font-medium">{otherParty.name}</div>
+                    <div className="flex items-center space-x-1">
+                      <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                      <span className="text-xs text-muted-foreground">
+                        {otherParty.rating?.toFixed(1) || '0.0'}
+                      </span>
+                    </div>
+                  </div>
+                </>
+              ) : null}
             </div>
             <div className="text-sm text-muted-foreground">
               <div className="flex items-center space-x-1">

@@ -29,13 +29,13 @@ router.get('/', async (req: Request, res: Response) => {
     }
     // search filter
     if (search) {
-      where.push(`(s.title ILIKE $${idx} OR s.description ILIKE $${idx})`);
+      where.push(`(COALESCE(s.title, o.title) ILIKE $${idx} OR COALESCE(s.description, o.requirements) ILIKE $${idx})`);
       params.push(`%${search}%`);
       idx++;
     }
     const sql = `SELECT o.id,
-                    s.title,
-                    s.description,
+                    COALESCE(s.title, o.title) as title,
+                    COALESCE(s.description, o.requirements) as description,
                     o.status,
                     o.price,
                     o.currency,
@@ -49,12 +49,12 @@ router.get('/', async (req: Request, res: Response) => {
                     u2.name AS performer_name,
                     u2.avatar_url AS performer_avatar,
                     u2.rating AS performer_rating,
-                    c.id AS category_id,
-                    c.name AS category_name,
-                    c.slug AS category_slug,
+                    COALESCE(sc.id, oc.id) AS category_id,
+                    COALESCE(sc.name, oc.name) AS category_name,
+                    COALESCE(sc.slug, oc.slug) AS category_slug,
                     0 AS "unreadMessages",
                     '[]'::json AS history,
-                    '[]'::json AS "additionalOptions",
+                    COALESCE(o.additional_options, '{}'::jsonb) AS "additionalOptions",
                     NULL AS rating,
                     NULL AS dispute,
                     (SELECT COALESCE(json_agg(json_build_object(
@@ -65,9 +65,10 @@ router.get('/', async (req: Request, res: Response) => {
                      FROM order_attachments att WHERE att.order_id = o.id) AS files
              FROM orders o
              JOIN users u1 ON o.client_id = u1.id
-             JOIN users u2 ON o.performer_id = u2.id
-             JOIN services s ON o.service_id = s.id
-             JOIN service_categories c ON s.category_id = c.id
+             LEFT JOIN users u2 ON o.performer_id = u2.id
+             LEFT JOIN services s ON o.service_id = s.id
+             LEFT JOIN service_categories sc ON s.category_id = sc.id
+             LEFT JOIN service_categories oc ON o.category_id = oc.id
              WHERE ${where.join(' AND ')}
              ORDER BY o.created_at DESC`;
     const result = await query(sql, params);
@@ -81,7 +82,7 @@ router.get('/', async (req: Request, res: Response) => {
       deadline: r.deadline,
       createdAt: r.createdAt,
       client: { id: r.client_id, name: r.client_name, avatar: r.client_avatar, rating: Number(r.client_rating) },
-      performer: { id: r.performer_id, name: r.performer_name, avatar: r.performer_avatar, rating: Number(r.performer_rating) },
+      performer: r.performer_id ? { id: r.performer_id, name: r.performer_name, avatar: r.performer_avatar, rating: Number(r.performer_rating) } : null,
       category: { id: r.category_id, name: r.category_name, slug: r.category_slug },
       unreadMessages: Number(r.unreadMessages),
       history: r.history,
@@ -104,8 +105,8 @@ router.get('/:id', async (req: Request, res: Response) => {
   try {
     const result = await query(
       `SELECT o.id,
-              o.title,
-              o.description,
+              COALESCE(s.title, o.title) as title,
+              COALESCE(s.description, o.requirements) as description,
               o.status,
               o.price,
               o.currency,
@@ -119,20 +120,22 @@ router.get('/:id', async (req: Request, res: Response) => {
               u2.name AS performer_name,
               u2.avatar_url AS performer_avatar,
               u2.rating AS performer_rating,
-              c.id AS category_id,
-              c.name AS category_name,
-              c.slug AS category_slug,
+              COALESCE(sc.id, oc.id) AS category_id,
+              COALESCE(sc.name, oc.name) AS category_name,
+              COALESCE(sc.slug, oc.slug) AS category_slug,
               0 AS "unreadMessages",
               (SELECT COALESCE(json_agg(json_build_object('status', status, 'changedAt', changed_at, 'by', changed_by)), '[]')
                FROM order_status_history h WHERE h.order_id = o.id) AS history,
               (SELECT COALESCE(json_agg(json_build_object('id', id, 'fileUrl', file_url, 'fileName', file_name)), '[]')
-               FROM order_attachments att WHERE att.order_id = o.id) AS files
+               FROM order_attachments att WHERE att.order_id = o.id) AS files,
+              COALESCE(o.additional_options, '{}'::jsonb) AS "additionalOptions"
        FROM orders o
        JOIN users u1 ON o.client_id = u1.id
-       JOIN users u2 ON o.performer_id = u2.id
-       JOIN services s ON o.service_id = s.id
-       JOIN service_categories c ON s.category_id = c.id
-       WHERE o.id = $1 AND (o.client_id = $2 OR o.performer_id = $2)`
+       LEFT JOIN users u2 ON o.performer_id = u2.id
+       LEFT JOIN services s ON o.service_id = s.id
+       LEFT JOIN service_categories sc ON s.category_id = sc.id
+       LEFT JOIN service_categories oc ON o.category_id = oc.id
+       WHERE o.id = $1 AND (o.client_id = $2 OR o.performer_id = $2 OR o.performer_id IS NULL)`
       , [id, req.user!.id]
     );
     if (result.rowCount === 0) return res.status(404).json({ message: 'Order not found' });
@@ -147,11 +150,12 @@ router.get('/:id', async (req: Request, res: Response) => {
       deadline: r.deadline,
       createdAt: r.createdAt,
       client: { id: r.client_id, name: r.client_name, avatar: r.client_avatar, rating: Number(r.client_rating) },
-      performer: { id: r.performer_id, name: r.performer_name, avatar: r.performer_avatar, rating: Number(r.performer_rating) },
+      performer: r.performer_id ? { id: r.performer_id, name: r.performer_name, avatar: r.performer_avatar, rating: Number(r.performer_rating) } : null,
       category: { id: r.category_id, name: r.category_name, slug: r.category_slug },
       unreadMessages: Number(r.unreadMessages),
       history: r.history,
-      files: r.files
+      files: r.files,
+      additionalOptions: r.additionalOptions
     });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Failed to fetch order';
