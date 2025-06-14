@@ -59,6 +59,10 @@ export default function Navbar() {
 
           {user ? (
             <>
+              <Button asChild size="sm" className="hidden md:flex">
+                <Link to="/services">Створити замовлення</Link>
+              </Button>
+              
               <div className="hidden md:flex">
                 <NotificationMenu />
               </div>

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import Layout from '@/components/Layout/Layout';
 import { Button } from '@/components/ui/button';
@@ -34,6 +35,7 @@ import { toast } from '@/components/ui/sonner';
 
 export default function Profile() {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     name: user?.name || '',
@@ -177,6 +179,41 @@ export default function Profile() {
                     {isEditing ? 'Cancel Edit' : 'Edit Profile'}
                   </Button>
                 </div>
+              </CardContent>
+            </Card>
+            
+            {/* Quick Actions */}
+            <Card className="mt-6">
+              <CardHeader>
+                <CardTitle>Швидкі дії</CardTitle>
+                <CardDescription>
+                  Основні дії для роботи з платформою
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Button 
+                  variant="default"
+                  className="w-full justify-start"
+                  onClick={() => navigate('/services')}
+                >
+                  🛍️ Переглянути послуги
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start"
+                  onClick={() => navigate('/my-orders')}
+                >
+                  📋 Мої замовлення
+                </Button>
+                {user.role === 'performer' && (
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-start"
+                    onClick={() => navigate('/performer-dashboard')}
+                  >
+                    💼 Панель виконавця
+                  </Button>
+                )}
               </CardContent>
             </Card>
           </div>

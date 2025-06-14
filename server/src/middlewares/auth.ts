@@ -2,17 +2,15 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { config } from '../config/config';
 
-// Authenticate JWT and attach user payload
 type JwtPayload = {
   id: string;
   role: string;
 };
 
-declare global {
-  namespace Express {
-    interface Request {
-      user?: JwtPayload;
-    }
+// Module augmentation to add user payload to express Request
+declare module 'express-serve-static-core' {
+  interface Request {
+    user?: JwtPayload;
   }
 }
 

@@ -133,9 +133,14 @@ export default function Index() {
             </div>
           </div>
           
-          <Button size="lg" asChild className="rounded-full px-8 bg-brand-amber hover:bg-brand-amber/90 text-white">
-            <Link to="/services">Переглянути послуги</Link>
-          </Button>
+          <div className="flex flex-col sm:flex-row justify-center gap-4 mb-8">
+            <Button size="lg" asChild className="rounded-full px-8 bg-brand-amber hover:bg-brand-amber/90 text-white">
+              <Link to="/services">Переглянути послуги</Link>
+            </Button>
+            <Button size="lg" variant="outline" asChild className="rounded-full px-8 border-white/20 text-white hover:bg-white/10">
+              <Link to="/services">Створити замовлення</Link>
+            </Button>
+          </div>
           
           <div className="mt-12 flex flex-wrap justify-center gap-4">
             <div className="flex items-center">
@@ -360,13 +365,13 @@ export default function Index() {
           
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <Button size="lg" asChild>
-              <Link to="/register?role=client">
-                Мені потрібна послуга
+              <Link to="/services">
+                Знайти послугу
               </Link>
             </Button>
             <Button size="lg" variant="outline" asChild>
               <Link to="/register?role=performer">
-                Хочу надавати послуги
+                Стати виконавцем
               </Link>
             </Button>
           </div>

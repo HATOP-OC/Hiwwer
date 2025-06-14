@@ -34,10 +34,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Check for stored user on mount
     const storedUser = localStorage.getItem('user');
     const storedToken = localStorage.getItem('token');
+    console.log('AuthContext: checking stored auth');
+    console.log('AuthContext: storedUser:', storedUser);
+    console.log('AuthContext: storedToken:', storedToken ? 'present' : 'missing');
+    
     if (storedUser && storedToken) {
       const parsed: User = JSON.parse(storedUser);
       // Використовуємо роль з токена
       setUser(parsed);
+      console.log('AuthContext: user restored from storage:', parsed);
+    } else {
+      console.log('AuthContext: no stored auth found');
     }
     setIsLoading(false);
   }, []);

@@ -162,28 +162,105 @@ router.get('/:id', async (req: Request, res: Response) => {
 
 // POST /v1/orders - create new order
 router.post('/', authenticate, authorizeClient, async (req: Request, res: Response) => {
-  const { service_id, client_id, performer_id, title, description, price, currency, deadline, additional_options } = req.body;
-  if (!service_id || !client_id || !performer_id || !title || !description || !price || !deadline) {
-    return res.status(400).json({ message: 'Missing required fields' });
-  }
   try {
+    const userId = req.user!.id;
+    const { service_id, title, description, price, currency, deadline, additional_options = {} } = req.body;
+
+    // Basic validation: ensure required fields present (price=0 valid)
+    if (typeof title !== 'string' || !title.trim() ||
+        typeof description !== 'string' || !description.trim() ||
+        !deadline ||
+        price == null || isNaN(Number(price))) {
+      return res.status(400).json({ message: 'Missing or invalid fields: title, description, price, deadline' });
+    }
+
+    const finalServiceId = service_id;
+    let finalPerformerId: string | null = null;
+    let finalTitle = title;
+    const finalDescription = description;
+
+     // Check if this is a service-based order
+     if (service_id) {
+       // Fetch service details to get performer and title
+       const serviceResult = await query(
+         'SELECT id, title, performer_id, price FROM services WHERE id = $1 AND is_active = true',
+         [service_id]
+       );
+
+       if (serviceResult.rowCount === 0) {
+         return res.status(404).json({ message: 'Service not found or inactive' });
+       }
+
+       const service = serviceResult.rows[0];
+       finalPerformerId = service.performer_id;
+       finalTitle = service.title;
+
+       // Check if user is not trying to order their own service
+       if (service.performer_id === userId) {
+         return res.status(400).json({ message: 'Cannot order your own service' });
+       }
+     } else {
+       // This is a custom order - available for performers to bid; performer_id remains null
+       finalPerformerId = null;
+     }
+
+    // Determine category for grouping (default to 'other' for custom orders)
+    let finalCategoryId: string | null = null;
+    if (!service_id) {
+      const slug = additional_options.category || 'other';
+      const catResult = await query(
+        'SELECT id FROM service_categories WHERE slug = $1',
+        [slug]
+      );
+      finalCategoryId = catResult.rowCount ? catResult.rows[0].id : null;
+    } else {
+      const svcCatRes = await query(
+        'SELECT category_id FROM services WHERE id = $1',
+        [service_id]
+      );
+      finalCategoryId = svcCatRes.rowCount ? svcCatRes.rows[0].category_id : null;
+    }
+
+    // Create the order: map `description` from request to `requirements` column in DB
     const result = await query(
-      `INSERT INTO orders(service_id, client_id, performer_id, title, description, price, currency, deadline, additional_options)
-       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *`,
-      [service_id, client_id, performer_id, title, description, price, currency || 'USD', deadline, additional_options || {}]
+      `INSERT INTO orders(
+          service_id, client_id, performer_id, title, requirements,
+          status, price, currency, deadline, additional_options, category_id
+        ) VALUES(
+          $1, $2, $3, $4, $5,
+          $6, $7, $8, $9, $10, $11
+        ) RETURNING *`,
+      [
+        finalServiceId,
+        userId,
+        finalPerformerId,
+        finalTitle,
+        description,
+        finalPerformerId ? 'pending' : 'open',
+        price,
+        currency || 'USD',
+        deadline,
+        JSON.stringify(additional_options || {}),
+        finalCategoryId
+      ]
     );
+
     const order = result.rows[0];
-    // notify performer про нове замовлення
-    await createNotification(
-      order.performer_id,
-      'new_order',
-      `Нове замовлення "${order.title}"`,
-      order.id
-    );
+
+    // Send notification to performer if assigned
+    if (finalPerformerId) {
+      await createNotification(
+        finalPerformerId,
+        'new_order',
+        `Нове замовлення "${order.title}"`,
+        order.id
+      );
+    }
+
     res.status(201).json(order);
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Failed to create order';
-    console.error(error);
+    console.error('Create order error:', error);
     res.status(500).json({ message });
   }
 });

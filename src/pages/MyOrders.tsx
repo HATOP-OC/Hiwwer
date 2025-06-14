@@ -230,12 +230,20 @@ export default function MyOrders() {
                 Керуйте вашими замовленнями та слідкуйте за прогресом
               </p>
             </div>
-            <Button asChild>
-              <Link to="/services">
-                <PlusCircle className="h-4 w-4 mr-2" />
-                Знайти послуги
-              </Link>
-            </Button>
+            <div className="flex space-x-3">
+              <Button asChild>
+                <Link to="/services">
+                  <PlusCircle className="h-4 w-4 mr-2" />
+                  Створити замовлення
+                </Link>
+              </Button>
+              <Button variant="outline" asChild>
+                <Link to="/services">
+                  <Search className="h-4 w-4 mr-2" />
+                  Переглянути послуги
+                </Link>
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -349,7 +357,7 @@ export default function MyOrders() {
                     <Button asChild className="mt-4">
                       <Link to="/services">
                         <PlusCircle className="mr-2 h-4 w-4" />
-                        Знайти послуги
+                        Створити нове замовлення
                       </Link>
                     </Button>
                   </div>
@@ -368,9 +376,15 @@ export default function MyOrders() {
                 <CardContent className="py-16 text-center">
                   <Clock className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
                   <h3 className="text-lg font-semibold mb-2">Немає замовлень що очікують</h3>
-                  <p className="text-muted-foreground">
+                  <p className="text-muted-foreground mb-4">
                     У вас немає замовлень, які очікують на підтвердження.
                   </p>
+                  <Button asChild>
+                    <Link to="/services">
+                      <PlusCircle className="mr-2 h-4 w-4" />
+                      Створити нове замовлення
+                    </Link>
+                  </Button>
                 </CardContent>
               </Card>
             )}
@@ -386,9 +400,15 @@ export default function MyOrders() {
                 <CardContent className="py-16 text-center">
                   <AlertCircle className="h-12 w-12 text-blue-500 mx-auto mb-4" />
                   <h3 className="text-lg font-semibold mb-2">Немає замовлень в роботі</h3>
-                  <p className="text-muted-foreground">
+                  <p className="text-muted-foreground mb-4">
                     У вас немає активних замовлень в процесі виконання.
                   </p>
+                  <Button asChild>
+                    <Link to="/services">
+                      <PlusCircle className="mr-2 h-4 w-4" />
+                      Створити нове замовлення
+                    </Link>
+                  </Button>
                 </CardContent>
               </Card>
             )}
@@ -404,9 +424,15 @@ export default function MyOrders() {
                 <CardContent className="py-16 text-center">
                   <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
                   <h3 className="text-lg font-semibold mb-2">Немає завершених замовлень</h3>
-                  <p className="text-muted-foreground">
+                  <p className="text-muted-foreground mb-4">
                     Ваші завершені замовлення з'являться тут.
                   </p>
+                  <Button asChild>
+                    <Link to="/services">
+                      <PlusCircle className="mr-2 h-4 w-4" />
+                      Створити нове замовлення
+                    </Link>
+                  </Button>
                 </CardContent>
               </Card>
             )}

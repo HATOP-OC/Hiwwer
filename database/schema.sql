@@ -74,23 +74,20 @@ CREATE TABLE service_images (
 -- Orders Table
 CREATE TABLE orders (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    service_id UUID NOT NULL REFERENCES services(id),
+    service_id UUID REFERENCES services(id),
     client_id UUID NOT NULL REFERENCES users(id),
-    performer_id UUID NOT NULL REFERENCES users(id),
-    title VARCHAR(255) NOT NULL,
-    description TEXT NOT NULL,
-    status VARCHAR(50) NOT NULL CHECK (status IN ('pending','in_progress','revision','completed','canceled','disputed')),
+    performer_id UUID REFERENCES users(id),
+    title VARCHAR(255) NOT NULL DEFAULT '',
+    requirements TEXT,
+    status VARCHAR(50) NOT NULL CHECK (status IN ('open','pending','in_progress','revision','completed','canceled','disputed')),
     price DECIMAL(10, 2) NOT NULL CHECK (price >= 0),
     currency VARCHAR(3) NOT NULL DEFAULT 'USD',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     deadline TIMESTAMP WITH TIME ZONE NOT NULL,
-    unread_messages INT NOT NULL DEFAULT 0,
-    history JSONB NOT NULL DEFAULT '[]'::jsonb,
-    additional_options JSONB,
-    rating DECIMAL(3,2) CHECK (rating >= 0 AND rating <= 5),
-    dispute JSONB,
     completed_at TIMESTAMP WITH TIME ZONE,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    additional_options JSONB NOT NULL DEFAULT '{}'::jsonb,
+    category_id UUID REFERENCES service_categories(id)
 );
 
 -- Additional Options Table
@@ -216,6 +213,7 @@ CREATE INDEX idx_services_performer_id ON services (performer_id);
 CREATE INDEX idx_services_category_id ON services (category_id);
 CREATE INDEX idx_orders_client_id ON orders (client_id);
 CREATE INDEX idx_orders_performer_id ON orders (performer_id);
+CREATE INDEX idx_orders_category_id ON orders (category_id);
 CREATE INDEX idx_messages_order_id ON messages (order_id);
 CREATE INDEX idx_notifications_user_id ON notifications (user_id);
 
@@ -246,6 +244,14 @@ FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- Example seed data for categories
 INSERT INTO service_categories (name, slug, description, icon) VALUES
+('Веб-розробка', 'web-development', 'Створення веб-сайтів та веб-додатків', 'code'),
+('Дизайн', 'design', 'Графічний дизайн, UI/UX, логотипи', 'palette'),
+('Маркетинг', 'marketing', 'Цифровий маркетинг, SMM, SEO', 'trending-up'),
+('Копірайтинг', 'copywriting', 'Написання текстів, контенту', 'edit'),
+('Переклад', 'translation', 'Переклад текстів різними мовами', 'globe'),
+('Відео', 'video', 'Відеомонтаж, анімація', 'film'),
+('Аудіо', 'audio', 'Аудіо обробка, озвучування', 'music'),
+('Інше', 'other', 'Інші послуги', 'more-horizontal'),
 ('Design', 'design', 'Graphic design, logos, UI/UX, illustrations, and more', '🎨'),
 ('Development', 'development', 'Web development, mobile apps, software, and more', '💻'),
 ('Writing', 'writing', 'Content writing, copywriting, translation, and more', '✍️'),
@@ -253,7 +259,8 @@ INSERT INTO service_categories (name, slug, description, icon) VALUES
 ('Video', 'video', 'Video editing, animation, motion graphics, and more', '🎥'),
 ('Audio', 'audio', 'Music production, voice over, sound effects, and more', '🎵'),
 ('Business', 'business', 'Business plans, market research, legal advice, and more', '💼'),
-('Lifestyle', 'lifestyle', 'Health, fitness, personal coaching, and more', '🌱');
+('Lifestyle', 'lifestyle', 'Health, fitness, personal coaching, and more', '🌱')
+ON CONFLICT (slug) DO NOTHING;
 
 -- Example seed data for tags
 INSERT INTO tags (name, slug) VALUES

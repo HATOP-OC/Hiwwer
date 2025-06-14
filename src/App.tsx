@@ -12,6 +12,9 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Profile from "./pages/Profile";
 import MyOrders from "./pages/MyOrders";
+import OrderDetail from "./pages/OrderDetail";
+import CreateOrder from "./pages/CreateOrder";
+import ServiceDetail from "./pages/ServiceDetail";
 import NotFound from "./pages/NotFound";
 
 // Сторінки для клієнтів
@@ -62,9 +65,13 @@ const App = () => (
               <Route path="/register" element={<Register />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/my-orders" element={<MyOrders />} />
+              <Route path="/order/:id" element={<OrderDetail />} />
+              <Route path="/create-order/:serviceId" element={<CreateOrder />} />
+              <Route path="/create-custom-order" element={<CreateOrder />} />
               
               {/* Сторінки для клієнтів */}
               <Route path="/services" element={<Services />} />
+              <Route path="/services/:serviceId" element={<ServiceDetail />} />
               <Route path="/how-it-works" element={<HowItWorks />} />
               <Route path="/how-to-order" element={<HowToOrder />} />
               <Route path="/faq/client" element={<ClientFAQ />} />

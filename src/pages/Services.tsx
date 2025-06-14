@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import Layout from '@/components/Layout/Layout';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -27,6 +28,8 @@ const serviceCategories = [
 
 export default function Services() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [allServices, setAllServices] = useState<Service[]>([]);
   const [services, setServices] = useState<Service[]>([]);
@@ -107,6 +110,18 @@ export default function Services() {
     setSelectedRating(null);
   };
 
+  const handleOrderService = (serviceId: string, e: React.MouseEvent) => {
+    e.preventDefault(); // Запобігає переходу по Link
+    e.stopPropagation();
+    
+    if (!user) {
+      navigate('/login', { state: { returnTo: `/create-order/${serviceId}` } });
+      return;
+    }
+    // Переходимо прямо до створення замовлення
+    navigate(`/create-order/${serviceId}`);
+  };
+
   if (loading) {
     return (
       <div className="text-center py-12">
@@ -120,7 +135,19 @@ export default function Services() {
       <div className="container mx-auto py-8 px-4">
         {/* Заголовок та пошук */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-4">Знайдіть ідеальну послугу</h1>
+          <div className="flex justify-between items-start mb-4">
+            <div>
+              <h1 className="text-3xl font-bold mb-2">Знайдіть ідеальну послугу</h1>
+              <p className="text-muted-foreground">Оберіть послугу та створіть замовлення прямо зараз</p>
+            </div>
+            {user && (
+              <Button asChild>
+                <Link to="/my-orders">
+                  Мої замовлення
+                </Link>
+              </Button>
+            )}
+          </div>
           <div className="relative max-w-xl">
             <Input
               type="text"
@@ -310,14 +337,21 @@ export default function Services() {
               <div>
                 <h2 className="text-xl font-semibold">Знайдено послуг: {services.length}</h2>
               </div>
-              {/* Тут можна додати сортування */}
+              <div className="flex gap-3">
+                <Button 
+                  variant="outline"
+                  onClick={() => navigate('/create-custom-order')}
+                >
+                  Створити власне замовлення
+                </Button>
+              </div>
             </div>
 
             {services.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {services.map(service => (
-                  <Link to={`/services/${service.id}`} key={service.id}>
-                    <Card className="overflow-hidden hover-card border group transition-all duration-300 hover:shadow-lg h-full flex flex-col">
+                  <Card key={service.id} className="overflow-hidden hover-card border group transition-all duration-300 hover:shadow-lg h-full flex flex-col">
+                    <Link to={`/services/${service.id}`}>
                       <div className="aspect-video relative overflow-hidden">
                         <img
                           src={service.images[0]}
@@ -330,7 +364,9 @@ export default function Services() {
                           </Badge>
                         </div>
                       </div>
-                      <CardContent className="p-4 flex-1 flex flex-col">
+                    </Link>
+                    <CardContent className="p-4 flex-1 flex flex-col">
+                      <Link to={`/services/${service.id}`}>
                         <div className="flex items-center mb-3">
                           <div className="flex items-center text-amber-500">
                             <Star className="fill-amber-500 stroke-amber-500 h-4 w-4" />
@@ -339,24 +375,45 @@ export default function Services() {
                           </div>
                           <span className="ml-auto text-xs text-muted-foreground">{service.delivery_time} дн.</span>
                         </div>
-                        <h3 className="font-bold mb-2 line-clamp-2">{service.title}</h3>
+                        <h3 className="font-bold mb-2 line-clamp-2 hover:text-primary transition-colors">{service.title}</h3>
                         <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{service.description}</p>
-                        <div className="flex flex-wrap gap-1 mb-3">
-                          {service.tags.slice(0, 3).map(tag => (
-                            <Badge key={tag.id} variant="outline" className="text-xs">
-                              {tag.name}
-                            </Badge>
-                          ))}
+                      </Link>
+                      <div className="flex flex-wrap gap-1 mb-3">
+                        {service.tags.slice(0, 3).map(tag => (
+                          <Badge key={tag.id} variant="outline" className="text-xs">
+                            {tag.name}
+                          </Badge>
+                        ))}
+                      </div>
+                      <div className="flex items-center mb-3 pt-3 border-t">
+                        <div className="w-6 h-6 rounded-full overflow-hidden mr-2">
+                          <img src={service.performer.avatar_url} alt={service.performer.name} className="w-full h-full object-cover" />
                         </div>
-                        <div className="flex items-center mt-auto pt-3 border-t">
-                          <div className="w-6 h-6 rounded-full overflow-hidden mr-2">
-                            <img src={service.performer.avatar_url} alt={service.performer.name} className="w-full h-full object-cover" />
-                          </div>
-                          <span className="text-sm">{service.performer.name}</span>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </Link>
+                        <span className="text-sm">{service.performer.name}</span>
+                      </div>
+                      
+                      {/* Кнопки дій */}
+                      <div className="flex gap-2 mt-auto">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="flex-1"
+                          asChild
+                        >
+                          <Link to={`/services/${service.id}`}>
+                            Детальніше
+                          </Link>
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          className="flex-1"
+                          onClick={(e) => handleOrderService(service.id, e)}
+                        >
+                          {user ? 'Замовити' : 'Увійти і замовити'}
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
                 ))}
               </div>
             ) : (
@@ -365,8 +422,18 @@ export default function Services() {
                   <Search className="h-12 w-12 mx-auto mb-2 opacity-50" />
                   <h3 className="text-lg font-medium">Нічого не знайдено</h3>
                 </div>
-                <p className="mb-4">Спробуйте змінити параметри пошуку або фільтри</p>
-                <Button onClick={resetFilters}>Скинути всі фільтри</Button>
+                <p className="mb-6">Спробуйте змінити параметри пошуку або фільтри</p>
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <Button onClick={resetFilters} variant="outline">
+                    Скинути всі фільтри
+                  </Button>
+                  <Button onClick={() => navigate('/create-custom-order')}>
+                    Створити власне замовлення
+                  </Button>
+                </div>
+                <p className="text-sm text-muted-foreground mt-4">
+                  Не знайшли те, що шукали? Створіть власне замовлення з вашими вимогами
+                </p>
               </Card>
             )}
           </div>

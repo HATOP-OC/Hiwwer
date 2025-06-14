@@ -72,6 +72,15 @@ export async function fetchServices(page = 1, limit = 10): Promise<Service[]> {
   return json.services;
 }
 
+/** Fetch service by ID */
+export async function fetchServiceById(serviceId: string): Promise<Service> {
+  const res = await fetch(`${API_BASE}/services/${serviceId}`, {
+    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+  });
+  if (!res.ok) throw new Error(`Failed to fetch service: ${res.status}`);
+  return res.json();
+}
+
 export interface FAQItem {
   id: string;
   question: string;
@@ -420,13 +429,58 @@ export async function fetchOrderById(id: string): Promise<Order> {
 }
 
 /** Create new order */
-export async function createOrder(data: { serviceId: string; description: string; deadline: string }): Promise<Order> {
+export async function createOrder(orderData: any): Promise<Order> {
+  // Transform the order data to match server expectations
+  let transformedData;
+  
+  if (orderData.isCustom) {
+    // For custom orders, we need to handle the case where there's no specific service
+    // We'll create a placeholder service or handle it differently
+    transformedData = {
+      service_id: null, // This might need to be handled differently on the server
+      client_id: null, // Will be filled by server from auth
+      performer_id: null, // Will be assigned later
+      title: orderData.title,
+      description: `${orderData.description}\n\nВимоги:\n${orderData.requirements}`,
+      price: orderData.budget,
+      currency: orderData.currency || 'USD',
+      deadline: orderData.deadline,
+      additional_options: {
+        category: orderData.category,
+        isCustom: true,
+        originalRequirements: orderData.requirements
+      }
+    };
+  } else {
+    // For service-based orders
+    transformedData = {
+      service_id: orderData.serviceId,
+      client_id: null, // Will be filled by server from auth
+      performer_id: null, // Will be filled by server from service
+      title: `Замовлення послуги`, // Will be updated by server from service
+      description: orderData.requirements,
+      price: orderData.price,
+      currency: orderData.currency || 'USD',
+      deadline: orderData.deadline,
+      additional_options: {
+        isCustom: false,
+        originalRequirements: orderData.requirements
+      }
+    };
+  }
+
   const res = await fetch(`${API_BASE}/orders`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
-    body: JSON.stringify(data)
+    headers: { 
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${localStorage.getItem('token')}` 
+    },
+    body: JSON.stringify(transformedData)
   });
-  if (!res.ok) throw new Error(`Failed to create order: ${res.status}`);
+  if (!res.ok) {
+    const errorData = await res.text();
+    throw new Error(`Failed to create order: ${res.status} - ${errorData}`);
+  }
   return res.json();
 }
 
