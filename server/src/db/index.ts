@@ -12,6 +12,6 @@ pool.on('error', (err) => {
 });
 
 // Helper to query the database
-export const query = (text: string, params?: any[]) => {
+export const query = (text: string, params?: unknown[]) => {
   return pool.query(text, params);
 };

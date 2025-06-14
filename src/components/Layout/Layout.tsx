@@ -10,9 +10,9 @@ interface LayoutProps {
 
 export default function Layout({ children, hideFooter = false }: LayoutProps) {
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen w-full bg-background">
       <Navbar />
-      <main className="flex-1">{children}</main>
+      <main className="flex-1 w-full">{children}</main>
       {!hideFooter && <Footer />}
     </div>
   );

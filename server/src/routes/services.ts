@@ -14,7 +14,7 @@ router.get('/', async (req: Request, res: Response) => {
       FROM services s
       JOIN users u ON s.performer_id = u.id
       JOIN service_categories c ON s.category_id = c.id`;
-    const params: any[] = [];
+    const params: unknown[] = [];
     if (category) {
       params.push(category);
       baseSql += ` WHERE c.slug = $${params.length}`;
@@ -38,9 +38,10 @@ router.get('/', async (req: Request, res: Response) => {
       tags: [] as Array<{ id: string; name: string }>
     }));
     res.json({ services });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Failed to fetch services' });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Failed to fetch services';
+    console.error(error);
+    res.status(500).json({ message });
   }
 });
 
@@ -74,9 +75,10 @@ router.get('/:id', async (req: Request, res: Response) => {
       tags: [],
       images: []
     });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Failed to fetch service' });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Failed to fetch service';
+    console.error(error);
+    res.status(500).json({ message });
   }
 });
 

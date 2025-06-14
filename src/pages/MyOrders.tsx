@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { fetchOrders, Order } from '@/lib/api';
+import { useQuery } from '@tanstack/react-query';
 import Layout from '@/components/Layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
+import { 
   Card,
   CardContent,
   CardDescription,
@@ -36,43 +38,19 @@ import {
   Star,
   Package,
   TrendingUp,
-  PlusCircle
+  PlusCircle,
+  Loader2
 } from 'lucide-react';
-
-// Приклад структури замовлення для типізації
-interface Order {
-  id: string;
-  title: string;
-  description: string;
-  status: 'pending' | 'in_progress' | 'revision' | 'completed' | 'cancelled';
-  price: number;
-  currency: string;
-  deadline: Date;
-  createdAt: Date;
-  client: {
-    id: string;
-    name: string;
-    avatar: string;
-    rating: number;
-  };
-  performer: {
-    id: string;
-    name: string;
-    avatar: string;
-    rating: number;
-  };
-  category: string;
-  unreadMessages: number;
-}
-
-// Пусті дані для демонстрації (будуть завантажуватися з бази даних)
-const userOrders: Order[] = [];
 
 export default function MyOrders() {
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [orders] = useState<Order[]>(userOrders);
+  const { data: orders = [], refetch, isLoading } = useQuery({
+    queryKey: ['orders', statusFilter, searchTerm],
+    queryFn: () => fetchOrders({ status: statusFilter, search: searchTerm }),
+    enabled: !!user
+  });
 
   if (!user) {
     return (
@@ -96,7 +74,7 @@ export default function MyOrders() {
         return <Eye className="h-4 w-4 text-orange-500" />;
       case 'completed':
         return <CheckCircle className="h-4 w-4 text-green-500" />;
-      case 'cancelled':
+      case 'canceled':
         return <XCircle className="h-4 w-4 text-red-500" />;
       default:
         return <Clock className="h-4 w-4 text-gray-500" />;
@@ -113,7 +91,7 @@ export default function MyOrders() {
         return 'bg-orange-100 text-orange-800 border-orange-200';
       case 'completed':
         return 'bg-green-100 text-green-800 border-green-200';
-      case 'cancelled':
+      case 'canceled':
         return 'bg-red-100 text-red-800 border-red-200';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
@@ -136,9 +114,10 @@ export default function MyOrders() {
     .reduce((sum, order) => sum + order.price, 0);
 
   const OrderCard = ({ order }: { order: Order }) => {
-    const isClient = user.role === 'client';
+    const isClient = user?.role === 'client';
     const otherParty = isClient ? order.performer : order.client;
-    const daysLeft = Math.ceil((order.deadline.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+    const deadline = new Date(order.deadline);
+    const daysLeft = Math.ceil((deadline.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
 
     return (
       <Card className="hover:shadow-md transition-shadow">
@@ -149,7 +128,7 @@ export default function MyOrders() {
                 <h3 className="font-semibold text-lg">{order.title}</h3>
                 {order.unreadMessages > 0 && (
                   <Badge variant="destructive" className="text-xs">
-                    {order.unreadMessages} new
+                    {order.unreadMessages} новых
                   </Badge>
                 )}
               </div>
@@ -175,14 +154,14 @@ export default function MyOrders() {
               </Badge>
             </div>
             <div className="text-sm text-muted-foreground">
-              #{order.id}
+              #{order.id.substring(0, 8)}
             </div>
           </div>
 
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-3">
               <Avatar className="h-8 w-8">
-                <AvatarImage src={otherParty.avatar} alt={otherParty.name} />
+                <AvatarImage src={otherParty.avatar || '/placeholder.svg'} alt={otherParty.name} />
                 <AvatarFallback>
                   {otherParty.name.split(' ').map(n => n[0]).join('')}
                 </AvatarFallback>
@@ -192,7 +171,7 @@ export default function MyOrders() {
                 <div className="flex items-center space-x-1">
                   <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
                   <span className="text-xs text-muted-foreground">
-                    {otherParty.rating.toFixed(1)}
+                    {otherParty.rating?.toFixed(1) || '0.0'}
                   </span>
                 </div>
               </div>
@@ -201,28 +180,43 @@ export default function MyOrders() {
               <div className="flex items-center space-x-1">
                 <Calendar className="h-4 w-4" />
                 <span>
-                  {daysLeft > 0 ? `${daysLeft} days left` : 
-                   daysLeft === 0 ? 'Due today' : 
-                   `${Math.abs(daysLeft)} days overdue`}
+                  {daysLeft > 0 ? `${daysLeft} днів` : 
+                   daysLeft === 0 ? 'Сьогодні' : 
+                   `Прострочено на ${Math.abs(daysLeft)} днів`}
                 </span>
               </div>
             </div>
           </div>
 
           <div className="flex space-x-2">
-            <Button variant="outline" size="sm" className="flex-1">
-              <Eye className="h-4 w-4 mr-2" />
-              View Details
+            <Button variant="outline" size="sm" className="flex-1" asChild>
+              <Link to={`/order/${order.id}`}>
+                <Eye className="h-4 w-4 mr-2" />
+                Деталі
+              </Link>
             </Button>
             <Button variant="outline" size="sm" className="flex-1">
               <MessageSquare className="h-4 w-4 mr-2" />
-              Chat
+              Чат
             </Button>
           </div>
         </CardContent>
       </Card>
     );
   };
+
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="container max-w-7xl py-8">
+          <div className="flex items-center justify-center py-16">
+            <Loader2 className="h-8 w-8 animate-spin" />
+            <span className="ml-2">Завантаження замовлень...</span>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
@@ -236,9 +230,11 @@ export default function MyOrders() {
                 Керуйте вашими замовленнями та слідкуйте за прогресом
               </p>
             </div>
-            <Button>
-              <PlusCircle className="h-4 w-4 mr-2" />
-              Створити замовлення
+            <Button asChild>
+              <Link to="/services">
+                <PlusCircle className="h-4 w-4 mr-2" />
+                Знайти послуги
+              </Link>
             </Button>
           </div>
         </div>
@@ -316,7 +312,7 @@ export default function MyOrders() {
               <SelectItem value="in_progress">В роботі</SelectItem>
               <SelectItem value="revision">На доопрацюванні</SelectItem>
               <SelectItem value="completed">Завершені</SelectItem>
-              <SelectItem value="cancelled">Скасовані</SelectItem>
+              <SelectItem value="canceled">Скасовані</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -328,7 +324,7 @@ export default function MyOrders() {
             <TabsTrigger value="pending">Очікують</TabsTrigger>
             <TabsTrigger value="in_progress">В роботі</TabsTrigger>
             <TabsTrigger value="completed">Завершені</TabsTrigger>
-            <TabsTrigger value="cancelled">Скасовані</TabsTrigger>
+            <TabsTrigger value="canceled">Скасовані</TabsTrigger>
           </TabsList>
 
           <TabsContent value="all" className="space-y-4">
@@ -340,7 +336,7 @@ export default function MyOrders() {
               <Card>
                 <CardContent className="py-16 text-center">
                   <div className="flex flex-col items-center justify-center space-y-4">
-                    <div className="w-16 h-16 bg-gradient-to-br from-brand-blue to-brand-teal rounded-full flex items-center justify-center">
+                    <div className="w-16 h-16 bg-gradient-to-br from-primary to-primary/70 rounded-full flex items-center justify-center">
                       <Package className="h-8 w-8 text-white" />
                     </div>
                     <h3 className="text-xl font-semibold">Ваші замовлення з'являться тут</h3>
@@ -363,35 +359,71 @@ export default function MyOrders() {
           </TabsContent>
 
           <TabsContent value="pending" className="space-y-4">
-            {getOrdersByStatus('pending').map(order => (
-              <OrderCard key={order.id} order={order} />
-            ))}
+            {getOrdersByStatus('pending').length > 0 ? (
+              getOrdersByStatus('pending').map(order => (
+                <OrderCard key={order.id} order={order} />
+              ))
+            ) : (
+              <Card>
+                <CardContent className="py-16 text-center">
+                  <Clock className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">Немає замовлень що очікують</h3>
+                  <p className="text-muted-foreground">
+                    У вас немає замовлень, які очікують на підтвердження.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           <TabsContent value="in_progress" className="space-y-4">
-            {getOrdersByStatus('in_progress').map(order => (
-              <OrderCard key={order.id} order={order} />
-            ))}
+            {getOrdersByStatus('in_progress').length > 0 ? (
+              getOrdersByStatus('in_progress').map(order => (
+                <OrderCard key={order.id} order={order} />
+              ))
+            ) : (
+              <Card>
+                <CardContent className="py-16 text-center">
+                  <AlertCircle className="h-12 w-12 text-blue-500 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">Немає замовлень в роботі</h3>
+                  <p className="text-muted-foreground">
+                    У вас немає активних замовлень в процесі виконання.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           <TabsContent value="completed" className="space-y-4">
-            {getOrdersByStatus('completed').map(order => (
-              <OrderCard key={order.id} order={order} />
-            ))}
-          </TabsContent>
-
-          <TabsContent value="cancelled" className="space-y-4">
-            {getOrdersByStatus('cancelled').length > 0 ? (
-              getOrdersByStatus('cancelled').map(order => (
+            {getOrdersByStatus('completed').length > 0 ? (
+              getOrdersByStatus('completed').map(order => (
                 <OrderCard key={order.id} order={order} />
               ))
             ) : (
               <Card>
                 <CardContent className="py-16 text-center">
                   <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No cancelled orders</h3>
+                  <h3 className="text-lg font-semibold mb-2">Немає завершених замовлень</h3>
                   <p className="text-muted-foreground">
-                    Great! You don't have any cancelled orders.
+                    Ваші завершені замовлення з'являться тут.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          <TabsContent value="canceled" className="space-y-4">
+            {getOrdersByStatus('canceled').length > 0 ? (
+              getOrdersByStatus('canceled').map(order => (
+                <OrderCard key={order.id} order={order} />
+              ))
+            ) : (
+              <Card>
+                <CardContent className="py-16 text-center">
+                  <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">Немає скасованих замовлень</h3>
+                  <p className="text-muted-foreground">
+                    Чудово! У вас немає скасованих замовлень.
                   </p>
                 </CardContent>
               </Card>

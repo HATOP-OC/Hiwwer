@@ -15,9 +15,10 @@ router.get('/profile', authenticate, async (req: Request, res: Response) => {
     );
     if (result.rowCount === 0) return res.status(404).json({ message: 'User not found' });
     res.json(result.rows[0]);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Failed to fetch profile' });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Failed to fetch profile';
+    console.error(error);
+    res.status(500).json({ message });
   }
 });
 
@@ -31,9 +32,10 @@ router.put('/profile', authenticate, async (req: Request, res: Response) => {
       [name, bio, avatar, userId]
     );
     res.json({ success: true, message: 'Profile updated successfully' });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Failed to update profile' });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Failed to update profile';
+    console.error(error);
+    res.status(500).json({ message });
   }
 });
 

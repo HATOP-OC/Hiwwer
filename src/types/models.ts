@@ -1,4 +1,3 @@
-
 // User related types
 export type UserRole = 'client' | 'performer' | 'admin';
 
@@ -56,24 +55,52 @@ export type OrderStatus =
   | 'in_progress' 
   | 'revision' 
   | 'completed' 
-  | 'canceled';
+  | 'canceled'
+  | 'disputed';
+
+// Attachment for orders
+export interface OrderAttachment {
+  id: string;
+  fileUrl: string;
+  fileName: string;
+}
+
+// History record for status changes
+export interface OrderHistory {
+  status: OrderStatus;
+  changedAt: Date;
+  by: 'client' | 'performer' | 'system';
+}
+
+// Dispute details
+export interface OrderDispute {
+  reason: string;
+  openedAt: Date;
+  status: 'open' | 'resolved';
+}
 
 export interface Order {
   id: string;
-  serviceId: string;
-  service: Service;
-  clientId: string;
-  client: User;
-  performerId: string;
-  performer: User;
-  requirements: string;
-  attachments?: string[];
+  title: string;
+  description: string;
   status: OrderStatus;
-  createdAt: Date;
-  deadline: Date;
-  completedAt?: Date;
   price: number;
   currency: string;
+  deadline: Date;
+  createdAt: Date;
+  client: User;
+  performer: User;
+  category: {
+    id: string;
+    name: string;
+    slug: string;
+  };
+  unreadMessages: number;
+  files?: OrderAttachment[];
+  history: OrderHistory[];
+  additionalOptions?: any;
+  rating?: number;
+  dispute?: OrderDispute;
 }
 
 // Review related types

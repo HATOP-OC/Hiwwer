@@ -21,12 +21,14 @@ router.post('/register', async (req: Request, res: Response) => {
     const user = result.rows[0];
     const token = jwt.sign({ id: user.id, role: user.role }, config.jwtSecret, { expiresIn: '7d' });
     res.json({ ...user, token });
-  } catch (err: any) {
-    if (err.code === '23505') {
+  } catch (error: unknown) {
+    const pgError = error as { code?: string };
+    if (pgError.code === '23505') {
       return res.status(409).json({ message: 'Email already exists' });
     }
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
+    const message = error instanceof Error ? error.message : 'Server error';
+    console.error(error);
+    res.status(500).json({ message });
   }
 });
 
@@ -44,9 +46,10 @@ router.post('/login', async (req: Request, res: Response) => {
     if (!match) return res.status(401).json({ message: 'Invalid credentials' });
     const token = jwt.sign({ id: user.id, role: user.role }, config.jwtSecret, { expiresIn: '7d' });
     res.json({ id: user.id, name: user.name, email: user.email, role: user.role, token });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Server error';
+    console.error(error);
+    res.status(500).json({ message });
   }
 });
 

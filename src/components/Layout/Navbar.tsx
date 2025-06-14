@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTheme } from "@/contexts/ThemeContext";
@@ -14,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Bell, Menu, Moon, Search, Sun, X } from "lucide-react";
+import NotificationMenu from '../NotificationMenu';
 
 export default function Navbar() {
   const { theme, toggleTheme } = useTheme();
@@ -59,10 +59,9 @@ export default function Navbar() {
 
           {user ? (
             <>
-              <Button variant="outline" size="icon" className="hidden md:flex relative">
-                <Bell className="h-4 w-4" />
-                <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
-              </Button>
+              <div className="hidden md:flex">
+                <NotificationMenu />
+              </div>
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

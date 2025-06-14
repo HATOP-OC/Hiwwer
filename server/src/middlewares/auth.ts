@@ -2,10 +2,11 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { config } from '../config/config';
 
-export interface JwtPayload {
+// Authenticate JWT and attach user payload
+type JwtPayload = {
   id: string;
   role: string;
-}
+};
 
 declare global {
   namespace Express {
@@ -27,8 +28,9 @@ export const authenticate = (req: Request, res: Response, next: NextFunction) =>
     const payload = jwt.verify(token, config.jwtSecret) as JwtPayload;
     req.user = payload;
     next();
-  } catch (err: any) {
-    console.warn(`[AUTH] Invalid token for ${req.method} ${req.originalUrl}: ${err.message}`);
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : 'Invalid token';
+    console.warn(`[AUTH] Invalid token for ${req.method} ${req.originalUrl}: ${msg}`);
     return res.status(401).json({ message: 'Invalid token' });
   }
 };

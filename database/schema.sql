@@ -1,4 +1,3 @@
-
 -- Hiwwer Database Schema
 
 -- Enable UUID extension
@@ -78,15 +77,45 @@ CREATE TABLE orders (
     service_id UUID NOT NULL REFERENCES services(id),
     client_id UUID NOT NULL REFERENCES users(id),
     performer_id UUID NOT NULL REFERENCES users(id),
-    requirements TEXT,
-    status VARCHAR(50) NOT NULL CHECK (status IN ('pending', 'in_progress', 'revision', 'completed', 'canceled')),
+    title VARCHAR(255) NOT NULL,
+    description TEXT NOT NULL,
+    status VARCHAR(50) NOT NULL CHECK (status IN ('pending','in_progress','revision','completed','canceled','disputed')),
     price DECIMAL(10, 2) NOT NULL CHECK (price >= 0),
     currency VARCHAR(3) NOT NULL DEFAULT 'USD',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     deadline TIMESTAMP WITH TIME ZONE NOT NULL,
+    unread_messages INT NOT NULL DEFAULT 0,
+    history JSONB NOT NULL DEFAULT '[]'::jsonb,
+    additional_options JSONB,
+    rating DECIMAL(3,2) CHECK (rating >= 0 AND rating <= 5),
+    dispute JSONB,
     completed_at TIMESTAMP WITH TIME ZONE,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- Additional Options Table
+CREATE TABLE order_additional_options (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    price DECIMAL(10,2) NOT NULL CHECK (price >= 0),
+    status VARCHAR(20) NOT NULL CHECK (status IN ('proposed','accepted','rejected')) DEFAULT 'proposed',
+    proposed_by UUID NOT NULL REFERENCES users(id),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+CREATE INDEX idx_order_additional_options_order_id ON order_additional_options(order_id);
+
+-- Order Status History Table
+CREATE TABLE order_status_history (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+    status VARCHAR(50) NOT NULL CHECK (status IN ('pending','in_progress','revision','completed','canceled','disputed')),
+    changed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    changed_by UUID NOT NULL REFERENCES users(id)
+);
+CREATE INDEX idx_order_status_history_order_id ON order_status_history(order_id);
 
 -- Order Attachments Table
 CREATE TABLE order_attachments (
@@ -151,12 +180,36 @@ CREATE TABLE payments (
     order_id UUID NOT NULL REFERENCES orders(id),
     amount DECIMAL(10, 2) NOT NULL CHECK (amount >= 0),
     currency VARCHAR(3) NOT NULL DEFAULT 'USD',
-    status VARCHAR(50) NOT NULL CHECK (status IN ('pending', 'completed', 'refunded', 'failed')),
+    status VARCHAR(50) NOT NULL CHECK (status IN ('pending','authorized','completed','refunded','failed')),
     provider VARCHAR(50) NOT NULL, -- e.g., 'stripe', 'liqpay'
     provider_payment_id VARCHAR(255),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- Disputes Table
+CREATE TABLE disputes (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+    client_id UUID NOT NULL REFERENCES users(id),
+    performer_id UUID NOT NULL REFERENCES users(id),
+    moderator_id UUID REFERENCES users(id),
+    reason TEXT NOT NULL,
+    status VARCHAR(20) NOT NULL CHECK (status IN ('open','in_review','resolved')) DEFAULT 'open',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+CREATE INDEX idx_disputes_order_id ON disputes(order_id);
+
+-- Dispute Messages Table
+CREATE TABLE dispute_messages (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    dispute_id UUID NOT NULL REFERENCES disputes(id) ON DELETE CASCADE,
+    sender_id UUID NOT NULL REFERENCES users(id),
+    content TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+CREATE INDEX idx_dispute_messages_dispute_id ON dispute_messages(dispute_id);
 
 -- Create indexes for common queries
 CREATE INDEX idx_services_performer_id ON services (performer_id);

@@ -376,3 +376,380 @@ export async function fetchHealth(): Promise<{ status: string; timestamp: number
   if (!res.ok) throw new Error(`Health check failed: ${res.status}`);
   return res.json();
 }
+
+// Order related APIs
+export interface Order {
+  id: string;
+  title: string;
+  description: string;
+  status: string;
+  price: number;
+  currency: string;
+  deadline: string;
+  createdAt: string;
+  client: { id: string; name: string; avatar: string; rating: number };
+  performer: { id: string; name: string; avatar: string; rating: number };
+  category: { id: string; name: string; slug: string };
+  unreadMessages: number;
+  files?: Array<{ id: string; fileUrl: string; fileName: string }>;
+  history: Array<{ status: string; changedAt: string; by: string }>;
+  additionalOptions?: any;
+  rating?: number;
+  dispute?: any;
+}
+
+/** Fetch list of orders with optional filters */
+export async function fetchOrders(params?: { status?: string; search?: string }): Promise<Order[]> {
+  const query = new URLSearchParams();
+  if (params?.status) query.append('status', params.status);
+  if (params?.search) query.append('search', params.search);
+  const res = await fetch(`${API_BASE}/orders?${query.toString()}`, {
+    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+  });
+  if (!res.ok) throw new Error(`Failed to fetch orders: ${res.status}`);
+  return res.json();
+}
+
+/** Fetch single order by id */
+export async function fetchOrderById(id: string): Promise<Order> {
+  const res = await fetch(`${API_BASE}/orders/${id}`, {
+    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+  });
+  if (!res.ok) throw new Error(`Failed to fetch order: ${res.status}`);
+  return res.json();
+}
+
+/** Create new order */
+export async function createOrder(data: { serviceId: string; description: string; deadline: string }): Promise<Order> {
+  const res = await fetch(`${API_BASE}/orders`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+    body: JSON.stringify(data)
+  });
+  if (!res.ok) throw new Error(`Failed to create order: ${res.status}`);
+  return res.json();
+}
+
+/** Update order */
+export async function updateOrder(id: string, data: Partial<Omit<Order, 'id'>>): Promise<Order> {
+  const res = await fetch(`${API_BASE}/orders/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+    body: JSON.stringify(data)
+  });
+  if (!res.ok) throw new Error(`Failed to update order: ${res.status}`);
+  return res.json();
+}
+
+/** Delete order */
+export async function deleteOrder(id: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/orders/${id}`, {
+    method: 'DELETE',
+    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+  });
+  if (!res.ok) throw new Error(`Failed to delete order: ${res.status}`);
+}
+
+/** Add attachment to order */
+export async function addOrderAttachment(orderId: string, fileUrl: string, fileName: string): Promise<{ id: string; fileUrl: string; fileName: string }> {
+  const res = await fetch(`${API_BASE}/orders/${orderId}/attachments`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+    body: JSON.stringify({ fileUrl, fileName })
+  });
+  if (!res.ok) throw new Error(`Failed to add attachment: ${res.status}`);
+  return res.json();
+}
+
+/** Fetch attachments for an order */
+export async function fetchOrderAttachments(orderId: string): Promise<Array<{ id: string; fileUrl: string; fileName: string }>> {
+  const res = await fetch(`${API_BASE}/orders/${orderId}/attachments`, {
+    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+  });
+  if (!res.ok) throw new Error(`Failed to fetch attachments: ${res.status}`);
+  return res.json();
+}
+
+/** Upload a file to order attachments */
+export async function uploadOrderAttachment(orderId: string, file: File): Promise<{ id: string; fileUrl: string; fileName: string }> {
+  const form = new FormData();
+  form.append('file', file);
+  const res = await fetch(`${API_BASE}/orders/${orderId}/attachments`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+    body: form
+  });
+  if (!res.ok) throw new Error(`Failed to upload attachment: ${res.status}`);
+  return res.json();
+}
+
+/** Delete an attachment */
+export async function deleteOrderAttachment(orderId: string, attachmentId: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/orders/${orderId}/attachments/${attachmentId}`, {
+    method: 'DELETE',
+    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+  });
+  if (!res.ok) throw new Error(`Failed to delete attachment: ${res.status}`);
+}
+
+// Notification-related types and functions
+export interface Notification {
+  id: string;
+  type: string;
+  content: string;
+  read: boolean;
+  relatedId?: string;
+  createdAt: string;
+}
+
+/** Fetch notifications for current user */
+export async function fetchNotifications(): Promise<Notification[]> {
+  const res = await fetch(`${API_BASE}/notifications`, {
+    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+  });
+  if (!res.ok) throw new Error(`Failed to fetch notifications: ${res.status}`);
+  return res.json();
+}
+
+/** Mark notification as read */
+export async function markNotificationRead(id: string): Promise<{ id: string; read: boolean }> {
+  const res = await fetch(`${API_BASE}/notifications/${id}/read`, {
+    method: 'PATCH',
+    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+  });
+  if (!res.ok) throw new Error(`Failed to mark notification read: ${res.status}`);
+  return res.json();
+}
+
+// Message related types and functions
+export interface ChatAttachment {
+  id: string;
+  fileUrl: string;
+  fileName: string;
+}
+export interface Message {
+  id: string;
+  senderId: string;
+  receiverId: string;
+  content: string;
+  read: boolean;
+  createdAt: string;
+  attachments?: ChatAttachment[];
+}
+
+/** Fetch messages in an order and mark unread as read */
+export async function fetchMessages(orderId: string): Promise<Message[]> {
+  const res = await fetch(`${API_BASE}/orders/${orderId}/messages`, {
+    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+  });
+  if (!res.ok) throw new Error(`Failed to fetch messages: ${res.status}`);
+  return res.json();
+}
+
+/** Send a new message in the order chat */
+export async function sendMessage(orderId: string, data: {
+  content: string;
+  attachments?: { fileUrl: string; fileName: string }[];
+}): Promise<Message> {
+  const res = await fetch(`${API_BASE}/orders/${orderId}/messages`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${localStorage.getItem('token')}`
+    },
+    body: JSON.stringify(data)
+  });
+  if (!res.ok) throw new Error(`Failed to send message: ${res.status}`);
+  return res.json();
+}
+
+// Additional order options
+export interface AdditionalOption {
+  id: string;
+  title: string;
+  description?: string;
+  price: number;
+  status: 'proposed' | 'accepted' | 'rejected';
+  proposedBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** Fetch additional options for an order */
+export async function fetchAdditionalOptions(orderId: string): Promise<AdditionalOption[]> {
+  const res = await fetch(`${API_BASE}/orders/${orderId}/options`, {
+    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+  });
+  if (!res.ok) throw new Error(`Failed to fetch options: ${res.status}`);
+  return res.json();
+}
+
+/** Propose a new additional option */
+export async function proposeAdditionalOption(orderId: string, data: { title: string; description?: string; price: number }): Promise<AdditionalOption> {
+  const res = await fetch(`${API_BASE}/orders/${orderId}/options`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+    body: JSON.stringify(data)
+  });
+  if (!res.ok) throw new Error(`Failed to propose option: ${res.status}`);
+  return res.json();
+}
+
+/** Update additional option status */
+export async function updateAdditionalOptionStatus(orderId: string, optionId: string, status: 'accepted' | 'rejected'): Promise<AdditionalOption> {
+  const res = await fetch(`${API_BASE}/orders/${orderId}/options/${optionId}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+    body: JSON.stringify({ status })
+  });
+  if (!res.ok) throw new Error(`Failed to update option status: ${res.status}`);
+  return res.json();
+}
+
+// Payment-related functions
+export interface Payment {
+  id: string;
+  amount: number;
+  currency: string;
+  status: 'pending' | 'authorized' | 'completed' | 'refunded' | 'failed';
+  provider: string;
+  providerPaymentId?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** Fetch payments for an order */
+export async function fetchPayments(orderId: string): Promise<Payment[]> {
+  const res = await fetch(`${API_BASE}/orders/${orderId}/payments`, {
+    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+  });
+  if (!res.ok) throw new Error(`Failed to fetch payments: ${res.status}`);
+  return res.json();
+}
+
+/** Authorize (freeze) payment */
+export async function authorizePaymentApi(orderId: string, amount: number, provider: string, currency?: string): Promise<Payment> {
+  const res = await fetch(`${API_BASE}/orders/${orderId}/payments/authorize`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+    body: JSON.stringify({ amount, currency, provider })
+  });
+  if (!res.ok) throw new Error(`Failed to authorize payment: ${res.status}`);
+  return res.json();
+}
+
+/** Capture payment */
+export async function capturePaymentApi(orderId: string, paymentId: string): Promise<Payment> {
+  const res = await fetch(`${API_BASE}/orders/${orderId}/payments/${paymentId}/capture`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+  });
+  if (!res.ok) throw new Error(`Failed to capture payment: ${res.status}`);
+  return res.json();
+}
+
+/** Refund payment */
+export async function refundPaymentApi(orderId: string, paymentId: string): Promise<Payment> {
+  const res = await fetch(`${API_BASE}/orders/${orderId}/payments/${paymentId}/refund`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+  });
+  if (!res.ok) throw new Error(`Failed to refund payment: ${res.status}`);
+  return res.json();
+}
+
+export interface Review {
+  id: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+}
+
+/** Fetch review for an order */
+export async function fetchReview(orderId: string): Promise<Review> {
+  const res = await fetch(`${API_BASE}/orders/${orderId}/review`, {
+    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+  });
+  if (!res.ok) throw new Error(`Failed to fetch review: ${res.status}`);
+  return res.json();
+}
+
+/** Create a review for an order */
+export async function createReview(orderId: string, data: { rating: number; comment?: string }): Promise<Review> {
+  const res = await fetch(`${API_BASE}/orders/${orderId}/review`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+    body: JSON.stringify(data)
+  });
+  if (!res.ok) throw new Error(`Failed to create review: ${res.status}`);
+  return res.json();
+}
+
+export interface Dispute {
+  id: string;
+  orderId: string;
+  clientId: string;
+  performerId: string;
+  moderatorId?: string;
+  reason: string;
+  status: 'open' | 'in_review' | 'resolved';
+  createdAt: string;
+  updatedAt: string;
+}
+export interface DisputeMessage {
+  id: string;
+  senderId: string;
+  content: string;
+  createdAt: string;
+}
+
+/** Fetch dispute for an order */
+export async function fetchDispute(orderId: string): Promise<Dispute> {
+  const res = await fetch(`${API_BASE}/orders/${orderId}/disputes`, {
+    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+  });
+  if (!res.ok) throw new Error(`Failed to fetch dispute: ${res.status}`);
+  return res.json();
+}
+
+/** Open a dispute on an order */
+export async function openDispute(orderId: string, reason: string): Promise<Dispute> {
+  const res = await fetch(`${API_BASE}/orders/${orderId}/disputes`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+    body: JSON.stringify({ reason })
+  });
+  if (!res.ok) throw new Error(`Failed to open dispute: ${res.status}`);
+  return res.json();
+}
+
+/** Fetch messages in dispute */
+export async function fetchDisputeMessages(orderId: string, disputeId: string): Promise<DisputeMessage[]> {
+  const res = await fetch(`${API_BASE}/orders/${orderId}/disputes/${disputeId}/messages`, {
+    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+  });
+  if (!res.ok) throw new Error(`Failed to fetch dispute messages: ${res.status}`);
+  return res.json();
+}
+
+/** Send message in dispute */
+export async function sendDisputeMessage(orderId: string, disputeId: string, content: string): Promise<DisputeMessage> {
+  const res = await fetch(`${API_BASE}/orders/${orderId}/disputes/${disputeId}/messages`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+    body: JSON.stringify({ content })
+  });
+  if (!res.ok) throw new Error(`Failed to send dispute message: ${res.status}`);
+  return res.json();
+}
+
+/** Update dispute status (moderator) */
+export async function updateDisputeStatus(orderId: string, disputeId: string, status: 'in_review' | 'resolved'): Promise<Dispute> {
+  const res = await fetch(`${API_BASE}/orders/${orderId}/disputes/${disputeId}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+    body: JSON.stringify({ status })
+  });
+  if (!res.ok) throw new Error(`Failed to update dispute status: ${res.status}`);
+  return res.json();
+}

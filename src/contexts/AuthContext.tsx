@@ -33,13 +33,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Check for stored user on mount
     const storedUser = localStorage.getItem('user');
-    if (storedUser) {
+    const storedToken = localStorage.getItem('token');
+    if (storedUser && storedToken) {
       const parsed: User = JSON.parse(storedUser);
       // Використовуємо роль з токена
       setUser(parsed);
-      // Ensure token remains
-      const token = localStorage.getItem('token');
-      if (!token) localStorage.setItem('token', '');
     }
     setIsLoading(false);
   }, []);
@@ -122,6 +120,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = () => {
     setUser(null);
     localStorage.removeItem('user');
+    localStorage.removeItem('token');
   };
 
   return (

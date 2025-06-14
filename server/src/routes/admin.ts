@@ -22,9 +22,10 @@ router.get('/dashboard', async (req: Request, res: Response) => {
     const totalServices = Number(sRes.rows[0].count);
     const totalOrders = Number(oRes.rows[0].count);
     res.json({ totalUsers, totalPerformers, totalServices, totalOrders });
-  } catch (err: any) {
-    console.error(err);
-    res.status(500).json({ message: 'Failed to fetch dashboard stats' });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Failed to fetch dashboard stats';
+    console.error(error);
+    res.status(500).json({ message });
   }
 });
 
