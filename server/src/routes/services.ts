@@ -46,6 +46,30 @@ router.get('/', async (req: Request, res: Response) => {
   }
 });
 
+// GET /v1/services/categories - отримати всі категорії послуг
+router.get('/categories', async (req: Request, res: Response) => {
+  try {
+    const result = await query(`
+      SELECT id, name, slug, description
+      FROM service_categories
+      ORDER BY name
+    `);
+
+    const categories = result.rows.map(r => ({
+      id: r.id,
+      name: r.name,
+      slug: r.slug,
+      description: r.description
+    }));
+
+    res.json({ categories });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Failed to fetch categories';
+    console.error(error);
+    res.status(500).json({ message });
+  }
+});
+
 // GET /v1/services/my - отримати мої послуги (для performer'ів)
 router.get('/my', authenticate, async (req: Request, res: Response) => {
   try {
@@ -123,6 +147,177 @@ router.get('/:id', async (req: Request, res: Response) => {
     });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Failed to fetch service';
+    console.error(error);
+    res.status(500).json({ message });
+  }
+});
+
+// POST /v1/services - створити нову послугу (тільки для performer'ів)
+router.post('/', authenticate, async (req: Request, res: Response) => {
+  try {
+    const userId = req.user!.id;
+    const userRole = req.user!.role;
+    
+    if (userRole !== 'performer') {
+      return res.status(403).json({ message: 'Only performers can create services' });
+    }
+
+    const { title, description, price, currency, delivery_time, category_id, tags } = req.body;
+
+    // Валідація
+    if (!title?.trim()) {
+      return res.status(400).json({ message: 'Title is required' });
+    }
+    if (!description?.trim()) {
+      return res.status(400).json({ message: 'Description is required' });
+    }
+    if (!category_id) {
+      return res.status(400).json({ message: 'Category is required' });
+    }
+    if (!price || price <= 0) {
+      return res.status(400).json({ message: 'Price must be greater than 0' });
+    }
+    if (!delivery_time || delivery_time <= 0) {
+      return res.status(400).json({ message: 'Delivery time must be greater than 0' });
+    }
+
+    // Створення послуги
+    const result = await query(`
+      INSERT INTO services (title, description, price, currency, delivery_time, category_id, performer_id)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      RETURNING id, title, description, price, currency, delivery_time, created_at
+    `, [title.trim(), description.trim(), price, currency || 'USD', delivery_time, category_id, userId]);
+
+    const service = result.rows[0];
+
+    // Додавання тегів, якщо є
+    if (tags && Array.isArray(tags) && tags.length > 0) {
+      for (const tagName of tags.slice(0, 10)) { // Максимум 10 тегів
+        if (typeof tagName === 'string' && tagName.trim()) {
+          // Спочатку знаходимо або створюємо тег
+          const tagResult = await query(`
+            INSERT INTO tags (name) VALUES ($1)
+            ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name
+            RETURNING id
+          `, [tagName.trim()]);
+          
+          const tagId = tagResult.rows[0].id;
+          
+          // Потім зв'язуємо з послугою
+          await query(`
+            INSERT INTO service_tags (service_id, tag_id)
+            VALUES ($1, $2)
+            ON CONFLICT DO NOTHING
+          `, [service.id, tagId]);
+        }
+      }
+    }
+
+    res.status(201).json({ 
+      message: 'Service created successfully',
+      service: {
+        id: service.id,
+        title: service.title,
+        description: service.description,
+        price: service.price,
+        currency: service.currency,
+        delivery_time: service.delivery_time,
+        created_at: service.created_at
+      }
+    });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Failed to create service';
+    console.error(error);
+    res.status(500).json({ message });
+  }
+});
+
+// PUT /v1/services/:id - оновити послугу (тільки власник)
+router.put('/:id', authenticate, async (req: Request, res: Response) => {
+  try {
+    const userId = req.user!.id;
+    const serviceId = req.params.id;
+    const { title, description, price, currency, delivery_time, category_id, tags } = req.body;
+
+    // Перевіряємо, чи користувач є власником послуги
+    const ownerCheck = await query(`
+      SELECT performer_id FROM services WHERE id = $1
+    `, [serviceId]);
+
+    if (ownerCheck.rows.length === 0) {
+      return res.status(404).json({ message: 'Service not found' });
+    }
+
+    if (ownerCheck.rows[0].performer_id !== userId) {
+      return res.status(403).json({ message: 'You can only edit your own services' });
+    }
+
+    // Валідація
+    if (!title?.trim()) {
+      return res.status(400).json({ message: 'Title is required' });
+    }
+    if (!description?.trim()) {
+      return res.status(400).json({ message: 'Description is required' });
+    }
+    if (!category_id) {
+      return res.status(400).json({ message: 'Category is required' });
+    }
+    if (!price || price <= 0) {
+      return res.status(400).json({ message: 'Price must be greater than 0' });
+    }
+    if (!delivery_time || delivery_time <= 0) {
+      return res.status(400).json({ message: 'Delivery time must be greater than 0' });
+    }
+
+    // Оновлення послуги
+    const result = await query(`
+      UPDATE services 
+      SET title = $1, description = $2, price = $3, currency = $4, delivery_time = $5, category_id = $6, updated_at = CURRENT_TIMESTAMP
+      WHERE id = $7
+      RETURNING id, title, description, price, currency, delivery_time, created_at, updated_at
+    `, [title.trim(), description.trim(), price, currency || 'USD', delivery_time, category_id, serviceId]);
+
+    const service = result.rows[0];
+
+    // Видалення старих тегів
+    await query(`DELETE FROM service_tags WHERE service_id = $1`, [serviceId]);
+
+    // Додавання нових тегів
+    if (tags && Array.isArray(tags) && tags.length > 0) {
+      for (const tagName of tags.slice(0, 10)) {
+        if (typeof tagName === 'string' && tagName.trim()) {
+          const tagResult = await query(`
+            INSERT INTO tags (name) VALUES ($1)
+            ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name
+            RETURNING id
+          `, [tagName.trim()]);
+          
+          const tagId = tagResult.rows[0].id;
+          
+          await query(`
+            INSERT INTO service_tags (service_id, tag_id)
+            VALUES ($1, $2)
+            ON CONFLICT DO NOTHING
+          `, [serviceId, tagId]);
+        }
+      }
+    }
+
+    res.json({ 
+      message: 'Service updated successfully',
+      service: {
+        id: service.id,
+        title: service.title,
+        description: service.description,
+        price: service.price,
+        currency: service.currency,
+        delivery_time: service.delivery_time,
+        created_at: service.created_at,
+        updated_at: service.updated_at
+      }
+    });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Failed to update service';
     console.error(error);
     res.status(500).json({ message });
   }
