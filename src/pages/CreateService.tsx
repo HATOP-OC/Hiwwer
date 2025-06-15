@@ -41,7 +41,7 @@ export default function CreateService() {
     description: '',
     price: 0,
     currency: 'UAH',
-    delivery_time: 1,
+    delivery_time: 0,
     category_id: '',
     tags: []
   });
@@ -180,6 +180,15 @@ export default function CreateService() {
       return;
     }
 
+    if (formData.delivery_time <= 0) {
+      toast({
+        title: "Помилка",
+        description: "Терміни виконання повинні бути більше 0",
+        variant: "destructive",
+      });
+      return;
+    }
+
     createMutation.mutate(formData);
   };
 
@@ -277,10 +286,16 @@ export default function CreateService() {
                   <Input
                     id="price"
                     type="number"
-                    min="1"
+                    min="0"
                     step="0.01"
-                    value={formData.price}
-                    onChange={(e) => setFormData(prev => ({ ...prev, price: parseFloat(e.target.value) || 0 }))}
+                    value={formData.price === 0 ? '' : formData.price}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setFormData(prev => ({ 
+                        ...prev, 
+                        price: value === '' ? 0 : parseFloat(value) 
+                      }));
+                    }}
                     required
                   />
                 </div>
@@ -309,8 +324,14 @@ export default function CreateService() {
                   id="delivery_time"
                   type="number"
                   min="1"
-                  value={formData.delivery_time}
-                  onChange={(e) => setFormData(prev => ({ ...prev, delivery_time: parseInt(e.target.value) || 1 }))}
+                  value={formData.delivery_time || ''}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setFormData(prev => ({ 
+                      ...prev, 
+                      delivery_time: value === '' ? 0 : parseInt(value) 
+                    }));
+                  }}
                   required
                 />
               </div>

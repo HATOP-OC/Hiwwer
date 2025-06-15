@@ -37,7 +37,7 @@ const ServicesAdmin: React.FC = () => {
                 <TableRow key={service.id}>
                   <TableCell>{service.id}</TableCell>
                   <TableCell>{service.title}</TableCell>
-                  <TableCell>{service.currency} {service.price.toFixed(2)}</TableCell>
+                  <TableCell>{service.currency} {Number(service.price).toFixed(2)}</TableCell>
                   <TableCell>{service.performer.name}</TableCell>
                   <TableCell>{service.category.name}</TableCell>
                 </TableRow>

@@ -4,6 +4,16 @@ import { authenticate } from '../middlewares/auth';
 
 const router = Router();
 
+// Функція для генерації slug з назви
+function generateSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '') // Видаляємо спецсимволи
+    .replace(/[\s_-]+/g, '-') // Замінюємо пробіли на дефіси
+    .replace(/^-+|-+$/g, ''); // Видаляємо дефіси на початку і в кінці
+}
+
 // GET /v1/services?category=slug&page=1&limit=10
 router.get('/', async (req: Request, res: Response) => {
   try {
@@ -194,21 +204,35 @@ router.post('/', authenticate, async (req: Request, res: Response) => {
     if (tags && Array.isArray(tags) && tags.length > 0) {
       for (const tagName of tags.slice(0, 10)) { // Максимум 10 тегів
         if (typeof tagName === 'string' && tagName.trim()) {
-          // Спочатку знаходимо або створюємо тег
-          const tagResult = await query(`
-            INSERT INTO tags (name) VALUES ($1)
-            ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name
-            RETURNING id
-          `, [tagName.trim()]);
+          const cleanTagName = tagName.trim();
+          const tagSlug = generateSlug(cleanTagName);
           
-          const tagId = tagResult.rows[0].id;
+          // Спочатку перевіряємо, чи існує тег з такою назвою
+          let existingTag = await query(`SELECT id FROM tags WHERE name = $1`, [cleanTagName]);
           
-          // Потім зв'язуємо з послугою
-          await query(`
-            INSERT INTO service_tags (service_id, tag_id)
-            VALUES ($1, $2)
-            ON CONFLICT DO NOTHING
-          `, [service.id, tagId]);
+          if (existingTag.rows.length > 0) {
+            // Тег вже існує, використовуємо його
+            const tagId = existingTag.rows[0].id;
+            await query(`
+              INSERT INTO service_tags (service_id, tag_id)
+              VALUES ($1, $2)
+              ON CONFLICT DO NOTHING
+            `, [service.id, tagId]);
+          } else {
+            // Створюємо новий тег
+            const tagResult = await query(`
+              INSERT INTO tags (name, slug) VALUES ($1, $2)
+              RETURNING id
+            `, [cleanTagName, tagSlug]);
+            
+            const tagId = tagResult.rows[0].id;
+            
+            await query(`
+              INSERT INTO service_tags (service_id, tag_id)
+              VALUES ($1, $2)
+              ON CONFLICT DO NOTHING
+            `, [service.id, tagId]);
+          }
         }
       }
     }
@@ -286,19 +310,35 @@ router.put('/:id', authenticate, async (req: Request, res: Response) => {
     if (tags && Array.isArray(tags) && tags.length > 0) {
       for (const tagName of tags.slice(0, 10)) {
         if (typeof tagName === 'string' && tagName.trim()) {
-          const tagResult = await query(`
-            INSERT INTO tags (name) VALUES ($1)
-            ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name
-            RETURNING id
-          `, [tagName.trim()]);
+          const cleanTagName = tagName.trim();
+          const tagSlug = generateSlug(cleanTagName);
           
-          const tagId = tagResult.rows[0].id;
+          // Спочатку перевіряємо, чи існує тег з такою назвою
+          let existingTag = await query(`SELECT id FROM tags WHERE name = $1`, [cleanTagName]);
           
-          await query(`
-            INSERT INTO service_tags (service_id, tag_id)
-            VALUES ($1, $2)
-            ON CONFLICT DO NOTHING
-          `, [serviceId, tagId]);
+          if (existingTag.rows.length > 0) {
+            // Тег вже існує, використовуємо його
+            const tagId = existingTag.rows[0].id;
+            await query(`
+              INSERT INTO service_tags (service_id, tag_id)
+              VALUES ($1, $2)
+              ON CONFLICT DO NOTHING
+            `, [serviceId, tagId]);
+          } else {
+            // Створюємо новий тег
+            const tagResult = await query(`
+              INSERT INTO tags (name, slug) VALUES ($1, $2)
+              RETURNING id
+            `, [cleanTagName, tagSlug]);
+            
+            const tagId = tagResult.rows[0].id;
+            
+            await query(`
+              INSERT INTO service_tags (service_id, tag_id)
+              VALUES ($1, $2)
+              ON CONFLICT DO NOTHING
+            `, [serviceId, tagId]);
+          }
         }
       }
     }
