@@ -81,6 +81,7 @@ export interface OrderDispute {
 
 export interface Order {
   id: string;
+  service_id?: string | null; // ID послуги (null для кастомних замовлень)
   title: string;
   description: string;
   status: OrderStatus;
@@ -89,7 +90,7 @@ export interface Order {
   deadline: Date;
   createdAt: Date;
   client: User;
-  performer: User;
+  performer: User | null; // Може бути null для кастомних замовлень без виконавця
   category: {
     id: string;
     name: string;

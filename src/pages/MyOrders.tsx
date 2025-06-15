@@ -116,7 +116,7 @@ export default function MyOrders() {
   const OrderCard = ({ order }: { order: Order }) => {
     const isClient = user?.role === 'client';
     const otherParty = isClient ? order.performer : order.client;
-    const isCustomOrder = !order.performer;
+    const isCustomOrder = !order.service_id; // Кастомне замовлення - без прив'язки до конкретної послуги
     const deadline = new Date(order.deadline);
     const daysLeft = Math.ceil((deadline.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
 
@@ -161,7 +161,7 @@ export default function MyOrders() {
 
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-3">
-              {isCustomOrder && isClient ? (
+              {isCustomOrder && isClient && !order.performer ? (
                 <div className="flex items-center space-x-2">
                   <div className="h-8 w-8 bg-orange-100 rounded-full flex items-center justify-center">
                     <span className="text-sm font-medium text-orange-600">К</span>
@@ -189,7 +189,17 @@ export default function MyOrders() {
                     </div>
                   </div>
                 </>
-              ) : null}
+              ) : (
+                <div className="flex items-center space-x-2">
+                  <div className="h-8 w-8 bg-gray-100 rounded-full flex items-center justify-center">
+                    <span className="text-sm font-medium text-gray-600">?</span>
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium text-gray-600">Без виконавця</div>
+                    <div className="text-xs text-muted-foreground">Очікує призначення</div>
+                  </div>
+                </div>
+              )}
             </div>
             <div className="text-sm text-muted-foreground">
               <div className="flex items-center space-x-1">

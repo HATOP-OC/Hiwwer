@@ -165,7 +165,7 @@ export default function OrderDetail() {
 
   const statusOptions = ['pending', 'in_progress', 'revision', 'completed', 'canceled', 'disputed'];
   const isClient = user?.id === order.client.id;
-  const isPerformer = user?.id === order.performer.id;
+  const isPerformer = order.performer && user?.id === order.performer.id;
 
   const handleStatusChange = (value: string) => {
     updateMutation.mutate({ status: value });

@@ -34,6 +34,7 @@ router.get('/', async (req: Request, res: Response) => {
       idx++;
     }
     const sql = `SELECT o.id,
+                    o.service_id,
                     COALESCE(s.title, o.title) as title,
                     COALESCE(s.description, o.requirements) as description,
                     o.status,
@@ -74,6 +75,7 @@ router.get('/', async (req: Request, res: Response) => {
     const result = await query(sql, params);
     const orders = result.rows.map(r => ({
       id: r.id,
+      service_id: r.service_id,
       title: r.title,
       description: r.description,
       status: r.status,
@@ -105,6 +107,7 @@ router.get('/:id', async (req: Request, res: Response) => {
   try {
     const result = await query(
       `SELECT o.id,
+              o.service_id,
               COALESCE(s.title, o.title) as title,
               COALESCE(s.description, o.requirements) as description,
               o.status,
@@ -142,6 +145,7 @@ router.get('/:id', async (req: Request, res: Response) => {
     const r = result.rows[0];
     res.json({
       id: r.id,
+      service_id: r.service_id,
       title: r.title,
       description: r.description,
       status: r.status,
