@@ -3,6 +3,7 @@ import { authenticate } from '../middlewares/auth';
 import { createNotification } from '../services/notificationService';
 import { query } from '../db';
 import { authorizeClient, authorizePerformer } from '../middlewares/roles';
+import { getWebSocketService } from '../services/webSocketService';
 
 const router = Router();
 
@@ -308,6 +309,12 @@ router.patch('/:id', authenticate, authorizePerformer, async (req: Request, res:
         `Статус замовлення "${updated.title}" змінено на ${req.body.status}`,
         id
       );
+
+      // Broadcast status update via WebSocket
+      const webSocketService = getWebSocketService();
+      if (webSocketService) {
+        webSocketService.broadcastOrderStatusUpdate(id, req.body.status, userId);
+      }
     }
     // Якщо додано additional_options
     if (req.body.additional_options) {

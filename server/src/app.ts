@@ -1,12 +1,13 @@
 import express, { Request, Response, NextFunction } from 'express';
+import { createServer } from 'http';
 import path from 'path';
 import { query } from './db';
 import bcrypt from 'bcrypt';
 import cors from 'cors';
-import bodyParser from 'body-parser';
 import morgan from 'morgan';
 import { config } from './config/config';
 import { scheduleAttachmentCleanup } from './services/cleanupService';
+import { initializeWebSocket } from './services/webSocketService';
 
 // Routes
 import authRouter from './routes/auth';
@@ -24,6 +25,10 @@ import reviewsRouter from './routes/reviews';
 import disputesRouter from './routes/disputes';
 
 const app = express();
+const httpServer = createServer(app);
+
+// Initialize WebSocket service
+const webSocketService = initializeWebSocket(httpServer);
 
 // Serve uploaded files
 app.use('/uploads', express.static(path.resolve(__dirname, '../../uploads')));
@@ -38,7 +43,7 @@ app.use(cors({
 }));
 // Preflight
 app.options('*', cors());
-app.use(bodyParser.json());
+app.use(express.json());
 app.use(morgan('dev'));
 
 // Health check
@@ -106,8 +111,9 @@ const initAdmin = async () => {
 
 // Start server only after initializing all admins
 initAdmin().then(() => {
-  app.listen(config.port, '0.0.0.0', () => {
+  httpServer.listen(config.port, '0.0.0.0', () => {
     console.log(`API server running at http://0.0.0.0:${config.port}/v1`);
+    console.log(`WebSocket server initialized`);
     // Запускаємо очищення файлів за TTL
     scheduleAttachmentCleanup();
   });

@@ -131,9 +131,11 @@ CREATE TABLE messages (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
     sender_id UUID NOT NULL REFERENCES users(id),
-    receiver_id UUID NOT NULL REFERENCES users(id),
     content TEXT NOT NULL,
-    read BOOLEAN NOT NULL DEFAULT false,
+    type VARCHAR(20) NOT NULL DEFAULT 'text' CHECK (type IN ('text', 'file', 'system')),
+    file_url VARCHAR(255), -- для файлових повідомлень
+    file_name VARCHAR(255), -- ім'я файлу
+    read_at TIMESTAMP WITH TIME ZONE, -- коли прочитано
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
@@ -216,6 +218,25 @@ CREATE INDEX idx_orders_performer_id ON orders (performer_id);
 CREATE INDEX idx_orders_category_id ON orders (category_id);
 CREATE INDEX idx_messages_order_id ON messages (order_id);
 CREATE INDEX idx_notifications_user_id ON notifications (user_id);
+
+-- Indexes
+CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_users_role ON users(role);
+CREATE INDEX idx_users_telegram_id ON users(telegram_id);
+
+CREATE INDEX idx_services_category_id ON services(category_id);
+CREATE INDEX idx_services_performer_id ON services(performer_id);
+CREATE INDEX idx_services_price ON services(price);
+
+CREATE INDEX idx_orders_client_id ON orders(client_id);
+CREATE INDEX idx_orders_performer_id ON orders(performer_id);
+CREATE INDEX idx_orders_service_id ON orders(service_id);
+CREATE INDEX idx_orders_status ON orders(status);
+CREATE INDEX idx_orders_category_id ON orders(category_id);
+
+CREATE INDEX idx_messages_order_id ON messages(order_id);
+CREATE INDEX idx_messages_sender_id ON messages(sender_id);
+CREATE INDEX idx_messages_created_at ON messages(created_at);
 
 -- Create functions to update updated_at automatically
 CREATE OR REPLACE FUNCTION update_updated_at_column()

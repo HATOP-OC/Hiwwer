@@ -7,13 +7,16 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@
 import { toast } from '@/hooks/use-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
-import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import OrderChat from '@/components/OrderChat';
+import DisputeChat from '@/components/DisputeChat';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Review } from '@/lib/api';
 
 export default function OrderDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const [file, setFile] = useState<File | null>(null);
@@ -27,6 +30,8 @@ export default function OrderDetail() {
   const [payProvider, setPayProvider] = useState<string>('stripe');
   const [rating, setRating] = useState<number>(5);
   const [comment, setComment] = useState('');
+  const [disputeReason, setDisputeReason] = useState('');
+  const [showDisputeForm, setShowDisputeForm] = useState(false);
 
   const { data: order, isLoading, error } = useQuery<Order>({
     queryKey: ['order', id],
@@ -57,6 +62,33 @@ export default function OrderDetail() {
     queryKey: ['review', id],
     queryFn: () => fetchReview(id!),
     enabled: !!order && order.status === 'completed'
+  });
+
+  // Dispute queries
+  const { data: dispute, refetch: refetchDispute } = useQuery({
+    queryKey: ['dispute', id],
+    queryFn: async () => {
+      const response = await fetch(`/v1/orders/${id}/disputes`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      if (response.status === 404) return null;
+      if (!response.ok) throw new Error('Failed to fetch dispute');
+      return response.json();
+    },
+    enabled: !!order && order.status === 'disputed'
+  });
+
+  const { data: disputeMessages = [] } = useQuery({
+    queryKey: ['disputeMessages', dispute?.id],
+    queryFn: async () => {
+      if (!dispute?.id) return [];
+      const response = await fetch(`/v1/orders/${id}/disputes/${dispute.id}/messages`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      if (!response.ok) throw new Error('Failed to fetch dispute messages');
+      return response.json();
+    },
+    enabled: !!dispute?.id
   });
 
   const updateMutation = useMutation({
@@ -160,6 +192,32 @@ export default function OrderDetail() {
     }
   });
 
+  // Dispute mutations
+  const createDisputeMutation = useMutation({
+    mutationFn: async (reason: string) => {
+      const response = await fetch(`/v1/orders/${id}/disputes`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ reason })
+      });
+      if (!response.ok) throw new Error('Failed to create dispute');
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({ title: 'Спір відкрито' });
+      setDisputeReason('');
+      setShowDisputeForm(false);
+      queryClient.invalidateQueries({ queryKey: ['order', id] });
+      queryClient.invalidateQueries({ queryKey: ['dispute', id] });
+    },
+    onError: () => {
+      toast({ title: 'Помилка', description: 'Не вдалося відкрити спір', variant: 'destructive' });
+    }
+  });
+
   if (isLoading) return <Layout><div className="py-12 text-center">Завантаження...</div></Layout>;
   if (error || !order) return <Layout><div className="py-12 text-center text-red-500">Не знайдено замовлення</div></Layout>;
 
@@ -181,6 +239,28 @@ export default function OrderDetail() {
       deleteMutation.mutate();
     }
   };
+
+  const handleCreateDispute = () => {
+    if (!disputeReason.trim()) {
+      toast({ title: 'Помилка', description: 'Вкажіть причину спору', variant: 'destructive' });
+      return;
+    }
+    createDisputeMutation.mutate(disputeReason);
+  };
+
+  // Auto-scroll to chat if hash is present
+  useEffect(() => {
+    if (location.hash === '#chat' && order) {
+      const timer = setTimeout(() => {
+        const chatElement = document.getElementById('order-chat');
+        if (chatElement) {
+          chatElement.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 500); // Delay to ensure content is rendered
+      
+      return () => clearTimeout(timer);
+    }
+  }, [location.hash, order]);
 
   return (
     <Layout>
@@ -225,30 +305,108 @@ export default function OrderDetail() {
         </div>
 
         {/* Chat section */}
-        <div>
-          <h2 className="text-xl font-semibold mb-2">Чат</h2>
-          <div className="border rounded p-4 h-64 overflow-y-auto mb-4 space-y-2">
-            {messages.map(msg => (
-              <div key={msg.id} className={msg.senderId === order.client.id ? 'text-left' : 'text-right'}>
-                <div className="inline-block bg-gray-200 p-2 rounded">
-                  <p>{msg.content}</p>
-                  {msg.attachments?.map(a => (
-                    <a key={a.id} href={a.fileUrl} target="_blank" rel="noreferrer" className="block text-blue-600 text-sm">{a.fileName}</a>
-                  ))}
-                  <div className="text-xs text-muted-foreground">{new Date(msg.createdAt).toLocaleString()}</div>
+        <div id="order-chat">
+          <OrderChat 
+            orderId={order.id}
+            participants={{
+              client: {
+                id: order.client.id,
+                name: order.client.name,
+                avatar: order.client.avatar
+              },
+              performer: order.performer ? {
+                id: order.performer.id,
+                name: order.performer.name,  
+                avatar: order.performer.avatar
+              } : undefined
+            }}
+          />
+        </div>
+
+        {/* Dispute Section */}
+        {order.status !== 'disputed' && (isClient || isPerformer) && (
+          <div className="border border-orange-200 rounded-lg p-4 bg-orange-50">
+            <h3 className="text-lg font-semibold mb-2 text-orange-800">Відкрити спір</h3>
+            <p className="text-sm text-orange-700 mb-3">
+              Якщо у вас є проблема з цим замовленням, ви можете відкрити спір для вирішення конфлікту.
+            </p>
+            {!showDisputeForm ? (
+              <Button 
+                variant="outline" 
+                onClick={() => setShowDisputeForm(true)}
+                className="border-orange-300 text-orange-700 hover:bg-orange-100"
+              >
+                Відкрити спір
+              </Button>
+            ) : (
+              <div className="space-y-3">
+                <textarea
+                  className="w-full border rounded p-2 resize-none"
+                  rows={3}
+                  placeholder="Опишіть причину спору..."
+                  value={disputeReason}
+                  onChange={(e) => setDisputeReason(e.target.value)}
+                />
+                <div className="flex space-x-2">
+                  <Button
+                    onClick={handleCreateDispute}
+                    disabled={createDisputeMutation.isPending || !disputeReason.trim()}
+                    className="bg-orange-600 hover:bg-orange-700"
+                  >
+                    {createDisputeMutation.isPending ? 'Відкриваю...' : 'Відкрити спір'}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setShowDisputeForm(false);
+                      setDisputeReason('');
+                    }}
+                  >
+                    Скасувати
+                  </Button>
                 </div>
               </div>
-            ))}
+            )}
           </div>
-          <div className="space-y-2">
-            <textarea className="w-full border p-2 rounded" rows={3} placeholder="Написати повідомлення..." value={messageContent} onChange={e => setMessageContent(e.target.value)} />
-            <div className="flex space-x-2">
-              <Input placeholder="URL вкладення" value={msgFileUrl} onChange={e => setMsgFileUrl(e.target.value)} />
-              <Input placeholder="Ім'я файлу" value={msgFileName} onChange={e => setMsgFileName(e.target.value)} />
-              <Button onClick={() => sendMsgMutation.mutate()} disabled={sendMsgMutation.isLoading || !messageContent}>Відправити</Button>
+        )}
+
+        {/* Active Dispute Chat */}
+        {order.status === 'disputed' && dispute && (
+          <div className="space-y-4">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <h3 className="text-lg font-semibold text-red-800 mb-2">Активний спір</h3>
+              <p className="text-sm text-red-700 mb-2">
+                <strong>Причина:</strong> {dispute.reason}
+              </p>
+              <p className="text-sm text-red-700">
+                <strong>Статус:</strong> {dispute.status === 'open' ? 'Відкритий' : dispute.status === 'in_review' ? 'На розгляді' : 'Вирішений'}
+              </p>
             </div>
+            
+            <DisputeChat
+              disputeId={dispute.id}
+              orderId={order.id}
+              participants={{
+                client: {
+                  id: order.client.id,
+                  name: order.client.name,
+                  avatar: order.client.avatar
+                },
+                performer: {
+                  id: order.performer!.id,
+                  name: order.performer!.name,
+                  avatar: order.performer!.avatar
+                },
+                moderator: dispute.moderatorId ? {
+                  id: dispute.moderatorId,
+                  name: 'Модератор',
+                  avatar: undefined
+                } : undefined
+              }}
+              initialMessages={disputeMessages}
+            />
           </div>
-        </div>
+        )}
 
         {/* Additional Options Section */}
         <div>

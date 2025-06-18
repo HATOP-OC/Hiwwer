@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { authenticate } from '../middlewares/auth';
 import { query } from '../db';
 import { createNotification } from '../services/notificationService';
+import { getWebSocketService } from '../services/webSocketService';
 
 const router = Router({ mergeParams: true });
 router.use(authenticate);
@@ -92,6 +93,20 @@ router.post('/:disputeId/messages', async (req: Request, res: Response) => {
       const mods = await query(`SELECT id FROM users WHERE role = 'admin'`);
       for (const m of mods.rows) await createNotification(m.id, 'message', `Нове повідомлення в спорі ${disputeId}`, req.params.orderId);
     }
+
+    // Broadcast message via WebSocket
+    const webSocketService = getWebSocketService();
+    if (webSocketService) {
+      webSocketService.broadcastDisputeMessage({
+        disputeId,
+        orderId: req.params.orderId,
+        messageId: message.id,
+        senderId: userId,
+        content,
+        createdAt: message.createdAt
+      });
+    }
+
     res.status(201).json(message);
   } catch (err) {
     console.error(err);
@@ -123,6 +138,13 @@ router.patch('/:disputeId', async (req: Request, res: Response) => {
       await createNotification(client_id, 'status_change', `Статус спору ${disputeId} змінено на ${status}`, req.params.orderId);
       await createNotification(performer_id, 'status_change', `Статус спору ${disputeId} змінено на ${status}`, req.params.orderId);
     }
+
+    // Broadcast status update via WebSocket
+    const webSocketService = getWebSocketService();
+    if (webSocketService) {
+      webSocketService.broadcastDisputeStatusUpdate(disputeId, req.params.orderId, status, userId);
+    }
+
     res.json(dispute);
   } catch (err) {
     console.error(err);

@@ -220,9 +220,11 @@ export default function MyOrders() {
                 Деталі
               </Link>
             </Button>
-            <Button variant="outline" size="sm" className="flex-1">
-              <MessageSquare className="h-4 w-4 mr-2" />
-              Чат
+            <Button variant="outline" size="sm" className="flex-1" asChild>
+              <Link to={`/order/${order.id}#chat`}>
+                <MessageSquare className="h-4 w-4 mr-2" />
+                Чат
+              </Link>
             </Button>
           </div>
         </CardContent>

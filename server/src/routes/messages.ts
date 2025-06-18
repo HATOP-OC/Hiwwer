@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { authenticate } from '../middlewares/auth';
 import { query } from '../db';
 import { createNotification } from '../services/notificationService';
+import { getWebSocketService } from '../services/webSocketService';
 
 const router = Router({ mergeParams: true });
 router.use(authenticate);
@@ -76,6 +77,21 @@ router.post('/', async (req: Request, res: Response) => {
       `Нове повідомлення у замовленні "${title}"`,
       orderId
     );
+
+    // Broadcast message via WebSocket
+    const webSocketService = getWebSocketService();
+    if (webSocketService) {
+      webSocketService.broadcastOrderMessage({
+        orderId,
+        messageId: message.id,
+        senderId: userId,
+        receiverId,
+        content,
+        attachments: message.attachments || [],
+        createdAt: message.createdAt
+      });
+    }
+
     res.status(201).json(message);
   } catch (err) {
     console.error(err);

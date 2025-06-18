@@ -1,4 +1,5 @@
 import { query } from '../db';
+import { getWebSocketService } from './webSocketService';
 
 // TODO: інтегрувати реальні сервіси
 async function sendEmail(userId: string, content: string) {
@@ -15,10 +16,26 @@ async function sendTelegram(userId: string, content: string) {
  * Create a notification record and dispatch via channels
  */
 export async function createNotification(userId: string, type: string, content: string, relatedId?: string) {
-  await query(
-    `INSERT INTO notifications(user_id, type, content, related_id) VALUES($1, $2, $3, $4)`,
+  const result = await query(
+    `INSERT INTO notifications(user_id, type, content, related_id) VALUES($1, $2, $3, $4) RETURNING id, created_at`,
     [userId, type, content, relatedId]
   );
-  // dispatch
+  
+  const notification = result.rows[0];
+  
+  // Send via WebSocket
+  const webSocketService = getWebSocketService();
+  if (webSocketService) {
+    webSocketService.sendNotificationToUser(userId, {
+      id: notification.id,
+      userId,
+      type,
+      content,
+      relatedId,
+      createdAt: notification.created_at
+    });
+  }
+  
+  // dispatch other channels
   await Promise.all([sendEmail(userId, content), sendPush(userId, content), sendTelegram(userId, content)]);
 }
