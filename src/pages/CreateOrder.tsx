@@ -270,7 +270,7 @@ export default function CreateOrder() {
                   <>
                     <div className="flex items-start space-x-4">
                       <img 
-                        src={service?.image || '/placeholder.svg'} 
+                        src={service?.images?.[0] || '/placeholder.svg'} 
                         alt={service?.title}
                         className="w-16 h-16 rounded-lg object-cover"
                       />
