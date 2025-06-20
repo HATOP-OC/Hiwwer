@@ -1,10 +1,22 @@
 import { query } from '../db';
 
+interface Payment {
+  id: string;
+  order_id: string;
+  amount: number;
+  currency: string;
+  status: string;
+  provider: string;
+  provider_payment_id?: string;
+  created_at: Date;
+  updated_at?: Date;
+}
+
 /**
  * Placeholder payment provider integration
  * Simulate authorize (freeze), capture, refund
  */
-export async function authorizePayment(orderId: string, amount: number, currency: string, provider: string): Promise<unknown> {
+export async function authorizePayment(orderId: string, amount: number, currency: string, provider: string): Promise<Payment> {
   // Simulate provider call, e.g., Stripe: paymentIntent.create({ amount, currency, capture_method: 'manual' })
   const providerPaymentId = `prov_${Date.now()}`;
   // Insert into payments table
@@ -16,7 +28,7 @@ export async function authorizePayment(orderId: string, amount: number, currency
   return result.rows[0];
 }
 
-export async function capturePayment(paymentId: string): Promise<unknown> {
+export async function capturePayment(paymentId: string): Promise<Payment> {
   // Simulate provider capture
   // Update status to completed
   const result = await query(
@@ -26,7 +38,7 @@ export async function capturePayment(paymentId: string): Promise<unknown> {
   return result.rows[0];
 }
 
-export async function refundPayment(paymentId: string): Promise<unknown> {
+export async function refundPayment(paymentId: string): Promise<Payment> {
   // Simulate provider refund
   // Update status to refunded
   const result = await query(
@@ -36,7 +48,7 @@ export async function refundPayment(paymentId: string): Promise<unknown> {
   return result.rows[0];
 }
 
-export async function fetchPayments(orderId: string): Promise<unknown[]> {
+export async function fetchPayments(orderId: string): Promise<Payment[]> {
   const result = await query(
     `SELECT id, amount, currency, status, provider, provider_payment_id AS "providerPaymentId", created_at AS "createdAt", updated_at AS "updatedAt"
      FROM payments WHERE order_id = $1 ORDER BY created_at`,

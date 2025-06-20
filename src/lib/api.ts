@@ -393,6 +393,7 @@ export async function fetchHealth(): Promise<{ status: string; timestamp: number
 // Order related APIs
 export interface Order {
   id: string;
+  serviceId?: string | null;
   title: string;
   description: string;
   status: string;
@@ -420,7 +421,12 @@ export async function fetchOrders(params?: { status?: string; search?: string })
     headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
   });
   if (!res.ok) throw new Error(`Failed to fetch orders: ${res.status}`);
-  return res.json();
+  const data = await res.json();
+  // Map service_id to serviceId for TypeScript compatibility
+  return data.map((order: any) => ({
+    ...order,
+    serviceId: order.service_id,
+  }));
 }
 
 /** Fetch single order by id */
@@ -429,7 +435,12 @@ export async function fetchOrderById(id: string): Promise<Order> {
     headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
   });
   if (!res.ok) throw new Error(`Failed to fetch order: ${res.status}`);
-  return res.json();
+  const data = await res.json();
+  // Map service_id to serviceId for TypeScript compatibility
+  return {
+    ...data,
+    serviceId: data.service_id,
+  };
 }
 
 /** Create new order */

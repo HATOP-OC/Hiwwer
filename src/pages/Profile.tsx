@@ -47,6 +47,7 @@ export default function Profile() {
     avatar: user?.avatar || '/placeholder.svg'
   });
 
+  // Early return AFTER all hooks
   if (!user) {
     return (
       <Layout>

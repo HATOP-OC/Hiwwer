@@ -1,8 +1,25 @@
-import { Router, Request, Response } from 'express';
+import { Router, Response, Request } from 'express';
 import { authenticate } from '../middlewares/auth';
 import { query } from '../db';
 import { createNotification } from '../services/notificationService';
 import { getWebSocketService } from '../services/webSocketService';
+
+// Extend Request interface locally
+declare module 'express-serve-static-core' {
+  interface Request {
+    user?: {
+      id: string;
+      email: string;
+      name: string;
+      role: 'client' | 'performer' | 'admin';
+      avatar?: string;
+      bio?: string;
+      rating?: number;
+      telegramId?: string;
+      createdAt: Date;
+    };
+  }
+}
 
 const router = Router({ mergeParams: true });
 router.use(authenticate);

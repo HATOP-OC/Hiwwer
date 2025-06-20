@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { User } from '../@types';
 
 // Ensure user is client
 export const authorizeClient = (req: Request, res: Response, next: NextFunction) => {

@@ -11,7 +11,7 @@ import OrderChat from '@/components/OrderChat';
 import DisputeChat from '@/components/DisputeChat';
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { Review } from '@/lib/api';
+import type { Order, Message, AdditionalOption, Review } from '@/lib/api';
 
 export default function OrderDetail() {
   const { id } = useParams<{ id: string }>();
@@ -19,6 +19,8 @@ export default function OrderDetail() {
   const location = useLocation();
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  
+  // All state hooks first - never conditionally call hooks
   const [file, setFile] = useState<File | null>(null);
   const [messageContent, setMessageContent] = useState('');
   const [msgFileUrl, setMsgFileUrl] = useState('');
@@ -33,35 +35,41 @@ export default function OrderDetail() {
   const [disputeReason, setDisputeReason] = useState('');
   const [showDisputeForm, setShowDisputeForm] = useState(false);
 
+  // All query hooks - never conditionally call
   const { data: order, isLoading, error } = useQuery<Order>({
     queryKey: ['order', id],
     queryFn: () => fetchOrderById(id!),
     enabled: !!id
   });
+  
   const { data: messages = [] } = useQuery<Message[]>({
     queryKey: ['messages', id],
     queryFn: () => fetchMessages(id!),
-    enabled: !!order
+    enabled: !!id && !!order
   });
+  
   const { data: options = [] } = useQuery<AdditionalOption[]>({
     queryKey: ['options', id],
     queryFn: () => fetchAdditionalOptions(id!),
-    enabled: !!order
+    enabled: !!id && !!order
   });
+  
   const { data: attachments = [] } = useQuery({
     queryKey: ['attachments', id],
     queryFn: () => fetchOrderAttachments(id!),
-    enabled: !!order
+    enabled: !!id && !!order
   });
+  
   const { data: payments = [] } = useQuery<Payment[]>({
     queryKey: ['payments', id],
     queryFn: () => fetchPayments(id!),
-    enabled: !!order
+    enabled: !!id && !!order
   });
+  
   const { data: review, refetch: refetchReview } = useQuery<Review>({
     queryKey: ['review', id],
     queryFn: () => fetchReview(id!),
-    enabled: !!order && order.status === 'completed'
+    enabled: !!id && !!order && order.status === 'completed'
   });
 
   // Dispute queries
@@ -75,7 +83,7 @@ export default function OrderDetail() {
       if (!response.ok) throw new Error('Failed to fetch dispute');
       return response.json();
     },
-    enabled: !!order && order.status === 'disputed'
+    enabled: !!id && !!order && order.status === 'disputed'
   });
 
   const { data: disputeMessages = [] } = useQuery({
@@ -91,6 +99,7 @@ export default function OrderDetail() {
     enabled: !!dispute?.id
   });
 
+  // All mutation hooks
   const updateMutation = useMutation({
     mutationFn: (data: Partial<Order>) => updateOrder(id!, data),
     onSuccess: () => {
@@ -127,6 +136,7 @@ export default function OrderDetail() {
       toast({ title: 'Помилка', description: 'Не вдалося додати файл', variant: 'destructive' });
     }
   });
+  
   const deleteAttachmentMutation = useMutation({
     mutationFn: (attId: string) => deleteOrderAttachment(id!, attId),
     onSuccess: () => {
@@ -156,6 +166,7 @@ export default function OrderDetail() {
       queryClient.invalidateQueries({ queryKey: ['options', id] });
     }
   });
+  
   const updateOptionStatusMutation = useMutation({
     mutationFn: ({ optId, status }: { optId: string; status: 'accepted' | 'rejected' }) => updateAdditionalOptionStatus(id!, optId, status),
     onSuccess: () => {
@@ -163,6 +174,7 @@ export default function OrderDetail() {
       queryClient.invalidateQueries({ queryKey: ['options', id] });
     }
   });
+  
   const authorizeMutation = useMutation({
     mutationFn: () => authorizePaymentApi(id!, payAmount, payProvider),
     onSuccess: () => {
@@ -170,6 +182,7 @@ export default function OrderDetail() {
       queryClient.invalidateQueries({ queryKey: ['payments', id] });
     }
   });
+  
   const captureMutation = useMutation({
     mutationFn: (paymentId: string) => capturePaymentApi(id!, paymentId),
     onSuccess: () => {
@@ -177,6 +190,7 @@ export default function OrderDetail() {
       queryClient.invalidateQueries({ queryKey: ['payments', id] });
     }
   });
+  
   const refundMutation = useMutation({
     mutationFn: (paymentId: string) => refundPaymentApi(id!, paymentId),
     onSuccess: () => {
@@ -184,6 +198,7 @@ export default function OrderDetail() {
       queryClient.invalidateQueries({ queryKey: ['payments', id] });
     }
   });
+  
   const createReviewMutation = useMutation({
     mutationFn: () => createReview(id!, { rating, comment }),
     onSuccess: () => {
@@ -218,20 +233,31 @@ export default function OrderDetail() {
     }
   });
 
+  // useEffect hooks
+  useEffect(() => {
+    if (location.hash === '#chat' && order) {
+      const timer = setTimeout(() => {
+        const chatElement = document.getElementById('order-chat');
+        if (chatElement) {
+          chatElement.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [location.hash, order]);
+
+  // Early returns after all hooks
   if (isLoading) return <Layout><div className="py-12 text-center">Завантаження...</div></Layout>;
   if (error || !order) return <Layout><div className="py-12 text-center text-red-500">Не знайдено замовлення</div></Layout>;
 
+  // Computed values after early returns
   const statusOptions = ['pending', 'in_progress', 'revision', 'completed', 'canceled', 'disputed'];
   const isClient = user?.id === order.client.id;
   const isPerformer = order.performer && user?.id === order.performer.id;
 
+  // Event handlers
   const handleStatusChange = (value: string) => {
     updateMutation.mutate({ status: value });
-  };
-
-  const handleAddAttachment = () => {
-    if (!file) return;
-    attachMutation.mutate();
   };
 
   const handleDelete = () => {
@@ -248,20 +274,6 @@ export default function OrderDetail() {
     createDisputeMutation.mutate(disputeReason);
   };
 
-  // Auto-scroll to chat if hash is present
-  useEffect(() => {
-    if (location.hash === '#chat' && order) {
-      const timer = setTimeout(() => {
-        const chatElement = document.getElementById('order-chat');
-        if (chatElement) {
-          chatElement.scrollIntoView({ behavior: 'smooth' });
-        }
-      }, 500); // Delay to ensure content is rendered
-      
-      return () => clearTimeout(timer);
-    }
-  }, [location.hash, order]);
-
   return (
     <Layout>
       <div className="container mx-auto py-8 px-4 space-y-6">
@@ -270,7 +282,7 @@ export default function OrderDetail() {
 
         <div className="flex items-center space-x-4">
           <label className="font-medium">Статус:</label>
-          <Select onValueChange={handleStatusChange} defaultValue={order.status} disabled={updateMutation.isLoading}>
+          <Select onValueChange={handleStatusChange} defaultValue={order.status} disabled={updateMutation.status === 'pending'}>
             <SelectTrigger className="w-48">
               <SelectValue />
             </SelectTrigger>
@@ -296,12 +308,12 @@ export default function OrderDetail() {
           </ul>
           <div className="flex items-center space-x-2">
             <input type="file" onChange={e => setFile(e.target.files?.[0] || null)} />
-            <Button onClick={() => attachMutation.mutate()} disabled={!file || attachMutation.isLoading}>Завантажити</Button>
+            <Button onClick={() => attachMutation.mutate()} disabled={!file || attachMutation.status === 'pending'}>Завантажити</Button>
           </div>
         </div>
 
         <div className="space-x-2">
-          <Button variant="destructive" onClick={handleDelete} disabled={deleteMutation.isLoading}>Видалити замовлення</Button>
+          <Button variant="destructive" onClick={handleDelete} disabled={deleteMutation.status === 'pending'}>Видалити замовлення</Button>
         </div>
 
         {/* Chat section */}
@@ -350,10 +362,10 @@ export default function OrderDetail() {
                 <div className="flex space-x-2">
                   <Button
                     onClick={handleCreateDispute}
-                    disabled={createDisputeMutation.isPending || !disputeReason.trim()}
+                    disabled={createDisputeMutation.status === 'pending' || !disputeReason.trim()}
                     className="bg-orange-600 hover:bg-orange-700"
                   >
-                    {createDisputeMutation.isPending ? 'Відкриваю...' : 'Відкрити спір'}
+                    {createDisputeMutation.status === 'pending' ? 'Відкриваю...' : 'Відкрити спір'}
                   </Button>
                   <Button
                     variant="outline"
@@ -438,7 +450,7 @@ export default function OrderDetail() {
               <Input placeholder="Заголовок опції" value={optionTitle} onChange={e => setOptionTitle(e.target.value)} className="mb-2" />
               <Input placeholder="Опис" value={optionDesc} onChange={e => setOptionDesc(e.target.value)} className="mb-2" />
               <Input type="number" placeholder="Ціна" value={optionPrice} onChange={e => setOptionPrice(Number(e.target.value))} className="mb-2" />
-              <Button onClick={() => proposeOptionMutation.mutate()} disabled={proposeOptionMutation.isLoading || !optionTitle || !optionPrice}>Запропонувати</Button>
+              <Button onClick={() => proposeOptionMutation.mutate()} disabled={proposeOptionMutation.status === 'pending' || !optionTitle || !optionPrice}>Запропонувати</Button>
             </div>
           )}
         </div>
@@ -455,10 +467,10 @@ export default function OrderDetail() {
                 </div>
                 <div className="space-x-2">
                   {p.status === 'authorized' && (
-                    <Button size="sm" onClick={() => captureMutation.mutate(p.id)} disabled={captureMutation.isLoading}>Capture</Button>
+                    <Button size="sm" onClick={() => captureMutation.mutate(p.id)} disabled={captureMutation.status === 'pending'}>Capture</Button>
                   )}
                   {p.status === 'completed' && (
-                    <Button size="sm" variant="destructive" onClick={() => refundMutation.mutate(p.id)} disabled={refundMutation.isLoading}>Refund</Button>
+                    <Button size="sm" variant="destructive" onClick={() => refundMutation.mutate(p.id)} disabled={refundMutation.status === 'pending'}>Refund</Button>
                   )}
                 </div>
               </li>
@@ -475,7 +487,7 @@ export default function OrderDetail() {
                     <SelectItem value="liqpay">LiqPay</SelectItem>
                   </SelectContent>
                 </Select>
-                <Button onClick={() => authorizeMutation.mutate()} disabled={authorizeMutation.isLoading}>Authorize</Button>
+                <Button onClick={() => authorizeMutation.mutate()} disabled={authorizeMutation.status === 'pending'}>Authorize</Button>
               </div>
             </div>
           )}
@@ -502,7 +514,7 @@ export default function OrderDetail() {
               <label className="font-medium">Оцініть (1-5):</label>
               <Input type="number" min={1} max={5} value={rating} onChange={e => setRating(Number(e.target.value))} />
               <textarea className="w-full border p-2 rounded" rows={3} placeholder="Коментар (опційно)" value={comment} onChange={e => setComment(e.target.value)} />
-              <Button onClick={() => createReviewMutation.mutate()} disabled={createReviewMutation.isLoading}>Надіслати відгук</Button>
+              <Button onClick={() => createReviewMutation.mutate()} disabled={createReviewMutation.status === 'pending'}>Надіслати відгук</Button>
             </div>
           )}
         </div>

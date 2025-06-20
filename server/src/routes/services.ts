@@ -2,6 +2,23 @@ import { Router, Request, Response } from 'express';
 import { query } from '../db';
 import { authenticate } from '../middlewares/auth';
 
+// Extend Request interface locally
+declare module 'express-serve-static-core' {
+  interface Request {
+    user?: {
+      id: string;
+      email: string;
+      name: string;
+      role: 'client' | 'performer' | 'admin';
+      avatar?: string;
+      bio?: string;
+      rating?: number;
+      telegramId?: string;
+      createdAt: Date;
+    };
+  }
+}
+
 const router = Router();
 
 // Функція для генерації slug з назви
@@ -208,7 +225,7 @@ router.post('/', authenticate, async (req: Request, res: Response) => {
           const tagSlug = generateSlug(cleanTagName);
           
           // Спочатку перевіряємо, чи існує тег з такою назвою
-          let existingTag = await query(`SELECT id FROM tags WHERE name = $1`, [cleanTagName]);
+          const existingTag = await query(`SELECT id FROM tags WHERE name = $1`, [cleanTagName]);
           
           if (existingTag.rows.length > 0) {
             // Тег вже існує, використовуємо його
@@ -314,7 +331,7 @@ router.put('/:id', authenticate, async (req: Request, res: Response) => {
           const tagSlug = generateSlug(cleanTagName);
           
           // Спочатку перевіряємо, чи існує тег з такою назвою
-          let existingTag = await query(`SELECT id FROM tags WHERE name = $1`, [cleanTagName]);
+          const existingTag = await query(`SELECT id FROM tags WHERE name = $1`, [cleanTagName]);
           
           if (existingTag.rows.length > 0) {
             // Тег вже існує, використовуємо його

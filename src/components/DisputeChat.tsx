@@ -86,7 +86,7 @@ export default function DisputeChat({
         webSocket.leaveDisputeChat(disputeId);
       };
     }
-  }, [webSocket.socket, webSocket.isConnected, disputeId, handleNewMessage, handleTyping]);
+  }, [webSocket, webSocket.socket, webSocket.isConnected, disputeId, handleNewMessage, handleTyping]);
 
   // Auto-scroll to bottom
   useEffect(() => {

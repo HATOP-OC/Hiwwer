@@ -126,7 +126,7 @@ export default function CreateService() {
     }
   });
 
-  // Перевірка доступу
+  // Перевірка доступу ПІСЛЯ всіх хуків
   if (user?.role !== 'performer') {
     return (
       <Layout>

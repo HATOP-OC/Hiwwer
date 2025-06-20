@@ -128,6 +128,7 @@ export default function CreateOrder() {
     createOrderMutation.mutate(orderData);
   };
 
+  // Early return AFTER all hooks
   if (!user) {
     return (
       <Layout>

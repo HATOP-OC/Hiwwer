@@ -46,12 +46,15 @@ export default function MyOrders() {
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  
+  // Always call useQuery, but disable it when no user
   const { data: orders = [], refetch, isLoading } = useQuery({
     queryKey: ['orders', statusFilter, searchTerm],
     queryFn: () => fetchOrders({ status: statusFilter, search: searchTerm }),
     enabled: !!user
   });
 
+  // Early return AFTER all hooks
   if (!user) {
     return (
       <Layout>
@@ -116,7 +119,7 @@ export default function MyOrders() {
   const OrderCard = ({ order }: { order: Order }) => {
     const isClient = user?.role === 'client';
     const otherParty = isClient ? order.performer : order.client;
-    const isCustomOrder = !order.service_id; // Кастомне замовлення - без прив'язки до конкретної послуги
+    const isCustomOrder = !order.serviceId; // Кастомне замовлення - без прив'язки до конкретної послуги
     const deadline = new Date(order.deadline);
     const daysLeft = Math.ceil((deadline.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
 

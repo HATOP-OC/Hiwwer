@@ -27,6 +27,7 @@ export default function MyServices() {
     enabled: !!user && user.role === 'performer',
   });
 
+  // Перевірка доступу ПІСЛЯ всіх хуків
   if (user?.role !== 'performer') {
     return (
       <Layout>

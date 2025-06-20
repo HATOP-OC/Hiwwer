@@ -1,18 +1,12 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { config } from '../config/config';
+import { User } from '../@types';
 
 type JwtPayload = {
   id: string;
   role: string;
 };
-
-// Module augmentation to add user payload to express Request
-declare module 'express-serve-static-core' {
-  interface Request {
-    user?: JwtPayload;
-  }
-}
 
 // Authenticate JWT and attach user payload
 export const authenticate = (req: Request, res: Response, next: NextFunction) => {
@@ -24,7 +18,14 @@ export const authenticate = (req: Request, res: Response, next: NextFunction) =>
   const token = authHeader.substring(7);
   try {
     const payload = jwt.verify(token, config.jwtSecret) as JwtPayload;
-    req.user = payload;
+    // Create a minimal user object that matches User interface requirements
+    req.user = {
+      id: payload.id,
+      role: payload.role as 'client' | 'performer' | 'admin',
+      email: '', // Will be populated from DB if needed
+      name: '', // Will be populated from DB if needed
+      createdAt: new Date() // Will be populated from DB if needed
+    };
     next();
   } catch (error) {
     const msg = error instanceof Error ? error.message : 'Invalid token';

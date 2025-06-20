@@ -9,7 +9,7 @@ import { Send, Paperclip, MoreVertical } from 'lucide-react';
 import { useWebSocket } from '@/hooks/useWebSocket';
 import { useAuth } from '@/contexts/AuthContext';
 import { OrderChatMessage, OrderChatTyping } from '@/types/websocket';
-import { Message } from '@/types/models';
+import { Message } from '@/lib/api';
 import { fetchMessages, sendMessage } from '@/lib/api';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
@@ -102,7 +102,7 @@ export default function OrderChat({ orderId, participants }: OrderChatProps) {
         webSocket.leaveOrderChat(orderId);
       };
     }
-  }, [webSocket.socket, webSocket.isConnected, orderId, handleNewMessage, handleTyping]);
+  }, [webSocket, webSocket.socket, webSocket.isConnected, orderId, handleNewMessage, handleTyping]);
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -244,12 +244,12 @@ export default function OrderChat({ orderId, participants }: OrderChatProps) {
                               <div key={index} className="flex items-center space-x-2">
                                 <Paperclip className="h-3 w-3" />
                                 <a
-                                  href={attachment}
+                                  href={typeof attachment === 'string' ? attachment : attachment.fileUrl || ''}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="text-xs underline hover:no-underline"
                                 >
-                                  Вкладення {index + 1}
+                                  {typeof attachment === 'string' ? `Вкладення ${index + 1}` : attachment.fileName}
                                 </a>
                               </div>
                             ))}

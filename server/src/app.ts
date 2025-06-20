@@ -8,6 +8,9 @@ import morgan from 'morgan';
 import { config } from './config/config';
 import { scheduleAttachmentCleanup } from './services/cleanupService';
 import { initializeWebSocket } from './services/webSocketService';
+// Import types to ensure they are loaded
+import './@types';
+import './@types'; // Import global type declarations
 
 // Routes
 import authRouter from './routes/auth';

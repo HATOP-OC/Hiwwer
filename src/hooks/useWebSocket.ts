@@ -72,7 +72,7 @@ export function useWebSocket(options: WebSocketHookOptions = {}): WebSocketHookR
 
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
-  const callbacksRef = useRef<Map<string, Set<Function>>>(new Map());
+  const callbacksRef = useRef<Map<string, Set<(...args: any[]) => void>>>(new Map());
 
   const connect = useCallback(() => {
     if (socket?.connected) return;
@@ -223,14 +223,14 @@ export function useWebSocket(options: WebSocketHookOptions = {}): WebSocketHookR
   }, [socket]);
 
   // Event listener management
-  const addCallback = useCallback((event: string, callback: Function) => {
+  const addCallback = useCallback((event: string, callback: (...args: any[]) => void) => {
     if (!callbacksRef.current.has(event)) {
       callbacksRef.current.set(event, new Set());
     }
     callbacksRef.current.get(event)!.add(callback);
   }, []);
 
-  const removeCallback = useCallback((event: string, callback: Function) => {
+  const removeCallback = useCallback((event: string, callback: (...args: any[]) => void) => {
     const callbacks = callbacksRef.current.get(event);
     if (callbacks) {
       callbacks.delete(callback);
