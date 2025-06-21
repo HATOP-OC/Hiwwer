@@ -34,7 +34,7 @@ const httpServer = createServer(app);
 const webSocketService = initializeWebSocket(httpServer);
 
 // Serve uploaded files
-app.use('/uploads', express.static(path.resolve(__dirname, '../../uploads')));
+app.use('/uploads', express.static(path.resolve(__dirname, '../uploads')));
 
 // Middleware
 // CORS для API: дозволяємо Authorization та Content-Type, всі методи
@@ -46,7 +46,39 @@ app.use(cors({
 }));
 // Preflight
 app.options('*', cors());
-app.use(express.json());
+// Add request logging middleware before any routing
+app.use((req: Request, res: Response, next: NextFunction) => {
+  if (req.path.includes('/attachments')) {
+    console.log('=== ATTACHMENT REQUEST INTERCEPTED ===');
+    console.log('Path:', req.path);
+    console.log('Method:', req.method);
+    console.log('Content-Type:', req.headers['content-type']);
+    console.log('Content-Length:', req.headers['content-length']);
+    console.log('Full URL:', req.url);
+    console.log('Original URL:', req.originalUrl);
+    console.log('Params:', req.params);
+    console.log('Body type:', typeof req.body);
+    console.log('Raw body available:', !!(req as any).rawBody);
+  }
+  
+  // Log ALL POST requests to orders
+  if (req.method === 'POST' && req.path.includes('/orders/')) {
+    console.log('=== POST REQUEST TO ORDERS ===');
+    console.log('Method:', req.method);
+    console.log('Path:', req.path);
+    console.log('URL:', req.url);
+    console.log('Original URL:', req.originalUrl);
+    console.log('Content-Type:', req.headers['content-type']);
+    console.log('Content-Length:', req.headers['content-length']);
+    console.log('Authorization:', req.headers['authorization'] ? 'Present' : 'Missing');
+  }
+  
+  next();
+});
+
+app.use(express.json({
+  type: ['application/json', 'text/json']
+}));
 app.use(morgan('dev'));
 
 // Health check
@@ -61,20 +93,21 @@ app.use('/v1/services', servicesRouter);
 // Protected routes
 app.use('/v1/users', usersRouter);
 app.use('/v1/performers', performersRouter);
-// Chat messages under orders
+app.use('/v1/notifications', notificationsRouter);
+
+// Order sub-routes (must come BEFORE main orders route)
 app.use('/v1/orders/:orderId/messages', messagesRouter);
 app.use('/v1/orders/:orderId/options', orderOptionsRouter);
-app.use('/v1/notifications', notificationsRouter);
-app.use('/v1/orders', ordersRouter);
-
-// Admin routes
-app.use('/v1/admin', adminRouter);
-
-// Order attachments, payments and reviews routes
 app.use('/v1/orders/:orderId/attachments', orderAttachmentsRouter);
 app.use('/v1/orders/:orderId/payments', paymentsRouter);
 app.use('/v1/orders/:orderId/review', reviewsRouter);
 app.use('/v1/orders/:orderId/disputes', disputesRouter);
+
+// Main orders route (must come AFTER sub-routes)
+app.use('/v1/orders', ordersRouter);
+
+// Admin routes
+app.use('/v1/admin', adminRouter);
 
 // Error handler
 interface ErrorWithStatus extends Error { status?: number }

@@ -42,25 +42,53 @@ router.get('/', async (req: Request, res: Response) => {
 });
 
 // POST /v1/orders/:orderId/disputes - open a dispute
-router.post('/', async (req: Request, res: Response) => {
+router.post('/', authenticate, async (req: Request, res: Response) => {
   const { orderId } = req.params;
   const userId = req.user!.id;
   const { reason } = req.body;
-  if (!reason) return res.status(400).json({ message: 'Reason is required' });
+  
+  console.log('Dispute creation attempt:', {
+    orderId,
+    userId,
+    reason,
+    body: req.body,
+    hasReason: !!reason
+  });
+  
+  if (!reason || typeof reason !== 'string' || reason.trim().length === 0) {
+    console.log('Invalid reason:', { reason, type: typeof reason, trimmed: reason?.trim?.() });
+    return res.status(400).json({ message: 'Reason is required' });
+  }
   try {
+    console.log('Checking if order exists for orderId:', orderId);
     // ensure order exists and not already disputed
     const ord = await query(`SELECT client_id, performer_id FROM orders WHERE id = $1`, [orderId]);
-    if (ord.rowCount === 0) return res.status(404).json({ message: 'Order not found' });
+    if (ord.rowCount === 0) {
+      console.log('Order not found:', orderId);
+      return res.status(404).json({ message: 'Order not found' });
+    }
+    
+    console.log('Checking if dispute already exists for orderId:', orderId);
     const exists = await query(`SELECT 1 FROM disputes WHERE order_id = $1`, [orderId]);
-    if ((exists.rowCount ?? 0) > 0) return res.status(400).json({ message: 'Dispute already exists' });
+    if ((exists.rowCount ?? 0) > 0) {
+      console.log('Dispute already exists for orderId:', orderId);
+      return res.status(409).json({ message: 'Спір для цього замовлення вже існує' });
+    }
+    
     const [o] = ord.rows;
     const performerId = o.performer_id;
+    
+    console.log('Creating dispute with data:', { orderId, userId, performerId, reason });
     // open dispute
     const result = await query(
       `INSERT INTO disputes(order_id, client_id, performer_id, reason) VALUES($1,$2,$3,$4) RETURNING id, reason, status, created_at AS "createdAt"`,
       [orderId, userId, performerId, reason]
     );
     const dispute = result.rows[0];
+    
+    // Update order status to disputed
+    await query(`UPDATE orders SET status = 'disputed' WHERE id = $1`, [orderId]);
+    
     // notify moderator (assume role=admin)
     const mods = await query(`SELECT id FROM users WHERE role = 'admin'`);
     for (const m of mods.rows) {

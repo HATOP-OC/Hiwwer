@@ -75,7 +75,7 @@ export default function ServiceDetail() {
               <CardContent className="p-0">
                 <div className="aspect-video relative overflow-hidden rounded-t-lg">
                   <img
-                    src={service.image || '/placeholder.svg'}
+                    src={service.images?.[0] || '/placeholder.svg'}
                     alt={service.title}
                     className="object-cover w-full h-full"
                   />
@@ -91,7 +91,7 @@ export default function ServiceDetail() {
                   <div className="flex items-center">
                     <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
                     <span className="ml-1 font-medium">{service.rating?.toFixed(1) || '0.0'}</span>
-                    <span className="ml-1 text-muted-foreground">({service.reviewCount || 0} відгуків)</span>
+                    <span className="ml-1 text-muted-foreground">({service.review_count || 0} відгуків)</span>
                   </div>
                   <Badge>{service.category?.name}</Badge>
                 </div>
@@ -125,7 +125,7 @@ export default function ServiceDetail() {
                 <div className="flex items-start space-x-4">
                   <Avatar className="h-16 w-16">
                     <AvatarImage 
-                      src={service.performer?.avatar || '/placeholder.svg'} 
+                      src={service.performer?.avatar_url || '/placeholder.svg'} 
                       alt={service.performer?.name} 
                     />
                     <AvatarFallback>
@@ -137,18 +137,16 @@ export default function ServiceDetail() {
                     <div className="flex items-center space-x-4 text-sm text-muted-foreground">
                       <div className="flex items-center">
                         <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
-                        {service.performer?.rating?.toFixed(1) || '0.0'}
+                        {service.rating?.toFixed(1) || '0.0'}
                       </div>
                       <div className="flex items-center">
                         <User className="h-4 w-4 mr-1" />
-                        {service.performer?.completedOrders || 0} завершених замовлень
+                        Досвідчений виконавець
                       </div>
                     </div>
-                    {service.performer?.bio && (
-                      <p className="text-sm text-muted-foreground">
-                        {service.performer.bio}
-                      </p>
-                    )}
+                    <p className="text-sm text-muted-foreground">
+                      Професійний виконавець на платформі
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -176,7 +174,7 @@ export default function ServiceDetail() {
                       <Clock className="h-4 w-4 mr-2 text-muted-foreground" />
                       <span>Час виконання:</span>
                     </div>
-                    <span className="font-medium">{service.deliveryTime} днів</span>
+                    <span className="font-medium">{service.delivery_time} днів</span>
                   </div>
                   
                   <div className="flex items-center justify-between text-sm">

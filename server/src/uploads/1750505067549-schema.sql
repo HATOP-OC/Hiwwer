@@ -131,12 +131,10 @@ CREATE TABLE messages (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
     sender_id UUID NOT NULL REFERENCES users(id),
-    receiver_id UUID NOT NULL REFERENCES users(id),
     content TEXT NOT NULL,
     type VARCHAR(20) NOT NULL DEFAULT 'text' CHECK (type IN ('text', 'file', 'system')),
     file_url VARCHAR(255), -- для файлових повідомлень
     file_name VARCHAR(255), -- ім'я файлу
-    read BOOLEAN NOT NULL DEFAULT false,
     read_at TIMESTAMP WITH TIME ZONE, -- коли прочитано
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -168,7 +166,7 @@ CREATE TABLE reviews (
 CREATE TABLE notifications (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    type VARCHAR(50) NOT NULL CHECK (type IN ('new_order', 'status_change', 'message', 'review', 'deadline', 'dispute', 'payment')),
+    type VARCHAR(50) NOT NULL CHECK (type IN ('new_order', 'status_change', 'message', 'review', 'deadline')),
     content TEXT NOT NULL,
     read BOOLEAN NOT NULL DEFAULT false,
     related_id UUID, -- can be order_id, message_id, etc.
@@ -212,16 +210,6 @@ CREATE TABLE dispute_messages (
 );
 CREATE INDEX idx_dispute_messages_dispute_id ON dispute_messages(dispute_id);
 
--- WebSocket Connections Table (for monitoring and analytics)
-CREATE TABLE websocket_connections (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    socket_id VARCHAR(255) NOT NULL,
-    connected_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    last_seen TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    is_active BOOLEAN DEFAULT true
-);
-
 -- Create indexes for common queries
 CREATE INDEX idx_services_performer_id ON services (performer_id);
 CREATE INDEX idx_services_category_id ON services (category_id);
@@ -231,23 +219,22 @@ CREATE INDEX idx_orders_category_id ON orders (category_id);
 CREATE INDEX idx_messages_order_id ON messages (order_id);
 CREATE INDEX idx_notifications_user_id ON notifications (user_id);
 
--- WebSocket-specific indexes for performance optimization
-CREATE INDEX idx_websocket_connections_user_id ON websocket_connections(user_id);
-CREATE INDEX idx_websocket_connections_socket_id ON websocket_connections(socket_id);
-CREATE INDEX idx_messages_order_sender ON messages(order_id, sender_id);
-CREATE INDEX idx_messages_read_at ON messages(read_at) WHERE read_at IS NULL;
-CREATE INDEX idx_dispute_messages_dispute_sender ON dispute_messages(dispute_id, sender_id);
-
 -- Indexes
 CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_users_role ON users(role);
 CREATE INDEX idx_users_telegram_id ON users(telegram_id);
 
+CREATE INDEX idx_services_category_id ON services(category_id);
+CREATE INDEX idx_services_performer_id ON services(performer_id);
 CREATE INDEX idx_services_price ON services(price);
 
+CREATE INDEX idx_orders_client_id ON orders(client_id);
+CREATE INDEX idx_orders_performer_id ON orders(performer_id);
 CREATE INDEX idx_orders_service_id ON orders(service_id);
 CREATE INDEX idx_orders_status ON orders(status);
+CREATE INDEX idx_orders_category_id ON orders(category_id);
 
+CREATE INDEX idx_messages_order_id ON messages(order_id);
 CREATE INDEX idx_messages_sender_id ON messages(sender_id);
 CREATE INDEX idx_messages_created_at ON messages(created_at);
 

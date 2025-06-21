@@ -10,7 +10,7 @@ import { useWebSocket } from '@/hooks/useWebSocket';
 import { useAuth } from '@/contexts/AuthContext';
 import { OrderChatMessage, OrderChatTyping } from '@/types/websocket';
 import { Message } from '@/lib/api';
-import { fetchMessages, sendMessage } from '@/lib/api';
+import { fetchMessages, sendMessage, uploadOrderAttachment } from '@/lib/api';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { uk } from 'date-fns/locale';
@@ -29,8 +29,11 @@ export default function OrderChat({ orderId, participants }: OrderChatProps) {
   const [messageText, setMessageText] = useState('');
   const [typingUsers, setTypingUsers] = useState<Set<string>>(new Set());
   const [isTyping, setIsTyping] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout>();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const webSocket = useWebSocket();
 
@@ -106,7 +109,20 @@ export default function OrderChat({ orderId, participants }: OrderChatProps) {
 
   // Auto-scroll to bottom
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const scrollToBottom = () => {
+      if (messagesEndRef.current) {
+        messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+      }
+      // Alternative: scroll the ScrollArea viewport
+      const viewport = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]') as HTMLElement;
+      if (viewport) {
+        viewport.scrollTop = viewport.scrollHeight;
+      }
+    };
+    
+    // Small delay to ensure DOM is updated
+    const timer = setTimeout(scrollToBottom, 100);
+    return () => clearTimeout(timer);
   }, [messages]);
 
   // Handle typing indicator
@@ -147,6 +163,42 @@ export default function OrderChat({ orderId, participants }: OrderChatProps) {
     sendMessageMutation.mutate({
       content: messageText.trim(),
     });
+  };
+
+  // File upload functionality
+  const handleFileSelect = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      handleFileUpload(file);
+    }
+  };
+
+  const handleFileUpload = async (file: File) => {
+    try {
+      const attachment = await uploadOrderAttachment(orderId, file);
+      
+      // Send message with attachment
+      sendMessageMutation.mutate({
+        content: messageText.trim() || `📎 ${file.name}`,
+        attachments: [{
+          fileUrl: attachment.fileUrl,
+          fileName: attachment.fileName
+        }]
+      });
+      
+      setSelectedFile(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    } catch (error) {
+      console.error('File upload failed:', error);
+      // TODO: Show error toast
+    }
   };
 
   const getMessageSender = (senderId: string) => {
@@ -198,9 +250,9 @@ export default function OrderChat({ orderId, participants }: OrderChatProps) {
         </div>
       </CardHeader>
       
-      <CardContent className="flex-1 flex flex-col p-0">
+      <CardContent className="flex-1 flex flex-col p-0 min-h-0">
         {/* Messages area */}
-        <ScrollArea className="flex-1 px-6">
+        <ScrollArea ref={scrollAreaRef} className="flex-1 px-6 min-h-0">
           <div className="space-y-4 py-4">
             {messages.map((message) => {
               const sender = getMessageSender(message.senderId);
@@ -239,20 +291,41 @@ export default function OrderChat({ orderId, participants }: OrderChatProps) {
                         {message.content}
                         
                         {message.attachments && message.attachments.length > 0 && (
-                          <div className="mt-2 space-y-1">
-                            {message.attachments.map((attachment, index) => (
-                              <div key={index} className="flex items-center space-x-2">
-                                <Paperclip className="h-3 w-3" />
-                                <a
-                                  href={typeof attachment === 'string' ? attachment : attachment.fileUrl || ''}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-xs underline hover:no-underline"
-                                >
-                                  {typeof attachment === 'string' ? `Вкладення ${index + 1}` : attachment.fileName}
-                                </a>
-                              </div>
-                            ))}
+                          <div className="mt-2 space-y-2">
+                            {message.attachments.map((attachment, index) => {
+                              const fileUrl = typeof attachment === 'string' ? attachment : attachment.fileUrl || '';
+                              const fileName = typeof attachment === 'string' ? `Вкладення ${index + 1}` : attachment.fileName;
+                              const isImage = fileName && /\.(jpg|jpeg|png|gif|webp)$/i.test(fileName);
+                              
+                              return (
+                                <div key={index}>
+                                  {isImage ? (
+                                    <div className="max-w-xs">
+                                      <img
+                                        src={fileUrl}
+                                        alt={fileName}
+                                        className="rounded-lg max-w-full h-auto cursor-pointer hover:opacity-80 transition-opacity"
+                                        onClick={() => window.open(fileUrl, '_blank')}
+                                        style={{ maxHeight: '200px' }}
+                                      />
+                                      <p className="text-xs text-gray-500 mt-1">{fileName}</p>
+                                    </div>
+                                  ) : (
+                                    <div className="flex items-center space-x-2 p-2 bg-gray-100 rounded-lg max-w-xs">
+                                      <Paperclip className="h-4 w-4" />
+                                      <a
+                                        href={fileUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-sm underline hover:no-underline flex-1 truncate"
+                                      >
+                                        {fileName}
+                                      </a>
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
                           </div>
                         )}
                       </div>
@@ -289,7 +362,7 @@ export default function OrderChat({ orderId, participants }: OrderChatProps) {
         {/* Message input */}
         <div className="border-t p-4">
           <form onSubmit={handleSendMessage} className="flex items-center space-x-2">
-            <Button type="button" variant="ghost" size="sm">
+            <Button type="button" variant="ghost" size="sm" onClick={handleFileSelect}>
               <Paperclip className="h-4 w-4" />
             </Button>
             
@@ -308,6 +381,15 @@ export default function OrderChat({ orderId, participants }: OrderChatProps) {
             >
               <Send className="h-4 w-4" />
             </Button>
+            
+            {/* Hidden file input */}
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              className="hidden"
+              accept="image/*,video/*,application/pdf"
+            />
           </form>
         </div>
       </CardContent>

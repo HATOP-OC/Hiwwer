@@ -16,12 +16,15 @@ async function sendTelegram(userId: string, content: string) {
  * Create a notification record and dispatch via channels
  */
 export async function createNotification(userId: string, type: string, content: string, relatedId?: string) {
+  console.log(`Creating notification: userId=${userId}, type=${type}, content=${content}, relatedId=${relatedId}`);
+  
   const result = await query(
     `INSERT INTO notifications(user_id, type, content, related_id) VALUES($1, $2, $3, $4) RETURNING id, created_at`,
     [userId, type, content, relatedId]
   );
   
   const notification = result.rows[0];
+  console.log(`Notification created successfully:`, notification);
   
   // Send via WebSocket
   const webSocketService = getWebSocketService();

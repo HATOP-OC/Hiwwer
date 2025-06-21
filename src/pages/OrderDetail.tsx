@@ -1,5 +1,5 @@
 import Layout from '@/components/Layout/Layout';
-import { fetchOrderById, updateOrder, deleteOrder, fetchMessages, sendMessage, fetchAdditionalOptions, proposeAdditionalOption, updateAdditionalOptionStatus, fetchOrderAttachments, uploadOrderAttachment, deleteOrderAttachment, fetchReview, createReview } from '@/lib/api';
+import { fetchOrderById, updateOrder, deleteOrder, fetchMessages, sendMessage, fetchAdditionalOptions, proposeAdditionalOption, updateAdditionalOptionStatus, fetchOrderAttachments, uploadOrderAttachment, deleteOrderAttachment, fetchReview, createReview, fetchDispute } from '@/lib/api';
 import { fetchPayments, authorizePaymentApi, capturePaymentApi, refundPaymentApi, Payment } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -75,28 +75,10 @@ export default function OrderDetail() {
   // Dispute queries
   const { data: dispute, refetch: refetchDispute } = useQuery({
     queryKey: ['dispute', id],
-    queryFn: async () => {
-      const response = await fetch(`/v1/orders/${id}/disputes`, {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      });
-      if (response.status === 404) return null;
-      if (!response.ok) throw new Error('Failed to fetch dispute');
-      return response.json();
-    },
-    enabled: !!id && !!order && order.status === 'disputed'
-  });
-
-  const { data: disputeMessages = [] } = useQuery({
-    queryKey: ['disputeMessages', dispute?.id],
-    queryFn: async () => {
-      if (!dispute?.id) return [];
-      const response = await fetch(`/v1/orders/${id}/disputes/${dispute.id}/messages`, {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      });
-      if (!response.ok) throw new Error('Failed to fetch dispute messages');
-      return response.json();
-    },
-    enabled: !!dispute?.id
+    queryFn: () => fetchDispute(id!),
+    enabled: !!id && !!order,
+    retry: false, // Don't retry if dispute doesn't exist
+    refetchOnWindowFocus: false
   });
 
   // All mutation hooks
@@ -218,7 +200,13 @@ export default function OrderDetail() {
         },
         body: JSON.stringify({ reason })
       });
-      if (!response.ok) throw new Error('Failed to create dispute');
+      if (!response.ok) {
+        const errorData = await response.json();
+        if (response.status === 409) {
+          throw new Error('Спір для цього замовлення вже існує');
+        }
+        throw new Error(errorData.message || 'Failed to create dispute');
+      }
       return response.json();
     },
     onSuccess: () => {
@@ -227,9 +215,10 @@ export default function OrderDetail() {
       setShowDisputeForm(false);
       queryClient.invalidateQueries({ queryKey: ['order', id] });
       queryClient.invalidateQueries({ queryKey: ['dispute', id] });
+      refetchDispute(); // Refresh dispute data
     },
-    onError: () => {
-      toast({ title: 'Помилка', description: 'Не вдалося відкрити спір', variant: 'destructive' });
+    onError: (error: any) => {
+      toast({ title: 'Помилка', description: error.message || 'Не вдалося відкрити спір', variant: 'destructive' });
     }
   });
 
@@ -383,7 +372,7 @@ export default function OrderDetail() {
         )}
 
         {/* Active Dispute Chat */}
-        {order.status === 'disputed' && dispute && (
+        {dispute && (
           <div className="space-y-4">
             <div className="bg-red-50 border border-red-200 rounded-lg p-4">
               <h3 className="text-lg font-semibold text-red-800 mb-2">Активний спір</h3>
@@ -415,7 +404,6 @@ export default function OrderDetail() {
                   avatar: undefined
                 } : undefined
               }}
-              initialMessages={disputeMessages}
             />
           </div>
         )}

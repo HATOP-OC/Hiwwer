@@ -118,7 +118,7 @@ export default function MyServices() {
                     <div className="flex items-center space-x-1">
                       <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                       <span className="text-sm">
-                        {service.rating?.toFixed(1) || '0.0'}
+                        {service.rating ? service.rating.toFixed(1) : '0.0'}
                       </span>
                     </div>
                   </div>

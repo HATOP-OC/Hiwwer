@@ -541,15 +541,48 @@ export async function fetchOrderAttachments(orderId: string): Promise<Array<{ id
 
 /** Upload a file to order attachments */
 export async function uploadOrderAttachment(orderId: string, file: File): Promise<{ id: string; fileUrl: string; fileName: string }> {
+  console.log('=== FRONTEND FILE UPLOAD START ===');
+  console.log('Order ID:', orderId);
+  console.log('File details:', {
+    name: file.name,
+    size: file.size,
+    type: file.type,
+    lastModified: file.lastModified
+  });
+  
   const form = new FormData();
   form.append('file', file);
-  const res = await fetch(`${API_BASE}/orders/${orderId}/attachments`, {
+  
+  console.log('FormData created, entries:');
+  for (const [key, value] of form.entries()) {
+    console.log(`  ${key}:`, value instanceof File ? `File(${value.name}, ${value.size} bytes)` : value);
+  }
+  
+  const url = `${API_BASE}/orders/${orderId}/attachments`;
+  console.log('Making request to:', url);
+  console.log('Authorization token:', localStorage.getItem('token') ? 'Present' : 'Missing');
+  
+  const res = await fetch(url, {
     method: 'POST',
     headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
     body: form
   });
-  if (!res.ok) throw new Error(`Failed to upload attachment: ${res.status}`);
-  return res.json();
+  
+  console.log('Response received:', {
+    status: res.status,
+    statusText: res.statusText,
+    headers: Object.fromEntries(res.headers.entries())
+  });
+  
+  if (!res.ok) {
+    const errorText = await res.text();
+    console.log('Error response body:', errorText);
+    throw new Error(`Failed to upload attachment: ${res.status} - ${errorText}`);
+  }
+  
+  const result = await res.json();
+  console.log('Upload successful:', result);
+  return result;
 }
 
 /** Delete an attachment */
