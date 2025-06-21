@@ -432,6 +432,34 @@ export class WebSocketService {
     console.log(`Broadcasted dispute message to room ${roomName}`);
   }
 
+  public broadcastMessageEdit(messageData: {
+    orderId: string;
+    messageId: string;
+    senderId: string;
+    receiverId: string;
+    content: string;
+    attachments: any[];
+    updatedAt: string;
+    edited: boolean;
+  }) {
+    const roomName = ROOM_TYPES.ORDER_CHAT(messageData.orderId);
+    
+    this.io.to(roomName).emit('message_edit', messageData);
+    console.log(`Broadcasted message edit to room ${roomName}`);
+  }
+
+  public broadcastMessageDelete(messageData: {
+    orderId: string;
+    messageId: string;
+    senderId: string;
+    receiverId: string;
+  }) {
+    const roomName = ROOM_TYPES.ORDER_CHAT(messageData.orderId);
+    
+    this.io.to(roomName).emit('message_delete', messageData);
+    console.log(`Broadcasted message delete to room ${roomName}`);
+  }
+
   public broadcastOrderStatusUpdate(orderId: string, status: string, updatedBy: string) {
     const roomName = ROOM_TYPES.ORDER_CHAT(orderId);
     

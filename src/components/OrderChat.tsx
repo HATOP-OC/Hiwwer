@@ -5,12 +5,29 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Send, Paperclip, MoreVertical } from 'lucide-react';
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { Send, Paperclip, MoreVertical, Edit2, Trash2, Check, X } from 'lucide-react';
 import { useWebSocket } from '@/hooks/useWebSocket';
 import { useAuth } from '@/contexts/AuthContext';
 import { OrderChatMessage, OrderChatTyping } from '@/types/websocket';
 import { Message } from '@/lib/api';
-import { fetchMessages, sendMessage, uploadOrderAttachment } from '@/lib/api';
+import { fetchMessages, sendMessage, uploadOrderAttachment, editMessage, deleteMessage } from '@/lib/api';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { uk } from 'date-fns/locale';
@@ -30,6 +47,8 @@ export default function OrderChat({ orderId, participants }: OrderChatProps) {
   const [typingUsers, setTypingUsers] = useState<Set<string>>(new Set());
   const [isTyping, setIsTyping] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+  const [editingText, setEditingText] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout>();
@@ -50,6 +69,25 @@ export default function OrderChat({ orderId, participants }: OrderChatProps) {
       sendMessage(orderId, data),
     onSuccess: () => {
       setMessageText('');
+      queryClient.invalidateQueries({ queryKey: ['messages', orderId] });
+    },
+  });
+
+  // Edit message mutation
+  const editMessageMutation = useMutation({
+    mutationFn: ({ messageId, content }: { messageId: string; content: string }) =>
+      editMessage(orderId, messageId, content),
+    onSuccess: () => {
+      setEditingMessageId(null);
+      setEditingText('');
+      queryClient.invalidateQueries({ queryKey: ['messages', orderId] });
+    },
+  });
+
+  // Delete message mutation
+  const deleteMessageMutation = useMutation({
+    mutationFn: (messageId: string) => deleteMessage(orderId, messageId),
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['messages', orderId] });
     },
   });
@@ -92,20 +130,48 @@ export default function OrderChat({ orderId, participants }: OrderChatProps) {
     }
   }, [orderId, user?.id]);
 
+  const handleMessageEdit = useCallback((data: any) => {
+    if (data.orderId === orderId) {
+      queryClient.setQueryData(['messages', orderId], (oldMessages: Message[] = []) => 
+        oldMessages.map(msg => 
+          msg.id === data.messageId 
+            ? { ...msg, content: data.content, edited: data.edited, updatedAt: data.updatedAt }
+            : msg
+        )
+      );
+    }
+  }, [orderId, queryClient]);
+
+  const handleMessageDelete = useCallback((data: any) => {
+    if (data.orderId === orderId) {
+      queryClient.setQueryData(['messages', orderId], (oldMessages: Message[] = []) =>
+        oldMessages.map(msg =>
+          msg.id === data.messageId
+            ? { ...msg, content: '[Повідомлення видалено]', deleted: true }
+            : msg
+        )
+      );
+    }
+  }, [orderId, queryClient]);
+
   // Set up WebSocket listeners
   useEffect(() => {
     if (webSocket.socket && webSocket.isConnected) {
       webSocket.joinOrderChat(orderId);
       webSocket.onOrderMessage(handleNewMessage);
       webSocket.onOrderTyping(handleTyping);
+      webSocket.onMessageEdit(handleMessageEdit);
+      webSocket.onMessageDelete(handleMessageDelete);
 
       return () => {
         webSocket.offOrderMessage(handleNewMessage);
         webSocket.offOrderTyping(handleTyping);
+        webSocket.offMessageEdit(handleMessageEdit);
+        webSocket.offMessageDelete(handleMessageDelete);
         webSocket.leaveOrderChat(orderId);
       };
     }
-  }, [webSocket, webSocket.socket, webSocket.isConnected, orderId, handleNewMessage, handleTyping]);
+  }, [webSocket, webSocket.socket, webSocket.isConnected, orderId, handleNewMessage, handleTyping, handleMessageEdit, handleMessageDelete]);
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -216,6 +282,29 @@ export default function OrderChat({ orderId, participants }: OrderChatProps) {
     return names;
   };
 
+  const handleEditMessage = (messageId: string, currentContent: string) => {
+    setEditingMessageId(messageId);
+    setEditingText(currentContent);
+  };
+
+  const handleSaveEdit = () => {
+    if (editingMessageId && editingText.trim()) {
+      editMessageMutation.mutate({
+        messageId: editingMessageId,
+        content: editingText.trim()
+      });
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingMessageId(null);
+    setEditingText('');
+  };
+
+  const handleDeleteMessage = (messageId: string) => {
+    deleteMessageMutation.mutate(messageId);
+  };
+
   if (isLoading) {
     return (
       <Card>
@@ -257,6 +346,7 @@ export default function OrderChat({ orderId, participants }: OrderChatProps) {
             {messages.map((message) => {
               const sender = getMessageSender(message.senderId);
               const isOwn = message.senderId === user?.id;
+              const isEditing = editingMessageId === message.id;
               
               return (
                 <div
@@ -271,64 +361,150 @@ export default function OrderChat({ orderId, participants }: OrderChatProps) {
                       </AvatarFallback>
                     </Avatar>
                     
-                    <div className={`space-y-1 ${isOwn ? 'text-right' : ''}`}>
-                      <div className="flex items-center space-x-2">
-                        <span className="text-sm font-medium text-muted-foreground">
-                          {sender?.name}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          {format(new Date(message.createdAt), 'HH:mm', { locale: uk })}
-                        </span>
-                      </div>
-                      
-                      <div
-                        className={`rounded-lg px-3 py-2 text-sm ${
-                          isOwn
-                            ? 'bg-primary text-primary-foreground'
-                            : 'bg-muted'
-                        }`}
-                      >
-                        {message.content}
+                    <div className={`space-y-1 ${isOwn ? 'text-right' : ''} flex-1`}>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm font-medium text-muted-foreground">
+                            {sender?.name}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {format(new Date(message.createdAt), 'HH:mm', { locale: uk })}
+                            {message.edited && (
+                              <span className="ml-1 text-xs text-muted-foreground italic">
+                                (відредаговано)
+                              </span>
+                            )}
+                          </span>
+                        </div>
                         
-                        {message.attachments && message.attachments.length > 0 && (
-                          <div className="mt-2 space-y-2">
-                            {message.attachments.map((attachment, index) => {
-                              const fileUrl = typeof attachment === 'string' ? attachment : attachment.fileUrl || '';
-                              const fileName = typeof attachment === 'string' ? `Вкладення ${index + 1}` : attachment.fileName;
-                              const isImage = fileName && /\.(jpg|jpeg|png|gif|webp)$/i.test(fileName);
-                              
-                              return (
-                                <div key={index}>
-                                  {isImage ? (
-                                    <div className="max-w-xs">
-                                      <img
-                                        src={fileUrl}
-                                        alt={fileName}
-                                        className="rounded-lg max-w-full h-auto cursor-pointer hover:opacity-80 transition-opacity"
-                                        onClick={() => window.open(fileUrl, '_blank')}
-                                        style={{ maxHeight: '200px' }}
-                                      />
-                                      <p className="text-xs text-gray-500 mt-1">{fileName}</p>
-                                    </div>
-                                  ) : (
-                                    <div className="flex items-center space-x-2 p-2 bg-gray-100 rounded-lg max-w-xs">
-                                      <Paperclip className="h-4 w-4" />
-                                      <a
-                                        href={fileUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-sm underline hover:no-underline flex-1 truncate"
-                                      >
-                                        {fileName}
-                                      </a>
-                                    </div>
-                                  )}
-                                </div>
-                              );
-                            })}
-                          </div>
+                        {isOwn && !message.deleted && !isEditing && (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm" className="h-6 w-6 p-0 opacity-50 hover:opacity-100">
+                                <MoreVertical className="h-3 w-3" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => handleEditMessage(message.id, message.content)}>
+                                <Edit2 className="mr-2 h-4 w-4" />
+                                Редагувати
+                              </DropdownMenuItem>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Видалити
+                                  </DropdownMenuItem>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Видалити повідомлення?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Це дію неможливо скасувати. Повідомлення буде видалено назавжди.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Скасувати</AlertDialogCancel>
+                                    <AlertDialogAction 
+                                      onClick={() => handleDeleteMessage(message.id)}
+                                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                    >
+                                      Видалити
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         )}
                       </div>
+                      
+                      {isEditing ? (
+                        <div className="space-y-2">
+                          <Input
+                            value={editingText}
+                            onChange={(e) => setEditingText(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' && !e.shiftKey) {
+                                e.preventDefault();
+                                handleSaveEdit();
+                              } else if (e.key === 'Escape') {
+                                handleCancelEdit();
+                              }
+                            }}
+                            placeholder="Відредагуйте повідомлення..."
+                            className="w-full"
+                            autoFocus
+                          />
+                          <div className="flex space-x-2">
+                            <Button 
+                              size="sm" 
+                              onClick={handleSaveEdit}
+                              disabled={!editingText.trim() || editMessageMutation.isPending}
+                            >
+                              <Check className="h-3 w-3 mr-1" />
+                              Зберегти
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              onClick={handleCancelEdit}
+                            >
+                              <X className="h-3 w-3 mr-1" />
+                              Скасувати
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div
+                          className={`rounded-lg px-3 py-2 text-sm ${
+                            isOwn
+                              ? 'bg-primary text-primary-foreground'
+                              : 'bg-muted'
+                          } ${message.deleted ? 'opacity-60 italic' : ''}`}
+                        >
+                          {message.content}
+                          
+                          {message.attachments && message.attachments.length > 0 && !message.deleted && (
+                            <div className="mt-2 space-y-2">
+                              {message.attachments.map((attachment, index) => {
+                                const fileUrl = typeof attachment === 'string' ? attachment : attachment.fileUrl || '';
+                                const fileName = typeof attachment === 'string' ? `Вкладення ${index + 1}` : attachment.fileName;
+                                const isImage = fileName && /\.(jpg|jpeg|png|gif|webp)$/i.test(fileName);
+                                
+                                return (
+                                  <div key={index}>
+                                    {isImage ? (
+                                      <div className="max-w-xs">
+                                        <img
+                                          src={fileUrl}
+                                          alt={fileName}
+                                          className="rounded-lg max-w-full h-auto cursor-pointer hover:opacity-80 transition-opacity"
+                                          onClick={() => window.open(fileUrl, '_blank')}
+                                          style={{ maxHeight: '200px' }}
+                                        />
+                                        <p className="text-xs text-gray-500 mt-1">{fileName}</p>
+                                      </div>
+                                    ) : (
+                                      <div className="flex items-center space-x-2 p-2 bg-gray-100 rounded-lg max-w-xs">
+                                        <Paperclip className="h-4 w-4" />
+                                        <a
+                                          href={fileUrl}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="text-sm underline hover:no-underline flex-1 truncate"
+                                        >
+                                          {fileName}
+                                        </a>
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

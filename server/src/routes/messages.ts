@@ -14,7 +14,7 @@ router.get('/', async (req: Request, res: Response) => {
   try {
     // Fetch messages
     const result = await query(
-      `SELECT m.id, m.sender_id AS "senderId", m.receiver_id AS "receiverId", m.content, m.read, m.created_at AS "createdAt",
+      `SELECT m.id, m.sender_id AS "senderId", m.receiver_id AS "receiverId", m.content, m.read, m.created_at AS "createdAt", m.updated_at AS "updatedAt", m.edited, m.deleted,
               (SELECT COALESCE(json_agg(json_build_object('id', id, 'fileUrl', file_url, 'fileName', file_name)), '[]')
                FROM message_attachments ma WHERE ma.message_id = m.id) AS attachments
        FROM messages m
@@ -51,7 +51,7 @@ router.post('/', async (req: Request, res: Response) => {
     const receiverId = userId === client_id ? performer_id : client_id;
     // Insert message
     const msgRes = await query(
-      `INSERT INTO messages(order_id, sender_id, receiver_id, content) VALUES($1,$2,$3,$4) RETURNING id, content, read, created_at AS "createdAt", sender_id AS "senderId", receiver_id AS "receiverId"`,
+      `INSERT INTO messages(order_id, sender_id, receiver_id, content) VALUES($1,$2,$3,$4) RETURNING id, content, read, created_at AS "createdAt", updated_at AS "updatedAt", sender_id AS "senderId", receiver_id AS "receiverId", edited, deleted`,
       [orderId, userId, receiverId, content]
     );
     const message = msgRes.rows[0];
@@ -96,6 +96,122 @@ router.post('/', async (req: Request, res: Response) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Failed to send message' });
+  }
+});
+
+// PUT /v1/orders/:orderId/messages/:messageId - edit message
+router.put('/:messageId', async (req: Request, res: Response) => {
+  const orderId = req.params.orderId;
+  const messageId = req.params.messageId;
+  const userId = req.user!.id;
+  const { content } = req.body;
+
+  if (!content || !content.trim()) {
+    return res.status(400).json({ message: 'Content is required' });
+  }
+
+  try {
+    // Check if message exists and user is the sender
+    const msgCheck = await query(
+      `SELECT sender_id FROM messages WHERE id = $1 AND order_id = $2`,
+      [messageId, orderId]
+    );
+
+    if (msgCheck.rowCount === 0) {
+      return res.status(404).json({ message: 'Message not found' });
+    }
+
+    if (msgCheck.rows[0].sender_id !== userId) {
+      return res.status(403).json({ message: 'You can only edit your own messages' });
+    }
+
+    // Update message
+    const result = await query(
+      `UPDATE messages 
+       SET content = $1, updated_at = NOW(), edited = true
+       WHERE id = $2 AND order_id = $3
+       RETURNING id, sender_id AS "senderId", receiver_id AS "receiverId", content, read, created_at AS "createdAt", updated_at AS "updatedAt", edited`,
+      [content.trim(), messageId, orderId]
+    );
+
+    const updatedMessage = result.rows[0];
+
+    // Fetch attachments
+    const attRes = await query(
+      `SELECT id, file_url AS "fileUrl", file_name AS "fileName" FROM message_attachments WHERE message_id = $1`,
+      [messageId]
+    );
+    updatedMessage.attachments = attRes.rows;
+
+    // Broadcast updated message via WebSocket
+    const webSocketService = getWebSocketService();
+    if (webSocketService) {
+      webSocketService.broadcastMessageEdit({
+        orderId,
+        messageId,
+        senderId: userId,
+        receiverId: updatedMessage.receiverId,
+        content: content.trim(),
+        attachments: updatedMessage.attachments || [],
+        updatedAt: updatedMessage.updatedAt,
+        edited: true
+      });
+    }
+
+    res.json(updatedMessage);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Failed to edit message' });
+  }
+});
+
+// DELETE /v1/orders/:orderId/messages/:messageId - delete message
+router.delete('/:messageId', async (req: Request, res: Response) => {
+  const orderId = req.params.orderId;
+  const messageId = req.params.messageId;
+  const userId = req.user!.id;
+
+  try {
+    // Check if message exists and user is the sender
+    const msgCheck = await query(
+      `SELECT sender_id, receiver_id FROM messages WHERE id = $1 AND order_id = $2`,
+      [messageId, orderId]
+    );
+
+    if (msgCheck.rowCount === 0) {
+      return res.status(404).json({ message: 'Message not found' });
+    }
+
+    if (msgCheck.rows[0].sender_id !== userId) {
+      return res.status(403).json({ message: 'You can only delete your own messages' });
+    }
+
+    // Delete message attachments first
+    await query(`DELETE FROM message_attachments WHERE message_id = $1`, [messageId]);
+
+    // Soft delete message (mark as deleted)
+    await query(
+      `UPDATE messages 
+       SET content = '[Повідомлення видалено]', deleted = true, updated_at = NOW()
+       WHERE id = $1 AND order_id = $2`,
+      [messageId, orderId]
+    );
+
+    // Broadcast deleted message via WebSocket
+    const webSocketService = getWebSocketService();
+    if (webSocketService) {
+      webSocketService.broadcastMessageDelete({
+        orderId,
+        messageId,
+        senderId: userId,
+        receiverId: msgCheck.rows[0].receiver_id
+      });
+    }
+
+    res.json({ message: 'Message deleted successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Failed to delete message' });
   }
 });
 

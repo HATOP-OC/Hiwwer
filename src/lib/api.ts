@@ -636,6 +636,9 @@ export interface Message {
   content: string;
   read: boolean;
   createdAt: string;
+  updatedAt?: string;
+  edited?: boolean;
+  deleted?: boolean;
   attachments?: ChatAttachment[];
 }
 
@@ -663,6 +666,31 @@ export async function sendMessage(orderId: string, data: {
   });
   if (!res.ok) throw new Error(`Failed to send message: ${res.status}`);
   return res.json();
+}
+
+/** Edit an existing message */
+export async function editMessage(orderId: string, messageId: string, content: string): Promise<Message> {
+  const res = await fetch(`${API_BASE}/orders/${orderId}/messages/${messageId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${localStorage.getItem('token')}`
+    },
+    body: JSON.stringify({ content })
+  });
+  if (!res.ok) throw new Error(`Failed to edit message: ${res.status}`);
+  return res.json();
+}
+
+/** Delete a message */
+export async function deleteMessage(orderId: string, messageId: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/orders/${orderId}/messages/${messageId}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${localStorage.getItem('token')}`
+    }
+  });
+  if (!res.ok) throw new Error(`Failed to delete message: ${res.status}`);
 }
 
 // Additional order options

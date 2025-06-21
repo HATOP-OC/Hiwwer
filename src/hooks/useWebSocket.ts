@@ -46,6 +46,8 @@ export interface WebSocketHookReturn {
   onDisputeStatusUpdate: (callback: (update: DisputeStatusUpdate) => void) => void;
   onUserPresence: (callback: (presence: UserPresence) => void) => void;
   onNotification: (callback: (notification: NotificationEvent) => void) => void;
+  onMessageEdit: (callback: (data: any) => void) => void;
+  onMessageDelete: (callback: (data: any) => void) => void;
   
   // Remove event listeners
   offOrderMessage: (callback: (message: OrderChatMessage) => void) => void;
@@ -56,6 +58,8 @@ export interface WebSocketHookReturn {
   offDisputeStatusUpdate: (callback: (update: DisputeStatusUpdate) => void) => void;
   offUserPresence: (callback: (presence: UserPresence) => void) => void;
   offNotification: (callback: (notification: NotificationEvent) => void) => void;
+  offMessageEdit: (callback: (data: any) => void) => void;
+  offMessageDelete: (callback: (data: any) => void) => void;
 }
 
 const API_BASE = (import.meta.env as any)?.VITE_API_BASE || 'http://localhost:3000/v1';
@@ -305,6 +309,22 @@ export function useWebSocket(options: WebSocketHookOptions = {}): WebSocketHookR
     removeCallback('notification', callback);
   }, [removeCallback]);
 
+  const onMessageEdit = useCallback((callback: (data: any) => void) => {
+    addCallback('message_edit', callback);
+  }, [addCallback]);
+
+  const offMessageEdit = useCallback((callback: (data: any) => void) => {
+    removeCallback('message_edit', callback);
+  }, [removeCallback]);
+
+  const onMessageDelete = useCallback((callback: (data: any) => void) => {
+    addCallback('message_delete', callback);
+  }, [addCallback]);
+
+  const offMessageDelete = useCallback((callback: (data: any) => void) => {
+    removeCallback('message_delete', callback);
+  }, [removeCallback]);
+
   return {
     socket,
     isConnected,
@@ -333,6 +353,8 @@ export function useWebSocket(options: WebSocketHookOptions = {}): WebSocketHookR
     onDisputeStatusUpdate,
     onUserPresence,
     onNotification,
+    onMessageEdit,
+    onMessageDelete,
     
     // Remove event listeners
     offOrderMessage,
@@ -342,6 +364,8 @@ export function useWebSocket(options: WebSocketHookOptions = {}): WebSocketHookR
     offOrderStatusUpdate,
     offDisputeStatusUpdate,
     offUserPresence,
-    offNotification
+    offNotification,
+    offMessageEdit,
+    offMessageDelete
   };
 }

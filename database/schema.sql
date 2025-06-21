@@ -138,7 +138,10 @@ CREATE TABLE messages (
     file_name VARCHAR(255), -- ім'я файлу
     read BOOLEAN NOT NULL DEFAULT false,
     read_at TIMESTAMP WITH TIME ZONE, -- коли прочитано
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    edited BOOLEAN NOT NULL DEFAULT false, -- чи було відредаговано
+    deleted BOOLEAN NOT NULL DEFAULT false, -- чи було видалено
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- Message Attachments Table
@@ -250,6 +253,8 @@ CREATE INDEX idx_orders_status ON orders(status);
 
 CREATE INDEX idx_messages_sender_id ON messages(sender_id);
 CREATE INDEX idx_messages_created_at ON messages(created_at);
+CREATE INDEX idx_messages_updated_at ON messages(updated_at);
+CREATE INDEX idx_messages_deleted ON messages(deleted) WHERE deleted = false;
 
 -- Create functions to update updated_at automatically
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -308,3 +313,18 @@ INSERT INTO tags (name, slug) VALUES
 ('Animation', 'animation'),
 ('Programming', 'programming'),
 ('Consulting', 'consulting');
+
+-- Function to update updated_at timestamp
+CREATE OR REPLACE FUNCTION update_messages_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger to automatically update updated_at on messages table
+CREATE TRIGGER trigger_update_messages_updated_at
+    BEFORE UPDATE ON messages
+    FOR EACH ROW
+    EXECUTE FUNCTION update_messages_updated_at();
