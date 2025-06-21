@@ -18,6 +18,7 @@ import ServiceDetail from "./pages/ServiceDetail";
 import MyServices from "./pages/MyServices";
 import CreateService from "./pages/CreateService";
 import NotFound from "./pages/NotFound";
+import Settings from "./pages/Settings";
 
 // Сторінки для клієнтів
 import Services from "./pages/Services";
@@ -43,7 +44,7 @@ import Performers from "./pages/admin/Performers";
 import ServicesAdmin from "./pages/admin/Services";
 import Orders from "./pages/admin/Orders";
 import Security from "./pages/admin/Security";
-import Settings from "./pages/admin/Settings";
+import AdminSettings from "./pages/admin/Settings";
 import Support from "./pages/admin/Support";
 import RequireAdmin from '@/components/RequireAdmin';
 import Database from './pages/admin/Database';
@@ -73,6 +74,7 @@ const App = () => (
               <Route path="/order/:id" element={<OrderDetail />} />
               <Route path="/create-order/:serviceId" element={<CreateOrder />} />
               <Route path="/create-custom-order" element={<CreateOrder />} />
+              <Route path="/settings" element={<Settings />} />
               
               {/* Сторінки для клієнтів */}
               <Route path="/services" element={<Services />} />
@@ -113,7 +115,7 @@ const App = () => (
               <Route path="/admin/orders" element={<RequireAdmin><Orders /></RequireAdmin>} />
               <Route path="/admin/support" element={<RequireAdmin><Support /></RequireAdmin>} />
               <Route path="/admin/security" element={<RequireAdmin><Security /></RequireAdmin>} />
-              <Route path="/admin/settings" element={<RequireAdmin><Settings /></RequireAdmin>} />
+              <Route path="/admin/settings" element={<RequireAdmin><AdminSettings /></RequireAdmin>} />
               <Route path="/admin/database" element={<RequireAdmin><Database /></RequireAdmin>} />
               <Route path="/admin/activity" element={<RequireAdmin><Activity /></RequireAdmin>} />
 

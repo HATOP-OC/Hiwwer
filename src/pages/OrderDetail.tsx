@@ -1,5 +1,5 @@
 import Layout from '@/components/Layout/Layout';
-import { fetchOrderById, updateOrder, deleteOrder, fetchMessages, sendMessage, fetchAdditionalOptions, proposeAdditionalOption, updateAdditionalOptionStatus, fetchOrderAttachments, uploadOrderAttachment, deleteOrderAttachment, fetchReview, createReview, fetchDispute } from '@/lib/api';
+import { fetchOrderById, updateOrder, deleteOrder, fetchMessages, sendMessage, fetchAdditionalOptions, proposeAdditionalOption, updateAdditionalOptionStatus, fetchReview, createReview, fetchDispute } from '@/lib/api';
 import { fetchPayments, authorizePaymentApi, capturePaymentApi, refundPaymentApi, Payment } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,7 +21,6 @@ export default function OrderDetail() {
   const { user } = useAuth();
   
   // All state hooks first - never conditionally call hooks
-  const [file, setFile] = useState<File | null>(null);
   const [messageContent, setMessageContent] = useState('');
   const [msgFileUrl, setMsgFileUrl] = useState('');
   const [msgFileName, setMsgFileName] = useState('');
@@ -51,12 +50,6 @@ export default function OrderDetail() {
   const { data: options = [] } = useQuery<AdditionalOption[]>({
     queryKey: ['options', id],
     queryFn: () => fetchAdditionalOptions(id!),
-    enabled: !!id && !!order
-  });
-  
-  const { data: attachments = [] } = useQuery({
-    queryKey: ['attachments', id],
-    queryFn: () => fetchOrderAttachments(id!),
     enabled: !!id && !!order
   });
   
@@ -104,26 +97,6 @@ export default function OrderDetail() {
     },
     onError: () => {
       toast({ title: 'Помилка', description: 'Не вдалося видалити замовлення', variant: 'destructive' });
-    }
-  });
-
-  const attachMutation = useMutation({
-    mutationFn: () => file ? uploadOrderAttachment(id!, file) : Promise.reject(),
-    onSuccess: () => {
-      toast({ title: 'Файл додано' });
-      queryClient.invalidateQueries({ queryKey: ['attachments', id] });
-      setFile(null);
-    },
-    onError: () => {
-      toast({ title: 'Помилка', description: 'Не вдалося додати файл', variant: 'destructive' });
-    }
-  });
-  
-  const deleteAttachmentMutation = useMutation({
-    mutationFn: (attId: string) => deleteOrderAttachment(id!, attId),
-    onSuccess: () => {
-      toast({ title: 'Файл видалено' });
-      queryClient.invalidateQueries({ queryKey: ['attachments', id] });
     }
   });
 
@@ -279,26 +252,6 @@ export default function OrderDetail() {
               {statusOptions.map(s => <SelectItem key={s} value={s}>{s.replace('_', ' ')}</SelectItem>)}
             </SelectContent>
           </Select>
-        </div>
-
-        <div>
-          <h2 className="font-medium">Файли:</h2>
-          <ul className="list-disc ml-6 mb-2">
-            {attachments.map(att => (
-              <li key={att.id} className="flex justify-between items-center">
-                <a href={att.fileUrl} target="_blank" rel="noreferrer" className="text-blue-600 underline">
-                  {att.fileName}
-                </a>
-                <Button size="icon" variant="ghost" onClick={() => deleteAttachmentMutation.mutate(att.id)}>
-                  🗑️
-                </Button>
-              </li>
-            ))}
-          </ul>
-          <div className="flex items-center space-x-2">
-            <input type="file" onChange={e => setFile(e.target.files?.[0] || null)} />
-            <Button onClick={() => attachMutation.mutate()} disabled={!file || attachMutation.status === 'pending'}>Завантажити</Button>
-          </div>
         </div>
 
         <div className="space-x-2">

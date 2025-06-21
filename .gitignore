@@ -77,6 +77,22 @@ telegram_bot/.env
 telegram_bot/.env.*
 telegram_bot/__pycache__/
 
+# Uploads - user uploaded files
+uploads/
+server/src/uploads/*.jpg
+server/src/uploads/*.jpeg
+server/src/uploads/*.png
+server/src/uploads/*.gif
+server/src/uploads/*.pdf
+server/src/uploads/*.doc
+server/src/uploads/*.docx
+server/src/uploads/*.txt
+server/src/uploads/*.zip
+server/src/uploads/*.rar
+server/src/uploads/*.7z
+server/src/uploads/*-*
+server/uploads/
+
 # Logs
 logs/
 *.log

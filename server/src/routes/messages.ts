@@ -3,6 +3,8 @@ import { authenticate } from '../middlewares/auth';
 import { query } from '../db';
 import { createNotification } from '../services/notificationService';
 import { getWebSocketService } from '../services/webSocketService';
+import fs from 'fs';
+import path from 'path';
 
 const router = Router({ mergeParams: true });
 router.use(authenticate);
@@ -99,7 +101,7 @@ router.post('/', async (req: Request, res: Response) => {
   }
 });
 
-// PUT /v1/orders/:orderId/messages/:messageId - edit message
+ // PUT /v1/orders/:orderId/messages/:messageId - edit message
 router.put('/:messageId', async (req: Request, res: Response) => {
   const orderId = req.params.orderId;
   const messageId = req.params.messageId;
@@ -171,6 +173,9 @@ router.delete('/:messageId', async (req: Request, res: Response) => {
   const messageId = req.params.messageId;
   const userId = req.user!.id;
 
+  console.log(`=== DELETE MESSAGE REQUEST ===`);
+  console.log(`Order ID: ${orderId}, Message ID: ${messageId}, User ID: ${userId}`);
+
   try {
     // Check if message exists and user is the sender
     const msgCheck = await query(
@@ -186,8 +191,43 @@ router.delete('/:messageId', async (req: Request, res: Response) => {
       return res.status(403).json({ message: 'You can only delete your own messages' });
     }
 
-    // Delete message attachments first
+    // Get attachment files before deleting from database
+    const attachmentsResult = await query(
+      `SELECT file_url, file_name FROM message_attachments WHERE message_id = $1`,
+      [messageId]
+    );
+
+    console.log(`Found ${attachmentsResult.rows.length} attachments to delete:`, attachmentsResult.rows);
+
+    // Delete message attachments from database first
     await query(`DELETE FROM message_attachments WHERE message_id = $1`, [messageId]);
+
+    // Delete actual files from filesystem
+    for (const attachment of attachmentsResult.rows) {
+      try {
+        // Extract filename from file_url (assuming format like /uploads/filename)
+        const fileName = attachment.file_url.split('/').pop();
+        if (fileName) {
+          // Use the same path as in app.ts - files are stored in src/uploads
+          const filePath = path.resolve(__dirname, '../uploads', fileName);
+          
+          console.log(`Attempting to delete file: ${filePath}`);
+          console.log(`File exists check: ${fs.existsSync(filePath)}`);
+          
+          // Check if file exists and delete it
+          if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+            console.log(`Successfully deleted file: ${filePath}`);
+          } else {
+            console.log(`File not found: ${filePath}`);
+            console.log(`Directory contents:`, fs.readdirSync(path.dirname(filePath)));
+          }
+        }
+      } catch (fileError) {
+        console.error(`Failed to delete file ${attachment.file_url}:`, fileError);
+        // Continue with message deletion even if file deletion fails
+      }
+    }
 
     // Soft delete message (mark as deleted)
     await query(

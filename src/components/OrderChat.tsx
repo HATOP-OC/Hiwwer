@@ -22,7 +22,22 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { Send, Paperclip, MoreVertical, Edit2, Trash2, Check, X } from 'lucide-react';
+import { 
+  Send, 
+  Paperclip, 
+  MoreVertical, 
+  Edit2, 
+  Trash2, 
+  Check, 
+  X, 
+  FileText,
+  FileImage,
+  FileVideo,
+  FileAudio,
+  FileArchive,
+  FileCode,
+  Download
+} from 'lucide-react';
 import { useWebSocket } from '@/hooks/useWebSocket';
 import { useAuth } from '@/contexts/AuthContext';
 import { OrderChatMessage, OrderChatTyping } from '@/types/websocket';
@@ -31,6 +46,8 @@ import { fetchMessages, sendMessage, uploadOrderAttachment, editMessage, deleteM
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { uk } from 'date-fns/locale';
+import { getAcceptString, getMaxFileSize } from './FileTypeSettings';
+import FilePreview from './FilePreview';
 
 interface OrderChatProps {
   orderId: string;
@@ -49,6 +66,8 @@ export default function OrderChat({ orderId, participants }: OrderChatProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState('');
+  const [showFilePreview, setShowFilePreview] = useState(false);
+  const [previewFile, setPreviewFile] = useState<File | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout>();
@@ -239,8 +258,36 @@ export default function OrderChat({ orderId, participants }: OrderChatProps) {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setSelectedFile(file);
-      handleFileUpload(file);
+      // Перевірка розміру файлу
+      const maxSize = getMaxFileSize() * 1024 * 1024; // Конвертуємо МБ в байти
+      if (file.size > maxSize) {
+        alert(`Файл занадто великий. Максимальний розмір: ${getMaxFileSize()} МБ`);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+        return;
+      }
+
+      // Показуємо попередній перегляд
+      setPreviewFile(file);
+      setShowFilePreview(true);
+    }
+  };
+
+  const handleFilePreviewConfirm = () => {
+    if (previewFile) {
+      setSelectedFile(previewFile);
+      handleFileUpload(previewFile);
+      setShowFilePreview(false);
+      setPreviewFile(null);
+    }
+  };
+
+  const handleFilePreviewCancel = () => {
+    setShowFilePreview(false);
+    setPreviewFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
 
@@ -248,9 +295,24 @@ export default function OrderChat({ orderId, participants }: OrderChatProps) {
     try {
       const attachment = await uploadOrderAttachment(orderId, file);
       
+      // Визначаємо тип файлу для іконки
+      const fileExtension = file.name.split('.').pop()?.toLowerCase();
+      const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(fileExtension || '');
+      const isVideo = ['mp4', 'avi', 'mov', 'wmv', 'flv', 'webm'].includes(fileExtension || '');
+      const isAudio = ['mp3', 'wav', 'flac', 'aac', 'ogg'].includes(fileExtension || '');
+      
+      let emoji = '📎';
+      if (isImage) emoji = '🖼️';
+      else if (isVideo) emoji = '🎥';
+      else if (isAudio) emoji = '🎵';
+      else if (fileExtension === 'pdf') emoji = '📄';
+      else if (['doc', 'docx'].includes(fileExtension || '')) emoji = '📝';
+      else if (['xls', 'xlsx'].includes(fileExtension || '')) emoji = '📊';
+      else if (['zip', 'rar', '7z'].includes(fileExtension || '')) emoji = '🗜️';
+      
       // Send message with attachment
       sendMessageMutation.mutate({
-        content: messageText.trim() || `📎 ${file.name}`,
+        content: messageText.trim() || `${emoji} ${file.name}`,
         attachments: [{
           fileUrl: attachment.fileUrl,
           fileName: attachment.fileName
@@ -263,7 +325,7 @@ export default function OrderChat({ orderId, participants }: OrderChatProps) {
       }
     } catch (error) {
       console.error('File upload failed:', error);
-      // TODO: Show error toast
+      alert('Помилка завантаження файлу. Спробуйте ще раз.');
     }
   };
 
@@ -470,7 +532,25 @@ export default function OrderChat({ orderId, participants }: OrderChatProps) {
                               {message.attachments.map((attachment, index) => {
                                 const fileUrl = typeof attachment === 'string' ? attachment : attachment.fileUrl || '';
                                 const fileName = typeof attachment === 'string' ? `Вкладення ${index + 1}` : attachment.fileName;
-                                const isImage = fileName && /\.(jpg|jpeg|png|gif|webp)$/i.test(fileName);
+                                const fileExtension = fileName?.split('.').pop()?.toLowerCase() || '';
+                                
+                                // Визначаємо тип файлу
+                                const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(fileExtension);
+                                const isVideo = ['mp4', 'avi', 'mov', 'wmv', 'flv', 'webm'].includes(fileExtension);
+                                const isAudio = ['mp3', 'wav', 'flac', 'aac', 'ogg'].includes(fileExtension);
+                                const isDocument = ['pdf', 'doc', 'docx', 'txt', 'rtf', 'odt'].includes(fileExtension);
+                                const isSpreadsheet = ['xls', 'xlsx', 'csv', 'ods'].includes(fileExtension);
+                                const isArchive = ['zip', 'rar', '7z', 'tar', 'gz'].includes(fileExtension);
+                                const isCode = ['js', 'ts', 'jsx', 'tsx', 'py', 'java', 'cpp', 'c', 'cs', 'php', 'rb', 'go', 'rs', 'swift'].includes(fileExtension);
+                                
+                                // Вибираємо іконку
+                                let FileIcon = Paperclip;
+                                if (isImage) FileIcon = FileImage;
+                                else if (isVideo) FileIcon = FileVideo;
+                                else if (isAudio) FileIcon = FileAudio;
+                                else if (isDocument || isSpreadsheet) FileIcon = FileText;
+                                else if (isArchive) FileIcon = FileArchive;
+                                else if (isCode) FileIcon = FileCode;
                                 
                                 return (
                                   <div key={index}>
@@ -485,16 +565,52 @@ export default function OrderChat({ orderId, participants }: OrderChatProps) {
                                         />
                                         <p className="text-xs text-gray-500 mt-1">{fileName}</p>
                                       </div>
+                                    ) : isVideo ? (
+                                      <div className="max-w-xs">
+                                        <video
+                                          src={fileUrl}
+                                          controls
+                                          className="rounded-lg max-w-full h-auto"
+                                          style={{ maxHeight: '200px' }}
+                                        >
+                                          Ваш браузер не підтримує відтворення відео.
+                                        </video>
+                                        <p className="text-xs text-gray-500 mt-1">{fileName}</p>
+                                      </div>
+                                    ) : isAudio ? (
+                                      <div className="max-w-xs">
+                                        <audio
+                                          src={fileUrl}
+                                          controls
+                                          className="w-full"
+                                        >
+                                          Ваш браузер не підтримує відтворення аудіо.
+                                        </audio>
+                                        <p className="text-xs text-gray-500 mt-1">{fileName}</p>
+                                      </div>
                                     ) : (
-                                      <div className="flex items-center space-x-2 p-2 bg-gray-100 rounded-lg max-w-xs">
-                                        <Paperclip className="h-4 w-4" />
+                                      <div className="flex items-center space-x-2 p-3 bg-gray-100 dark:bg-gray-800 rounded-lg max-w-xs hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                                        <FileIcon className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                                        <div className="flex-1 min-w-0">
+                                          <a
+                                            href={fileUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-sm hover:underline truncate block font-medium"
+                                          >
+                                            {fileName}
+                                          </a>
+                                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                                            .{fileExtension.toUpperCase()}
+                                          </p>
+                                        </div>
                                         <a
                                           href={fileUrl}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                          className="text-sm underline hover:no-underline flex-1 truncate"
+                                          download={fileName}
+                                          className="p-1 hover:bg-gray-300 dark:hover:bg-gray-600 rounded"
+                                          title="Завантажити файл"
                                         >
-                                          {fileName}
+                                          <Download className="h-4 w-4 text-gray-600 dark:text-gray-400" />
                                         </a>
                                       </div>
                                     )}
@@ -564,11 +680,20 @@ export default function OrderChat({ orderId, participants }: OrderChatProps) {
               ref={fileInputRef}
               onChange={handleFileChange}
               className="hidden"
-              accept="image/*,video/*,application/pdf"
+              accept={getAcceptString()}
             />
           </form>
         </div>
       </CardContent>
+
+      {/* File Preview Dialog */}
+      <FilePreview
+        file={previewFile}
+        isOpen={showFilePreview}
+        onClose={handleFilePreviewCancel}
+        onSend={handleFilePreviewConfirm}
+        isUploading={sendMessageMutation.isPending}
+      />
     </Card>
   );
 }

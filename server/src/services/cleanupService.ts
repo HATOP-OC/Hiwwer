@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 
 // Шлях до директорії з файлами
-const uploadDir = path.resolve(__dirname, '../../uploads');
+const uploadDir = path.resolve(__dirname, '../uploads');
 
 /**
  * Видалити файл та запис з БД за attachment id та file_url
@@ -28,6 +28,68 @@ async function removeAttachment(id: string, fileUrl: string) {
 }
 
 /**
+ * Видалити файл повідомлення
+ */
+async function removeMessageAttachment(id: string, fileUrl: string) {
+  const filePath = path.resolve(uploadDir, path.basename(fileUrl));
+  try {
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+      console.log(`Deleted message file ${filePath}`);
+    }
+  } catch (err) {
+    console.error(`Failed to delete message file ${filePath}:`, err);
+  }
+  // Видалити запис з БД
+  try {
+    await query('DELETE FROM message_attachments WHERE id = $1', [id]);
+    console.log(`Deleted DB record for message attachment ${id}`);
+  } catch (err) {
+    console.error(`Failed to delete DB record for message attachment ${id}:`, err);
+  }
+}
+
+/**
+ * Очистити осиротілі файли (файли без відповідних записів у БД)
+ */
+async function cleanupOrphanedFiles() {
+  try {
+    if (!fs.existsSync(uploadDir)) {
+      return;
+    }
+
+    const files = fs.readdirSync(uploadDir);
+    console.log(`Checking ${files.length} files for orphaned entries...`);
+
+    for (const fileName of files) {
+      // Перевіряємо, чи існує файл у БД
+      const orderAttachment = await query(
+        'SELECT 1 FROM order_attachments WHERE file_url LIKE $1',
+        [`%${fileName}`]
+      );
+      
+      const messageAttachment = await query(
+        'SELECT 1 FROM message_attachments WHERE file_url LIKE $1',
+        [`%${fileName}`]
+      );
+
+      // Якщо файл не знайдено в жодній таблиці
+      if (orderAttachment.rowCount === 0 && messageAttachment.rowCount === 0) {
+        const filePath = path.join(uploadDir, fileName);
+        try {
+          fs.unlinkSync(filePath);
+          console.log(`Deleted orphaned file: ${fileName}`);
+        } catch (err) {
+          console.error(`Failed to delete orphaned file ${fileName}:`, err);
+        }
+      }
+    }
+  } catch (err) {
+    console.error('Error cleaning orphaned files:', err);
+  }
+}
+
+/**
  * Запуск очищення файлів, де замовлення завершено більше ніж 3 місяці тому
  */
 export function scheduleAttachmentCleanup() {
@@ -35,6 +97,7 @@ export function scheduleAttachmentCleanup() {
   async function cleanup() {
     console.log('Running attachment cleanup...');
     try {
+      // Очищення старих файлів замовлень
       const res = await query(
         `SELECT a.id, a.file_url
          FROM order_attachments a
@@ -44,6 +107,21 @@ export function scheduleAttachmentCleanup() {
       for (const row of res.rows) {
         await removeAttachment(row.id, row.file_url);
       }
+
+      // Очищення старих файлів повідомлень (старше 6 місяців)
+      const messageRes = await query(
+        `SELECT ma.id, ma.file_url
+         FROM message_attachments ma
+         JOIN messages m ON ma.message_id = m.id
+         WHERE m.created_at < NOW() - INTERVAL '6 months'`
+      );
+      for (const row of messageRes.rows) {
+        await removeMessageAttachment(row.id, row.file_url);
+      }
+
+      // Очищення осиротілих файлів
+      await cleanupOrphanedFiles();
+
     } catch (err) {
       console.error('Cleanup error:', err);
     }
