@@ -90,8 +90,12 @@ server/src/uploads/*.txt
 server/src/uploads/*.zip
 server/src/uploads/*.rar
 server/src/uploads/*.7z
-server/src/uploads/*-*
+server/src/uploads/1*
+server/src/uploads/2*
 server/uploads/
+
+!/server/src/uploads/UPLOADS-INFO.md
+
 
 # Logs
 logs/
