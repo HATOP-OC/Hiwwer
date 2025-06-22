@@ -1,5 +1,5 @@
 import Layout from '@/components/Layout/Layout';
-import { fetchOrderById, updateOrder, deleteOrder, fetchMessages, sendMessage, fetchAdditionalOptions, proposeAdditionalOption, updateAdditionalOptionStatus, fetchReview, createReview, fetchDispute, Dispute } from '@/lib/api';
+import { fetchOrderById, updateOrder, deleteOrder, fetchMessages, sendMessage, fetchAdditionalOptions, proposeAdditionalOption, updateAdditionalOptionStatus, fetchReview, createReview, fetchDispute, deleteDispute, Dispute } from '@/lib/api';
 import { fetchPayments, authorizePaymentApi, capturePaymentApi, refundPaymentApi, Payment } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -33,6 +33,7 @@ export default function OrderDetail() {
   const [comment, setComment] = useState('');
   const [disputeReason, setDisputeReason] = useState('');
   const [showDisputeForm, setShowDisputeForm] = useState(false);
+  const [deletingDispute, setDeletingDispute] = useState(false);
 
   // All query hooks - never conditionally call
   const { data: order, isLoading, error } = useQuery<Order>({
@@ -68,7 +69,17 @@ export default function OrderDetail() {
   // Dispute queries
   const { data: dispute, refetch: refetchDispute } = useQuery({
     queryKey: ['dispute', id],
-    queryFn: () => fetchDispute(id!),
+    queryFn: async () => {
+      try {
+        return await fetchDispute(id!);
+      } catch (error: any) {
+        // If dispute doesn't exist (404), return null instead of throwing
+        if (error.message?.includes('404')) {
+          return null;
+        }
+        throw error;
+      }
+    },
     enabled: !!id && !!order,
     retry: false, // Don't retry if dispute doesn't exist
     refetchOnWindowFocus: false
@@ -236,6 +247,40 @@ export default function OrderDetail() {
     createDisputeMutation.mutate(disputeReason);
   };
 
+  const handleDeleteDispute = async () => {
+    if (!dispute) return;
+    
+    if (!window.confirm('Ви впевнені, що хочете видалити спір? Всі повідомлення та файли будуть видалені назавжди.')) {
+      return;
+    }
+
+    setDeletingDispute(true);
+    try {
+      await deleteDispute(order.id, dispute.id);
+      
+      // Оновлюємо кеш, щоб відобразити, що спору більше немає
+      queryClient.setQueryData(['dispute', id], null);
+      
+      // Також оновлюємо дані замовлення, якщо потрібно
+      queryClient.invalidateQueries({ queryKey: ['order', id] });
+      
+      toast({ 
+        title: 'Успіх', 
+        description: 'Спір та всі пов\'язані дані видалені', 
+        variant: 'default' 
+      });
+    } catch (error) {
+      console.error('Error deleting dispute:', error);
+      toast({ 
+        title: 'Помилка', 
+        description: 'Не вдалося видалити спір', 
+        variant: 'destructive' 
+      });
+    } finally {
+      setDeletingDispute(false);
+    }
+  };
+
   return (
     <Layout>
       <div className="container mx-auto py-8 px-4 space-y-6">
@@ -327,20 +372,33 @@ export default function OrderDetail() {
         {/* Active Dispute Chat */}
         {dispute && (
           <div className="space-y-4">
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <h3 className="text-lg font-semibold text-red-800 mb-2">Активний спір</h3>
-              <p className="text-sm text-red-700 mb-2">
-                <strong>Причина:</strong> {dispute.reason}
-              </p>
-              <p className="text-sm text-red-700">
-                <strong>Статус:</strong> {dispute.status === 'open' ? 'Відкритий' : dispute.status === 'in_review' ? 'На розгляді' : 'Вирішений'}
-              </p>
-              {/* Debug info */}
-              {process.env.NODE_ENV === 'development' && (
-                <p className="text-xs text-gray-600 mt-2">
-                  Current user role: {user?.role}, canResolve: {(user?.role === 'admin' || user?.id === dispute.clientId).toString()}
-                </p>
-              )}
+            <div className={`border rounded-lg p-4 ${dispute.status === 'resolved' ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className={`text-lg font-semibold mb-2 ${dispute.status === 'resolved' ? 'text-green-800' : 'text-red-800'}`}>
+                    {dispute.status === 'resolved' ? 'Вирішений спір' : 'Активний спір'}
+                  </h3>
+                  <p className={`text-sm mb-2 ${dispute.status === 'resolved' ? 'text-green-700' : 'text-red-700'}`}>
+                    <strong>Причина:</strong> {dispute.reason}
+                  </p>
+                  <p className={`text-sm ${dispute.status === 'resolved' ? 'text-green-700' : 'text-red-700'}`}>
+                    <strong>Статус:</strong> {dispute.status === 'open' ? 'Відкритий' : dispute.status === 'in_review' ? 'На розгляді' : 'Вирішений'}
+                  </p>
+                </div>
+                
+                {/* Delete dispute button for resolved disputes */}
+                {dispute.status === 'resolved' && (user?.role === 'admin' || user?.id === dispute.clientId) && (
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={handleDeleteDispute}
+                    disabled={deletingDispute}
+                    className="ml-4"
+                  >
+                    {deletingDispute ? 'Видалення...' : 'Видалити спір'}
+                  </Button>
+                )}
+              </div>
             </div>
             
             <div className="h-[600px]">            <DisputeChat

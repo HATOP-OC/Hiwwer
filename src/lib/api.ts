@@ -906,6 +906,15 @@ export async function updateDisputeStatus(orderId: string, disputeId: string, st
   return res.json();
 }
 
+/** Delete dispute and all its data (admin or dispute creator) */
+export async function deleteDispute(orderId: string, disputeId: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/orders/${orderId}/disputes/${disputeId}`, {
+    method: 'DELETE',
+    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+  });
+  if (!res.ok) throw new Error(`Failed to delete dispute: ${res.status}`);
+}
+
 /**
  * Fetch global file type settings
  */

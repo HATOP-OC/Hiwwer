@@ -317,4 +317,81 @@ router.patch('/:disputeId', async (req: Request, res: Response) => {
   }
 });
 
+// DELETE /v1/orders/:orderId/disputes/:disputeId - delete dispute and all its data
+router.delete('/:disputeId', async (req: Request, res: Response) => {
+  const { disputeId, orderId } = req.params;
+  const userId = req.user!.id;
+  
+  try {
+    // Get dispute info to check permissions
+    const disputeResult = await query(
+      `SELECT client_id, performer_id, status FROM disputes WHERE id = $1`,
+      [disputeId]
+    );
+    
+    if (disputeResult.rowCount === 0) {
+      return res.status(404).json({ message: 'Dispute not found' });
+    }
+    
+    const { client_id, performer_id, status } = disputeResult.rows[0];
+    const isAdmin = req.user!.role === 'admin';
+    const isDisputeInitiator = userId === client_id;
+    
+    // Only admin or dispute initiator can delete, and only if resolved
+    if (!isAdmin && !isDisputeInitiator) {
+      return res.status(403).json({ message: 'Only moderator or dispute initiator can delete dispute' });
+    }
+    
+    if (status !== 'resolved') {
+      return res.status(400).json({ message: 'Only resolved disputes can be deleted' });
+    }
+    
+    // Start transaction
+    await query('BEGIN');
+    
+    try {
+      // Get all attachment file paths before deletion
+      const attachmentsResult = await query(
+        `SELECT file_url FROM dispute_message_attachments dma
+         JOIN dispute_messages dm ON dma.message_id = dm.id
+         WHERE dm.dispute_id = $1`,
+        [disputeId]
+      );
+      
+      // Delete dispute (CASCADE will delete messages and attachments)
+      await query(`DELETE FROM disputes WHERE id = $1`, [disputeId]);
+      
+      // Delete physical files
+      for (const attachment of attachmentsResult.rows) {
+        try {
+          const filePath = path.join(__dirname, '../..', attachment.file_url);
+          await fs.unlink(filePath);
+        } catch (fileError) {
+          console.warn(`Failed to delete file ${attachment.file_url}:`, fileError);
+        }
+      }
+      
+      // Update order status back to completed if it was disputed
+      await query(`UPDATE orders SET status = 'completed' WHERE id = $1 AND status = 'disputed'`, [orderId]);
+      
+      // Commit transaction
+      await query('COMMIT');
+      
+      // Notify other party
+      const otherUserId = userId === client_id ? performer_id : client_id;
+      await createNotification(otherUserId, 'message', `Спір для замовлення ${orderId} було видалено`, orderId);
+      
+      res.status(204).send(); // No content
+      
+    } catch (error) {
+      await query('ROLLBACK');
+      throw error;
+    }
+    
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Failed to delete dispute' });
+  }
+});
+
 export default router;
