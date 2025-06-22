@@ -422,6 +422,18 @@ export interface Order {
   dispute?: any;
 }
 
+export interface Dispute {
+  id: string;
+  orderId: string;
+  clientId: string;
+  performerId: string;
+  moderatorId?: string;
+  reason: string;
+  status: 'open' | 'in_review' | 'resolved';
+  createdAt: string;
+  updatedAt: string;
+}
+
 /** Fetch list of orders with optional filters */
 export async function fetchOrders(params?: { status?: string; search?: string }): Promise<Order[]> {
   const query = new URLSearchParams();

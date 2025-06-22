@@ -59,6 +59,13 @@ export interface DisputeChatMessage {
     messageId: string;
     senderId: string;
     content: string;
+    attachments?: Array<{
+      id: string;
+      fileName: string;
+      fileUrl: string;
+      fileSize: number;
+      mimeType: string;
+    }>;
     createdAt: string;
   };
 }

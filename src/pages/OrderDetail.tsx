@@ -1,5 +1,5 @@
 import Layout from '@/components/Layout/Layout';
-import { fetchOrderById, updateOrder, deleteOrder, fetchMessages, sendMessage, fetchAdditionalOptions, proposeAdditionalOption, updateAdditionalOptionStatus, fetchReview, createReview, fetchDispute } from '@/lib/api';
+import { fetchOrderById, updateOrder, deleteOrder, fetchMessages, sendMessage, fetchAdditionalOptions, proposeAdditionalOption, updateAdditionalOptionStatus, fetchReview, createReview, fetchDispute, Dispute } from '@/lib/api';
 import { fetchPayments, authorizePaymentApi, capturePaymentApi, refundPaymentApi, Payment } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -335,9 +335,15 @@ export default function OrderDetail() {
               <p className="text-sm text-red-700">
                 <strong>Статус:</strong> {dispute.status === 'open' ? 'Відкритий' : dispute.status === 'in_review' ? 'На розгляді' : 'Вирішений'}
               </p>
+              {/* Debug info */}
+              {process.env.NODE_ENV === 'development' && (
+                <p className="text-xs text-gray-600 mt-2">
+                  Current user role: {user?.role}, canResolve: {(user?.role === 'admin' || user?.id === dispute.clientId).toString()}
+                </p>
+              )}
             </div>
             
-            <DisputeChat
+            <div className="h-[600px]">            <DisputeChat
               disputeId={dispute.id}
               orderId={order.id}
               participants={{
@@ -357,7 +363,15 @@ export default function OrderDetail() {
                   avatar: undefined
                 } : undefined
               }}
+              canResolve={user?.role === 'admin' || user?.id === dispute.clientId}
+              disputeStatus={dispute.status}
+              userRole={user?.role}
+              onDisputeResolve={() => {
+                // Reload the page to show updated dispute status
+                window.location.reload();
+              }}
             />
+            </div>
           </div>
         )}
 

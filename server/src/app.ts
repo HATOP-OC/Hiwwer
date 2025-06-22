@@ -34,7 +34,7 @@ const httpServer = createServer(app);
 const webSocketService = initializeWebSocket(httpServer);
 
 // Serve uploaded files
-app.use('/uploads', express.static(path.resolve(__dirname, 'uploads')));
+app.use('/uploads', express.static(path.resolve(__dirname, './uploads')));
 
 // Middleware
 // CORS для API: дозволяємо Authorization та Content-Type, всі методи

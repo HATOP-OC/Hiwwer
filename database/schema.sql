@@ -215,6 +215,18 @@ CREATE TABLE dispute_messages (
 );
 CREATE INDEX idx_dispute_messages_dispute_id ON dispute_messages(dispute_id);
 
+-- Dispute Message Attachments Table
+CREATE TABLE dispute_message_attachments (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    message_id UUID NOT NULL REFERENCES dispute_messages(id) ON DELETE CASCADE,
+    file_name VARCHAR(255) NOT NULL,
+    file_url TEXT NOT NULL,
+    file_size INTEGER NOT NULL,
+    mime_type VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+CREATE INDEX idx_dispute_message_attachments_message_id ON dispute_message_attachments(message_id);
+
 -- WebSocket Connections Table (for monitoring and analytics)
 CREATE TABLE websocket_connections (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),

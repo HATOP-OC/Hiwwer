@@ -52,6 +52,27 @@ async function removeMessageAttachment(id: string, fileUrl: string) {
 /**
  * Очистити осиротілі файли (файли без відповідних записів у БД)
  */
+/**
+ * Видалення конкретного вкладення спору
+ */
+async function removeDisputeAttachment(attachmentId: string, fileUrl: string) {
+  try {
+    // Видалення з БД
+    await query('DELETE FROM dispute_message_attachments WHERE id = $1', [attachmentId]);
+    
+    // Видалення файлу з диску
+    const fileName = path.basename(fileUrl);
+    const filePath = path.join(__dirname, '../uploads/disputes', fileName);
+    
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+      console.log(`Deleted dispute attachment file: ${fileName}`);
+    }
+  } catch (err) {
+    console.error(`Error removing dispute attachment ${attachmentId}:`, err);
+  }
+}
+
 async function cleanupOrphanedFiles() {
   try {
     if (!fs.existsSync(uploadDir)) {
@@ -62,6 +83,13 @@ async function cleanupOrphanedFiles() {
     console.log(`Checking ${files.length} files for orphaned entries...`);
 
     for (const fileName of files) {
+      const filePath = path.join(uploadDir, fileName);
+      
+      // Пропускаємо папки
+      if (fs.statSync(filePath).isDirectory()) {
+        continue;
+      }
+      
       // Перевіряємо, чи існує файл у БД
       const orderAttachment = await query(
         'SELECT 1 FROM order_attachments WHERE file_url LIKE $1',
@@ -72,10 +100,14 @@ async function cleanupOrphanedFiles() {
         'SELECT 1 FROM message_attachments WHERE file_url LIKE $1',
         [`%${fileName}`]
       );
+      
+      const disputeAttachment = await query(
+        'SELECT 1 FROM dispute_message_attachments WHERE file_url LIKE $1',
+        [`%${fileName}`]
+      );
 
       // Якщо файл не знайдено в жодній таблиці
-      if (orderAttachment.rowCount === 0 && messageAttachment.rowCount === 0) {
-        const filePath = path.join(uploadDir, fileName);
+      if (orderAttachment.rowCount === 0 && messageAttachment.rowCount === 0 && disputeAttachment.rowCount === 0) {
         try {
           fs.unlinkSync(filePath);
           console.log(`Deleted orphaned file: ${fileName}`);
@@ -86,6 +118,46 @@ async function cleanupOrphanedFiles() {
     }
   } catch (err) {
     console.error('Error cleaning orphaned files:', err);
+  }
+}
+
+async function cleanupOrphanedDisputeFiles() {
+  try {
+    const disputeUploadDir = path.join(__dirname, '../uploads/disputes');
+    
+    if (!fs.existsSync(disputeUploadDir)) {
+      return;
+    }
+
+    const files = fs.readdirSync(disputeUploadDir);
+    console.log(`Checking ${files.length} dispute files for orphaned entries...`);
+
+    for (const fileName of files) {
+      const filePath = path.join(disputeUploadDir, fileName);
+      
+      // Пропускаємо папки
+      if (fs.statSync(filePath).isDirectory()) {
+        continue;
+      }
+      
+      // Перевіряємо, чи існує файл у БД
+      const disputeAttachment = await query(
+        'SELECT 1 FROM dispute_message_attachments WHERE file_url LIKE $1',
+        [`%${fileName}`]
+      );
+
+      // Якщо файл не знайдено в БД
+      if (disputeAttachment.rowCount === 0) {
+        try {
+          fs.unlinkSync(filePath);
+          console.log(`Deleted orphaned dispute file: ${fileName}`);
+        } catch (err) {
+          console.error(`Failed to delete orphaned dispute file ${fileName}:`, err);
+        }
+      }
+    }
+  } catch (err) {
+    console.error('Error cleaning orphaned dispute files:', err);
   }
 }
 
@@ -119,8 +191,23 @@ export function scheduleAttachmentCleanup() {
         await removeMessageAttachment(row.id, row.file_url);
       }
 
+      // Очищення файлів спорів (старше 1 року після вирішення)
+      const disputeRes = await query(
+        `SELECT dma.id, dma.file_url
+         FROM dispute_message_attachments dma
+         JOIN dispute_messages dm ON dma.message_id = dm.id
+         JOIN disputes d ON dm.dispute_id = d.id
+         WHERE d.status = 'resolved' AND d.updated_at < NOW() - INTERVAL '1 year'`
+      );
+      for (const row of disputeRes.rows) {
+        await removeDisputeAttachment(row.id, row.file_url);
+      }
+
       // Очищення осиротілих файлів
       await cleanupOrphanedFiles();
+      
+      // Очищення файлів спорів
+      await cleanupOrphanedDisputeFiles();
 
     } catch (err) {
       console.error('Cleanup error:', err);
