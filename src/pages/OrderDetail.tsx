@@ -62,8 +62,23 @@ export default function OrderDetail() {
   
   const { data: review, refetch: refetchReview } = useQuery<Review>({
     queryKey: ['review', id],
-    queryFn: () => fetchReview(id!),
-    enabled: !!id && !!order && order.status === 'completed'
+    queryFn: async () => {
+      console.log('🔍 Fetching review for order:', id, 'Order status:', order?.status);
+      try {
+        return await fetchReview(id!);
+      } catch (error: any) {
+        console.log('❌ Review fetch failed:', error.message);
+        // If review doesn't exist (404), return null instead of throwing
+        if (error.message?.includes('404') || error.message?.includes('Failed to fetch review')) {
+          return null;
+        }
+        throw error;
+      }
+    },
+    enabled: !!id && !!order && order.status === 'completed',
+    retry: false, // Don't retry if review doesn't exist
+    refetchOnWindowFocus: false,
+    staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
   });
 
   // Dispute queries
@@ -74,7 +89,7 @@ export default function OrderDetail() {
         return await fetchDispute(id!);
       } catch (error: any) {
         // If dispute doesn't exist (404), return null instead of throwing
-        if (error.message?.includes('404')) {
+        if (error.message?.includes('404') || error.message?.includes('Failed to fetch dispute')) {
           return null;
         }
         throw error;
@@ -82,7 +97,8 @@ export default function OrderDetail() {
     },
     enabled: !!id && !!order,
     retry: false, // Don't retry if dispute doesn't exist
-    refetchOnWindowFocus: false
+    refetchOnWindowFocus: false,
+    staleTime: 2 * 60 * 1000, // Consider data fresh for 2 minutes
   });
 
   // All mutation hooks
