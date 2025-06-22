@@ -339,12 +339,6 @@ export default function DisputeChat({
                 }
               </Button>
             )}
-            {/* Debug info */}
-            {process.env.NODE_ENV === 'development' && (
-              <div className="text-xs text-gray-500">
-                canResolve: {canResolve.toString()}, status: {disputeStatus}
-              </div>
-            )}
             {webSocket.isConnected ? (
               <Badge variant="outline" className="text-green-600 border-green-600">
                 Онлайн

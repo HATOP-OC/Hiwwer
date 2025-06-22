@@ -425,8 +425,9 @@ export default function OrderDetail() {
               disputeStatus={dispute.status}
               userRole={user?.role}
               onDisputeResolve={() => {
-                // Reload the page to show updated dispute status
-                window.location.reload();
+                // Refresh dispute and order data without page reload
+                refetchDispute();
+                queryClient.invalidateQueries({ queryKey: ['order', id] });
               }}
             />
             </div>
