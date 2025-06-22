@@ -2,6 +2,8 @@ import { Router, Request, Response } from 'express';
 import { query } from '../db';
 import { authenticate, authorizeAdmin } from '../middlewares/auth';
 import { format } from 'date-fns';
+import { backupService } from '../services/backupService';
+import * as path from 'path';
 
 const router = Router();
 
@@ -209,13 +211,117 @@ router.get('/security/logs', (req, res) => {
 });
 
 // Database endpoints
-router.get('/database/stats', (req, res) => {
-  res.json([]); // stubbed empty stats
+router.get('/database/stats', async (req: Request, res: Response) => {
+  try {
+    const [totalTables, totalRows, dbSize] = await Promise.all([
+      query(`SELECT COUNT(*) as count FROM information_schema.tables WHERE table_schema = 'public'`),
+      query(`SELECT SUM(n_tup_ins + n_tup_upd + n_tup_del) as total FROM pg_stat_user_tables`),
+      query(`SELECT pg_size_pretty(pg_database_size(current_database())) as size`)
+    ]);
+
+    res.json({
+      totalTables: Number(totalTables.rows[0].count),
+      totalRows: Number(totalRows.rows[0].total || 0),
+      databaseSize: dbSize.rows[0].size
+    });
+  } catch (err) {
+    console.error('Failed to fetch database stats:', err);
+    res.status(500).json({ message: 'Failed to fetch database stats' });
+  }
 });
 
-router.get('/database/backup', (req, res) => {
-  // Return a dummy backup URL; replace with real backup logic later
-  res.json({ url: `${req.baseUrl}/database/backup/file.sql` });
+// Отримати список бекапів
+router.get('/database/backups', async (req: Request, res: Response) => {
+  try {
+    const backups = await backupService.getBackupList();
+    res.json(backups);
+  } catch (err) {
+    console.error('Failed to fetch backup list:', err);
+    res.status(500).json({ message: 'Failed to fetch backup list' });
+  }
+});
+
+// Створити новий бекап
+router.post('/database/backup', async (req: Request, res: Response) => {
+  try {
+    const filename = await backupService.createBackup();
+    
+    // Автоматично очищуємо старі бекапи
+    await backupService.cleanupOldBackups(10);
+    
+    res.json({ 
+      message: 'Backup created successfully', 
+      filename,
+      downloadUrl: `/v1/admin/database/backup/${filename}`
+    });
+  } catch (err) {
+    console.error('Failed to create backup:', err);
+    res.status(500).json({ message: 'Failed to create backup' });
+  }
+});
+
+// Завантажити бекап файл
+router.get('/database/backup/:filename', async (req: Request, res: Response) => {
+  try {
+    const { filename } = req.params;
+    const filepath = backupService.getBackupFilePath(filename);
+    
+    // Перевіряємо, чи існує файл
+    const fs = require('fs');
+    if (!fs.existsSync(filepath)) {
+      return res.status(404).json({ message: 'Backup file not found' });
+    }
+
+    res.download(filepath, filename, (err) => {
+      if (err) {
+        console.error('Error downloading backup:', err);
+        res.status(500).json({ message: 'Failed to download backup' });
+      }
+    });
+  } catch (err) {
+    console.error('Failed to download backup:', err);
+    res.status(500).json({ message: 'Failed to download backup' });
+  }
+});
+
+// Відновити базу даних з бекапу
+router.post('/database/restore', async (req: Request, res: Response) => {
+  try {
+    const { filename } = req.body;
+    
+    if (!filename) {
+      return res.status(400).json({ message: 'Backup filename is required' });
+    }
+
+    await backupService.restoreFromBackup(filename);
+    res.json({ message: 'Database restored successfully' });
+  } catch (err) {
+    console.error('Failed to restore database:', err);
+    res.status(500).json({ message: 'Failed to restore database' });
+  }
+});
+
+// Видалити бекап
+router.delete('/database/backup/:filename', async (req: Request, res: Response) => {
+  try {
+    const { filename } = req.params;
+    await backupService.deleteBackup(filename);
+    res.json({ message: 'Backup deleted successfully' });
+  } catch (err) {
+    console.error('Failed to delete backup:', err);
+    res.status(500).json({ message: 'Failed to delete backup' });
+  }
+});
+
+// Застарілий endpoint для зворотної сумісності
+router.get('/database/backup', async (req: Request, res: Response) => {
+  try {
+    const filename = await backupService.createBackup();
+    res.json({ url: `/v1/admin/database/backup/${filename}` });
+  } catch (err) {
+    console.error('Failed to create backup:', err);
+    res.status(500).json({ message: 'Failed to create backup' });
+  }
 });
 
 export default router;

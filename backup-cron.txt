@@ -1,0 +1,17 @@
+# Cron конфігурація для автоматичних бекапів бази даних
+# Додайте цей файл до crontab за допомогою: crontab backup-cron.txt
+
+# Створення бекапу щодня о 2:00 ночі
+0 2 * * * /workspaces/digi-hub-telegram-sales/backup-db.sh auto >> /var/log/db-backup.log 2>&1
+
+# Створення бекапу кожні 6 годин (опціонально, для критичних даних)
+# 0 */6 * * * /workspaces/digi-hub-telegram-sales/backup-db.sh auto >> /var/log/db-backup.log 2>&1
+
+# Щотижневе створення бекапу з додатковим логуванням (неділя о 3:00)
+0 3 * * 0 /workspaces/digi-hub-telegram-sales/backup-db.sh auto >> /var/log/db-backup-weekly.log 2>&1
+
+# Приклади інших розкладів:
+# Кожні 12 годин: 0 */12 * * *
+# Щодня о полудні: 0 12 * * *
+# Кожен понеділок о 1:00: 0 1 * * 1
+# Перше число кожного місяця о 2:30: 30 2 1 * *

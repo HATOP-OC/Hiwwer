@@ -49,6 +49,14 @@ hiwwer_postgres_data/
 database/*.sqlite
 database/*.db
 
+# Database backups - ignore all backup files but keep documentation
+server/backups/*.sql
+server/backups/*.sql.gz
+server/backups/*.dump
+server/backups/*.backup
+server/backups/backup_*
+!server/backups/README.md
+
 # System
 .DS_Store
 Thumbs.db
