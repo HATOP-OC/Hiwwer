@@ -286,9 +286,19 @@ export async function fetchAdminOrders(): Promise<AdminOrder[]> {
 }
 
 // Admin settings
+export interface FileTypeConfig {
+  id: string;
+  name: string;
+  extensions: string[];
+  mimeTypes: string[];
+  maxSize: number; // in MB
+  description?: string;
+}
+
 export interface AdminSettings {
   siteName: string;
   maintenanceMode: boolean;
+  allowedFileTypes?: FileTypeConfig[] | null;
 }
 
 /**
@@ -881,5 +891,29 @@ export async function updateDisputeStatus(orderId: string, disputeId: string, st
     body: JSON.stringify({ status })
   });
   if (!res.ok) throw new Error(`Failed to update dispute status: ${res.status}`);
+  return res.json();
+}
+
+/**
+ * Fetch global file type settings
+ */
+export async function fetchGlobalFileTypes(): Promise<FileTypeConfig[] | null> {
+  try {
+    const res = await fetch(`${API_BASE}/admin/settings`);
+    if (!res.ok) throw new Error(`Failed to fetch file types: ${res.status}`);
+    const data = await res.json();
+    return data.allowedFileTypes;
+  } catch (error) {
+    console.error('Error fetching global file types:', error);
+    return null;
+  }
+}
+
+/**
+ * Fetch file type configuration from admin settings
+ */
+export async function fetchFileTypeSettings(): Promise<{ allowedFileTypes: FileTypeConfig[] | null }> {
+  const res = await fetch(`${API_BASE}/file-types`);
+  if (!res.ok) throw new Error(`Failed to fetch file types: ${res.status}`);
   return res.json();
 }

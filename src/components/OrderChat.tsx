@@ -46,7 +46,7 @@ import { fetchMessages, sendMessage, uploadOrderAttachment, editMessage, deleteM
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { uk } from 'date-fns/locale';
-import { getAcceptString, getMaxFileSize } from './FileTypeSettings';
+import { getAcceptString, getMaxFileSize, validateFile } from '@/lib/fileTypes';
 import FilePreview from './FilePreview';
 
 interface OrderChatProps {
@@ -258,10 +258,10 @@ export default function OrderChat({ orderId, participants }: OrderChatProps) {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Перевірка розміру файлу
-      const maxSize = getMaxFileSize() * 1024 * 1024; // Конвертуємо МБ в байти
-      if (file.size > maxSize) {
-        alert(`Файл занадто великий. Максимальний розмір: ${getMaxFileSize()} МБ`);
+      // Валідація файлу
+      const validation = validateFile(file);
+      if (!validation.isValid) {
+        alert(validation.error);
         if (fileInputRef.current) {
           fileInputRef.current.value = '';
         }

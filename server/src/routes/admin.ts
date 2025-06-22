@@ -187,14 +187,70 @@ router.get('/sales/category/:category/monthly', async (req: Request, res: Respon
 });
 
 // Admin panel settings endpoints
-router.get('/settings', (req, res) => {
-  // Return stubbed or default settings
-  res.json({ siteName: 'Digi Hub', maintenanceMode: false });
+router.get('/settings', async (req, res) => {
+  try {
+    // Спробуємо отримати налаштування з бази даних
+    const result = await query('SELECT * FROM admin_settings ORDER BY id DESC LIMIT 1');
+    
+    if (result.rows.length > 0) {
+      const settings = result.rows[0];
+      let allowedFileTypes = null;
+      
+      if (settings.allowed_file_types !== null && settings.allowed_file_types !== undefined) {
+        try {
+          allowedFileTypes = JSON.parse(settings.allowed_file_types);
+        } catch (parseError) {
+          console.error('Error parsing allowed_file_types:', parseError);
+          allowedFileTypes = null;
+        }
+      }
+      
+      res.json({
+        siteName: settings.site_name || 'Hiwwer',
+        maintenanceMode: settings.maintenance_mode || false,
+        allowedFileTypes
+      });
+    } else {
+      // Default settings
+      res.json({ 
+        siteName: 'Hiwwer', 
+        maintenanceMode: false,
+        allowedFileTypes: null
+      });
+    }
+  } catch (error) {
+    console.error('Error fetching admin settings:', error);
+    // Fallback to default settings
+    res.json({ 
+      siteName: 'Hiwwer', 
+      maintenanceMode: false,
+      allowedFileTypes: null
+    });
+  }
 });
 
-router.put('/settings', (req, res) => {
-  // Accept and ignore updated settings for now
-  res.sendStatus(204);
+router.put('/settings', async (req, res) => {
+  try {
+    const { siteName, maintenanceMode, allowedFileTypes } = req.body;
+    
+    // Спробуємо оновити або створити налаштування
+    const allowedFileTypesJson = allowedFileTypes ? JSON.stringify(allowedFileTypes) : null;
+    
+    await query(`
+      INSERT INTO admin_settings (site_name, maintenance_mode, allowed_file_types, updated_at)
+      VALUES ($1, $2, $3, NOW())
+      ON CONFLICT (id) DO UPDATE SET
+        site_name = EXCLUDED.site_name,
+        maintenance_mode = EXCLUDED.maintenance_mode,
+        allowed_file_types = EXCLUDED.allowed_file_types,
+        updated_at = EXCLUDED.updated_at
+    `, [siteName, maintenanceMode, allowedFileTypesJson]);
+    
+    res.sendStatus(204);
+  } catch (error) {
+    console.error('Error updating admin settings:', error);
+    res.status(500).json({ message: 'Failed to update settings' });
+  }
 });
 
 // Security policy endpoints

@@ -225,6 +225,16 @@ CREATE TABLE websocket_connections (
     is_active BOOLEAN DEFAULT true
 );
 
+-- Admin Settings Table
+CREATE TABLE admin_settings (
+    id SERIAL PRIMARY KEY,
+    site_name VARCHAR(255) NOT NULL DEFAULT 'Hiwwer',
+    maintenance_mode BOOLEAN DEFAULT FALSE,
+    allowed_file_types TEXT, -- JSON string containing file type configurations
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- Create indexes for common queries
 CREATE INDEX idx_services_performer_id ON services (performer_id);
 CREATE INDEX idx_services_category_id ON services (category_id);

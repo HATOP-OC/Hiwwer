@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Trash2, Plus, FileType, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useFileTypes } from '@/contexts/FileTypeContext';
 
 interface FileTypeConfig {
   id: string;
@@ -85,9 +86,15 @@ const DEFAULT_FILE_TYPES: FileTypeConfig[] = [
 
 interface FileTypeSettingsProps {
   onConfigChange?: (config: FileTypeConfig[]) => void;
+  initialConfig?: FileTypeConfig[] | null;
+  isAdminMode?: boolean;
 }
 
-export default function FileTypeSettings({ onConfigChange }: FileTypeSettingsProps) {
+export default function FileTypeSettings({ 
+  onConfigChange, 
+  initialConfig, 
+  isAdminMode = false 
+}: FileTypeSettingsProps) {
   const { user } = useAuth();
   const [fileTypes, setFileTypes] = useState<FileTypeConfig[]>([]);
   const [enabledTypes, setEnabledTypes] = useState<Set<string>>(new Set());
@@ -99,35 +106,62 @@ export default function FileTypeSettings({ onConfigChange }: FileTypeSettingsPro
   });
   const [showAddForm, setShowAddForm] = useState(false);
 
+  // Стан для відстеження ініціалізації
+  const [isInitialized, setIsInitialized] = useState(false);
+
   useEffect(() => {
-    // Завантажити конфігурацію з localStorage або використати дефолтну
-    const savedConfig = localStorage.getItem('fileTypeConfig');
-    const savedEnabled = localStorage.getItem('enabledFileTypes');
-    
-    if (savedConfig) {
-      setFileTypes(JSON.parse(savedConfig));
-    } else {
+    // Ініціалізувати тільки один раз
+    if (isInitialized) return;
+
+    if (isAdminMode) {
+      // В режимі адміністратора завжди показуємо всі доступні типи файлів
       setFileTypes(DEFAULT_FILE_TYPES);
-    }
+      
+      if (initialConfig && initialConfig.length > 0) {
+        // Якщо є збережена конфігурація, встановлюємо тільки дозволені типи як активні
+        setEnabledTypes(new Set(initialConfig.map(ft => ft.id)));
+      } else if (initialConfig === null) {
+        // Якщо немає збереженої конфігурації (null), всі типи активні за замовчуванням
+        setEnabledTypes(new Set(DEFAULT_FILE_TYPES.map(ft => ft.id)));
+      } else {
+        // Якщо порожній масив [], жоден тип не активний
+        setEnabledTypes(new Set());
+      }
+      setIsInitialized(true);
+    } else if (!isAdminMode) {
+      // Для звичайних користувачів зчитуємо глобальні налаштування з API
+      // або використовуємо localStorage як fallback
+      const savedConfig = localStorage.getItem('fileTypeConfig');
+      const savedEnabled = localStorage.getItem('enabledFileTypes');
+      
+      if (savedConfig) {
+        setFileTypes(JSON.parse(savedConfig));
+      } else {
+        setFileTypes(DEFAULT_FILE_TYPES);
+      }
 
-    if (savedEnabled) {
-      setEnabledTypes(new Set(JSON.parse(savedEnabled)));
-    } else {
-      setEnabledTypes(new Set(['images', 'documents'])); // Дефолтно увімкнути зображення та документи
+      if (savedEnabled) {
+        setEnabledTypes(new Set(JSON.parse(savedEnabled)));
+      } else {
+        setEnabledTypes(new Set(['images', 'documents'])); // Дефолтно увімкнути зображення та документи
+      }
+      setIsInitialized(true);
     }
-  }, []);
+  }, [isAdminMode, initialConfig, isInitialized]);
 
   useEffect(() => {
-    // Зберігати конфігурацію в localStorage
-    localStorage.setItem('fileTypeConfig', JSON.stringify(fileTypes));
-    localStorage.setItem('enabledFileTypes', JSON.stringify(Array.from(enabledTypes)));
+    // Зберігати конфігурацію в localStorage тільки якщо не адмін режим
+    if (!isAdminMode) {
+      localStorage.setItem('fileTypeConfig', JSON.stringify(fileTypes));
+      localStorage.setItem('enabledFileTypes', JSON.stringify(Array.from(enabledTypes)));
+    }
     
     // Викликати callback якщо є
     if (onConfigChange) {
       const enabledFileTypes = fileTypes.filter(type => enabledTypes.has(type.id));
       onConfigChange(enabledFileTypes);
     }
-  }, [fileTypes, enabledTypes, onConfigChange]);
+  }, [fileTypes, enabledTypes, onConfigChange, isAdminMode]);
 
   const toggleFileType = (typeId: string) => {
     setEnabledTypes(prev => {
@@ -180,6 +214,19 @@ export default function FileTypeSettings({ onConfigChange }: FileTypeSettingsPro
   };
 
   if (!user) return null;
+
+  // Показати завантаження в адмін режимі поки не ініціалізовано
+  if (isAdminMode && !isInitialized) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex items-center justify-center h-32">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
@@ -341,27 +388,30 @@ export default function FileTypeSettings({ onConfigChange }: FileTypeSettingsPro
   );
 }
 
+// Глобальні змінні для кешування
+let cachedFileTypes: FileTypeConfig[] | null = null;
+
 // Функція для отримання поточної конфігурації
-export function getFileTypeConfig(): FileTypeConfig[] {
-  const savedConfig = localStorage.getItem('fileTypeConfig');
-  const savedEnabled = localStorage.getItem('enabledFileTypes');
-  
-  const fileTypes = savedConfig ? JSON.parse(savedConfig) : DEFAULT_FILE_TYPES;
-  const enabledTypes = savedEnabled ? new Set(JSON.parse(savedEnabled)) : new Set(['images', 'documents']);
-  
-  return fileTypes.filter((type: FileTypeConfig) => enabledTypes.has(type.id));
-}
+export async function getFileTypeConfig(): Promise<FileTypeConfig[]> {
+  // Якщо є кешовані дані, повертаємо їх
+  if (cachedFileTypes) {
+    return cachedFileTypes;
+  }
 
-// Функція для отримання строки accept
-export function getAcceptString(): string {
-  const enabledFileTypes = getFileTypeConfig();
-  const mimeTypes = enabledFileTypes.flatMap(type => type.mimeTypes);
-  const extensions = enabledFileTypes.flatMap(type => type.extensions.map(ext => `.${ext}`));
-  return [...new Set([...mimeTypes, ...extensions])].join(',');
-}
-
-// Функція для отримання максимального розміру файлу
-export function getMaxFileSize(): number {
-  const enabledFileTypes = getFileTypeConfig();
-  return Math.max(...enabledFileTypes.map(type => type.maxSize), 10);
+  try {
+    // Спробуємо отримати глобальні налаштування
+    const response = await fetch('/v1/admin/settings');
+    if (response.ok) {      const data = await response.json();
+      if (data.allowedFileTypes && Array.isArray(data.allowedFileTypes)) {
+        cachedFileTypes = data.allowedFileTypes;
+        return cachedFileTypes;
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching global file types:', error);
+  }
+  
+  // Fallback до дефолтних налаштувань
+  cachedFileTypes = DEFAULT_FILE_TYPES;
+  return cachedFileTypes;
 }

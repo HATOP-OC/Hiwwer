@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { FileTypeProvider } from "@/contexts/FileTypeContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
 import Index from "./pages/Index";
@@ -18,7 +19,6 @@ import ServiceDetail from "./pages/ServiceDetail";
 import MyServices from "./pages/MyServices";
 import CreateService from "./pages/CreateService";
 import NotFound from "./pages/NotFound";
-import Settings from "./pages/Settings";
 
 // Сторінки для клієнтів
 import Services from "./pages/Services";
@@ -57,10 +57,11 @@ const App = () => (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <AuthProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
+          <FileTypeProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
             <Routes>
               {/* Основні сторінки */}
               <Route path="/" element={<Index />} />
@@ -74,7 +75,6 @@ const App = () => (
               <Route path="/order/:id" element={<OrderDetail />} />
               <Route path="/create-order/:serviceId" element={<CreateOrder />} />
               <Route path="/create-custom-order" element={<CreateOrder />} />
-              <Route path="/settings" element={<Settings />} />
               
               {/* Сторінки для клієнтів */}
               <Route path="/services" element={<Services />} />
@@ -124,8 +124,9 @@ const App = () => (
             </Routes>
           </BrowserRouter>
         </TooltipProvider>
-      </AuthProvider>
-    </ThemeProvider>
+      </FileTypeProvider>
+    </AuthProvider>
+  </ThemeProvider>
   </QueryClientProvider>
   </ErrorBoundary>
 );

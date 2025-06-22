@@ -90,6 +90,39 @@ app.get('/v1/health', (req: Request, res: Response) => {
 app.use('/v1/auth', authRouter);
 app.use('/v1/services', servicesRouter);
 
+// File types endpoint (public)
+app.get('/v1/file-types', async (req: Request, res: Response) => {
+  try {
+    // Get file type settings from admin_settings
+    const result = await query('SELECT allowed_file_types FROM admin_settings ORDER BY id DESC LIMIT 1');
+    
+    if (result.rows.length > 0) {
+      const allowedFileTypesRaw = result.rows[0].allowed_file_types;
+      
+      if (allowedFileTypesRaw === null || allowedFileTypesRaw === undefined) {
+        // Якщо NULL - повертаємо null для використання дефолтних налаштувань
+        res.json({ allowedFileTypes: null });
+      } else {
+        try {
+          const allowedFileTypes = JSON.parse(allowedFileTypesRaw);
+          // Повертаємо те, що збережено (може бути порожнім масивом)
+          res.json({ allowedFileTypes });
+        } catch (parseError) {
+          console.error('Error parsing allowed_file_types JSON:', parseError);
+          // Якщо помилка парсингу - повертаємо null
+          res.json({ allowedFileTypes: null });
+        }
+      }
+    } else {
+      // Якщо немає записів - повертаємо null для дефолтних налаштувань
+      res.json({ allowedFileTypes: null });
+    }
+  } catch (error) {
+    console.error('Error fetching file types:', error);
+    res.status(500).json({ message: 'Failed to fetch file types' });
+  }
+});
+
 // Protected routes
 app.use('/v1/users', usersRouter);
 app.use('/v1/performers', performersRouter);

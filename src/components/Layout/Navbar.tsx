@@ -84,9 +84,6 @@ export default function Navbar() {
                     <Link to="/profile">Profile</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link to="/settings">Settings</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
                     <Link to="/my-orders">My Orders</Link>
                   </DropdownMenuItem>
                   {user.role === 'performer' && (
