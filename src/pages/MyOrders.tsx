@@ -253,21 +253,21 @@ export default function MyOrders() {
       <div className="container max-w-7xl py-8">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div>
               <h1 className="text-3xl font-bold text-foreground">Мої замовлення</h1>
               <p className="text-muted-foreground mt-2">
                 Керуйте вашими замовленнями та слідкуйте за прогресом
               </p>
             </div>
-            <div className="flex space-x-3">
-              <Button asChild>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button asChild className="w-full sm:w-auto">
                 <Link to="/services">
                   <PlusCircle className="h-4 w-4 mr-2" />
                   Створити замовлення
                 </Link>
               </Button>
-              <Button variant="outline" asChild>
+              <Button variant="outline" asChild className="w-full sm:w-auto">
                 <Link to="/services">
                   <Search className="h-4 w-4 mr-2" />
                   Переглянути послуги

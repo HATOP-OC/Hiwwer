@@ -313,14 +313,14 @@ INSERT INTO service_categories (name, slug, description, icon) VALUES
 ('Відео', 'video', 'Відеомонтаж, анімація', 'film'),
 ('Аудіо', 'audio', 'Аудіо обробка, озвучування', 'music'),
 ('Інше', 'other', 'Інші послуги', 'more-horizontal'),
-('Design', 'design', 'Graphic design, logos, UI/UX, illustrations, and more', '🎨'),
-('Development', 'development', 'Web development, mobile apps, software, and more', '💻'),
-('Writing', 'writing', 'Content writing, copywriting, translation, and more', '✍️'),
-('Marketing', 'marketing', 'SEO, social media, content marketing, and more', '📈'),
-('Video', 'video', 'Video editing, animation, motion graphics, and more', '🎥'),
-('Audio', 'audio', 'Music production, voice over, sound effects, and more', '🎵'),
-('Business', 'business', 'Business plans, market research, legal advice, and more', '💼'),
-('Lifestyle', 'lifestyle', 'Health, fitness, personal coaching, and more', '🌱')
+('Design', 'design-en', 'Graphic design, logos, UI/UX, illustrations, and more', 'palette'),
+('Development', 'development-en', 'Web development, mobile apps, software, and more', 'code'),
+('Writing', 'writing-en', 'Content writing, copywriting, translation, and more', 'pen-square'),
+('Marketing', 'marketing-en', 'SEO, social media, content marketing, and more', 'trending-up'),
+('Video', 'video-en', 'Video editing, animation, motion graphics, and more', 'film'),
+('Audio', 'audio-en', 'Music production, voice over, sound effects, and more', 'music'),
+('Business', 'business-en', 'Business plans, market research, legal advice, and more', 'briefcase'),
+('Lifestyle', 'lifestyle-en', 'Health, fitness, personal coaching, and more', 'leaf')
 ON CONFLICT (slug) DO NOTHING;
 
 -- Example seed data for tags
@@ -350,3 +350,14 @@ CREATE TRIGGER trigger_update_messages_updated_at
     BEFORE UPDATE ON messages
     FOR EACH ROW
     EXECUTE FUNCTION update_messages_updated_at();
+
+-- AI Chat History Table
+CREATE TABLE ai_chat_history (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    session_id VARCHAR(255) NOT NULL,
+    sender VARCHAR(50) NOT NULL CHECK (sender IN ('user', 'assistant')),
+    message TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_ai_chat_history_session_id ON ai_chat_history(session_id);

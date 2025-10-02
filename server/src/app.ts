@@ -21,6 +21,7 @@ import ordersRouter from './routes/orders';
 import messagesRouter from './routes/messages';
 import notificationsRouter from './routes/notifications';
 import adminRouter from './routes/admin';
+import assistantRouter from './routes/assistant';
 import orderOptionsRouter from './routes/orderOptions';
 import orderAttachmentsRouter from './routes/orderAttachments';
 import paymentsRouter from './routes/payments';
@@ -89,6 +90,7 @@ app.get('/v1/health', (req: Request, res: Response) => {
 // Public routes
 app.use('/v1/auth', authRouter);
 app.use('/v1/services', servicesRouter);
+app.use('/v1/assistant', assistantRouter);
 
 // File types endpoint (public)
 app.get('/v1/file-types', async (req: Request, res: Response) => {

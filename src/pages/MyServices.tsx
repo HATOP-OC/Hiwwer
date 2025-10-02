@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import Layout from '@/components/Layout/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,9 +8,12 @@ import { Badge } from '@/components/ui/badge';
 import { Star, Edit, Trash2, Plus, Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Service } from '@/lib/api';
+import { useToast } from '@/hooks/use-toast';
 
 export default function MyServices() {
   const { user } = useAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   
   // Отримання послуг користувача
   const { data: services = [], isLoading, refetch } = useQuery<Service[]>({
@@ -26,6 +29,42 @@ export default function MyServices() {
     },
     enabled: !!user && user.role === 'performer',
   });
+
+  // Видалення послуги
+  const deleteMutation = useMutation({
+    mutationFn: async (serviceId: string) => {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`/v1/services/${serviceId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || 'Failed to delete service');
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['my-services'] });
+      toast({
+        title: 'Успіх',
+        description: 'Послугу успішно видалено',
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Помилка',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+
+  const handleDeleteService = async (serviceId: string, serviceTitle: string) => {
+    if (confirm(`Ви впевнені, що хочете видалити послугу "${serviceTitle}"?`)) {
+      deleteMutation.mutate(serviceId);
+    }
+  };
 
   // Перевірка доступу ПІСЛЯ всіх хуків
   if (user?.role !== 'performer') {
@@ -100,7 +139,12 @@ export default function MyServices() {
                           <Edit className="h-4 w-4" />
                         </Link>
                       </Button>
-                      <Button variant="ghost" size="sm">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => handleDeleteService(service.id, service.title)}
+                        disabled={deleteMutation.isPending}
+                      >
                         <Trash2 className="h-4 w-4 text-red-500" />
                       </Button>
                     </div>

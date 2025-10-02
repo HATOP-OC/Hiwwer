@@ -2,6 +2,7 @@
 import { ReactNode } from 'react';
 import Navbar from './Navbar';
 import Footer from './Footer';
+import AssistantChat from '../AssistantChat';
 
 interface LayoutProps {
   children: ReactNode;
@@ -14,6 +15,7 @@ export default function Layout({ children, hideFooter = false }: LayoutProps) {
       <Navbar />
       <main className="flex-1 w-full">{children}</main>
       {!hideFooter && <Footer />}
+      <AssistantChat />
     </div>
   );
 }

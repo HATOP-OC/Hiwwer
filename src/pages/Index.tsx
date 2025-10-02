@@ -7,7 +7,22 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Search, CheckCircle, ArrowRight, Star } from 'lucide-react';
+import { Search, CheckCircle, ArrowRight, Star, Palette, Code, PenSquare, TrendingUp, Film, Music, Briefcase, BookOpen, ClipboardList, Smartphone } from 'lucide-react';
+
+const iconMap: { [key: string]: React.ElementType } = {
+  design: Palette,
+  development: Code,
+  writing: PenSquare,
+  marketing: TrendingUp,
+  video: Film,
+  audio: Music,
+  business: Briefcase,
+  learning: BookOpen,
+  search: Search,
+  order: ClipboardList,
+  updates: Smartphone,
+  result: CheckCircle,
+};
 
 // Презентаційні послуги для демонстрації можливостей платформи
 const showcaseServices = [
@@ -67,14 +82,14 @@ const showcaseServices = [
 
 // Популярні категорії послуг
 const serviceCategories = [
-  { id: '1', name: 'Дизайн', icon: '🎨', description: 'Креативні рішення' },
-  { id: '2', name: 'Розробка', icon: '💻', description: 'Веб та мобільні додатки' },
-  { id: '3', name: 'Тексти', icon: '✍️', description: 'Якісний контент' },
-  { id: '4', name: 'Маркетинг', icon: '📈', description: 'Просування бізнесу' },
-  { id: '5', name: 'Відео', icon: '🎥', description: 'Відеопродукція' },
-  { id: '6', name: 'Аудіо', icon: '🎵', description: 'Звукові рішення' },
-  { id: '7', name: 'Бізнес', icon: '💼', description: 'Консалтинг' },
-  { id: '8', name: 'Навчання', icon: '📚', description: 'Освітні послуги' }
+  { id: '1', name: 'Дизайн', icon: 'design', description: 'Креативні рішення' },
+  { id: '2', name: 'Розробка', icon: 'development', description: 'Веб та мобільні додатки' },
+  { id: '3', name: 'Тексти', icon: 'writing', description: 'Якісний контент' },
+  { id: '4', name: 'Маркетинг', icon: 'marketing', description: 'Просування бізнесу' },
+  { id: '5', name: 'Відео', icon: 'video', description: 'Відеопродукція' },
+  { id: '6', name: 'Аудіо', icon: 'audio', description: 'Звукові рішення' },
+  { id: '7', name: 'Бізнес', icon: 'business', description: 'Консалтинг' },
+  { id: '8', name: 'Навчання', icon: 'learning', description: 'Освітні послуги' }
 ];
 
 // Як працює платформа Hiwwer
@@ -83,25 +98,25 @@ const workflowSteps = [
     id: '1',
     title: 'Знайдіть послугу',
     description: 'Оберіть потрібну послугу з широкого асортименту талановитих виконавців.',
-    icon: '🔍'
+    icon: 'search'
   },
   {
     id: '2',
     title: 'Оформте замовлення',
     description: 'Опишіть ваші вимоги і безпечно здійсніть оплату.',
-    icon: '📋'
+    icon: 'order'
   },
   {
     id: '3',
     title: 'Отримуйте оновлення',
     description: 'Слідкуйте за прогресом через зручний Telegram-бот.',
-    icon: '📱'
+    icon: 'updates'
   },
   {
     id: '4',
     title: 'Отримайте результат',
     description: 'Перевірте роботу і запросіть правки за потреби.',
-    icon: '✅'
+    icon: 'result'
   }
 ];
 
@@ -169,15 +184,18 @@ export default function Index() {
           <h2 className="text-3xl font-bold mb-8 text-center">Популярні категорії</h2>
           
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4">
-            {serviceCategories.map(category => (
-              <Link to={`/services?category=${category.name.toLowerCase()}`} key={category.id}>
-                <div className="bg-card hover-card rounded-lg p-4 flex flex-col items-center justify-center text-center h-32 group transition-all duration-300">
-                  <div className="text-3xl mb-2 group-hover:scale-110 transition-transform duration-300">{category.icon}</div>
-                  <h3 className="font-medium mb-1">{category.name}</h3>
-                  <p className="text-xs text-muted-foreground">{category.description}</p>
-                </div>
-              </Link>
-            ))}
+            {serviceCategories.map(category => {
+              const Icon = iconMap[category.icon];
+              return (
+                <Link to={`/services?category=${category.name.toLowerCase()}`} key={category.id}>
+                  <div className="bg-card hover-card rounded-lg p-4 flex flex-col items-center justify-center text-center h-32 group transition-all duration-300">
+                    {Icon && <Icon className="text-3xl mb-2 group-hover:scale-110 transition-transform duration-300" />}
+                    <h3 className="font-medium mb-1">{category.name}</h3>
+                    <p className="text-xs text-muted-foreground">{category.description}</p>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -185,9 +203,9 @@ export default function Index() {
       {/* Featured Services Section */}
       <section className="py-16 bg-muted/50">
         <div className="container mx-auto px-4">
-          <div className="flex justify-between items-center mb-8">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-8 gap-4">
             <h2 className="text-3xl font-bold">Рекомендовані послуги</h2>
-            <Button variant="outline" asChild>
+            <Button variant="outline" asChild className="self-start sm:self-auto">
               <Link to="/services">
                 Переглянути всі <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
@@ -245,19 +263,22 @@ export default function Index() {
           <h2 className="text-3xl font-bold mb-12 text-center">Як це працює</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {workflowSteps.map((step, index) => (
-              <div key={step.id} className="flex flex-col items-center text-center relative">
-                <div className="text-4xl mb-4">{step.icon}</div>
-                <div className="text-2xl font-bold mb-2 text-primary">{step.title}</div>
-                <p className="text-muted-foreground">{step.description}</p>
-                
-                {index < workflowSteps.length - 1 && (
-                  <div className="hidden lg:block absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-1/2">
-                    <ArrowRight className="h-6 w-6 text-muted-foreground/30" />
-                  </div>
-                )}
-              </div>
-            ))}
+            {workflowSteps.map((step, index) => {
+              const Icon = iconMap[step.icon];
+              return (
+                <div key={step.id} className="flex flex-col items-center text-center relative">
+                  {Icon && <Icon className="text-4xl mb-4" />}
+                  <div className="text-2xl font-bold mb-2 text-primary">{step.title}</div>
+                  <p className="text-muted-foreground">{step.description}</p>
+
+                  {index < workflowSteps.length - 1 && (
+                    <div className="hidden lg:block absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-1/2">
+                      <ArrowRight className="h-6 w-6 text-muted-foreground/30" />
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
           
           <div className="flex justify-center mt-12">

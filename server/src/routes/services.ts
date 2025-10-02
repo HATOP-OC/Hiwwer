@@ -380,4 +380,39 @@ router.put('/:id', authenticate, async (req: Request, res: Response) => {
   }
 });
 
+// DELETE /v1/services/:id - видалити послугу
+router.delete('/:id', authenticate, async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user!.id;
+
+    // Перевірка, чи послуга належить користувачу
+    const serviceResult = await query(
+      `SELECT id, performer_id FROM services WHERE id = $1`,
+      [id]
+    );
+
+    if (serviceResult.rows.length === 0) {
+      return res.status(404).json({ message: 'Service not found' });
+    }
+
+    if (serviceResult.rows[0].performer_id !== userId) {
+      return res.status(403).json({ message: 'You do not have permission to delete this service' });
+    }
+
+    // Видалення пов'язаних записів (каскадне видалення)
+    await query(`DELETE FROM service_tags WHERE service_id = $1`, [id]);
+    await query(`DELETE FROM service_images WHERE service_id = $1`, [id]);
+    
+    // Видалення самої послуги
+    await query(`DELETE FROM services WHERE id = $1`, [id]);
+
+    res.json({ message: 'Service deleted successfully' });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Failed to delete service';
+    console.error(error);
+    res.status(500).json({ message });
+  }
+});
+
 export default router;

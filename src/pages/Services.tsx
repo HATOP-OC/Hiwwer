@@ -11,19 +11,30 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Link } from 'react-router-dom';
-import { Star, Search, Filter as FilterIcon, ChevronDown, ChevronUp } from 'lucide-react';
+import { Star, Search, Filter as FilterIcon, ChevronDown, ChevronUp, Palette, Code, PenSquare, TrendingUp, Film, Music, Briefcase, BookOpen } from 'lucide-react';
 import { fetchServices, Service } from '@/lib/api';
+
+const iconMap: { [key: string]: React.ElementType } = {
+  design: Palette,
+  development: Code,
+  writing: PenSquare,
+  marketing: TrendingUp,
+  video: Film,
+  audio: Music,
+  business: Briefcase,
+  learning: BookOpen,
+};
 
 // Реальні категорії послуг
 const serviceCategories = [
-  { id: '1', name: 'Дизайн', icon: '🎨', count: 156 },
-  { id: '2', name: 'Розробка', icon: '💻', count: 243 },
-  { id: '3', name: 'Тексти', icon: '✍️', count: 112 },
-  { id: '4', name: 'Маркетинг', icon: '📈', count: 98 },
-  { id: '5', name: 'Відео', icon: '🎥', count: 67 },
-  { id: '6', name: 'Аудіо', icon: '🎵', count: 45 },
-  { id: '7', name: 'Бізнес', icon: '💼', count: 78 },
-  { id: '8', name: 'Навчання', icon: '📚', count: 53 }
+  { id: '1', name: 'Дизайн', icon: 'design', count: 156 },
+  { id: '2', name: 'Розробка', icon: 'development', count: 243 },
+  { id: '3', name: 'Тексти', icon: 'writing', count: 112 },
+  { id: '4', name: 'Маркетинг', icon: 'marketing', count: 98 },
+  { id: '5', name: 'Відео', icon: 'video', count: 67 },
+  { id: '6', name: 'Аудіо', icon: 'audio', count: 45 },
+  { id: '7', name: 'Бізнес', icon: 'business', count: 78 },
+  { id: '8', name: 'Навчання', icon: 'learning', count: 53 }
 ];
 
 export default function Services() {
@@ -189,20 +200,23 @@ export default function Services() {
                   <div className="mb-6">
                     <h3 className="font-medium mb-2">Категорії</h3>
                     <div className="space-y-2">
-                      {serviceCategories.map(category => (
-                        <div key={category.id} className="flex items-center">
-                          <Checkbox
-                            id={`mobile-category-${category.id}`}
-                            checked={selectedCategories.includes(category.id)}
-                            onCheckedChange={() => handleCategoryChange(category.id)}
-                          />
-                          <Label htmlFor={`mobile-category-${category.id}`} className="ml-2 flex items-center">
-                            <span className="mr-2">{category.icon}</span>
-                            {category.name}
-                            <span className="ml-1 text-muted-foreground text-xs">({category.count})</span>
-                          </Label>
-                        </div>
-                      ))}
+                      {serviceCategories.map(category => {
+                        const Icon = iconMap[category.icon];
+                        return (
+                          <div key={category.id} className="flex items-center">
+                            <Checkbox
+                              id={`mobile-category-${category.id}`}
+                              checked={selectedCategories.includes(category.id)}
+                              onCheckedChange={() => handleCategoryChange(category.id)}
+                            />
+                            <Label htmlFor={`mobile-category-${category.id}`} className="ml-2 flex items-center">
+                              {Icon && <Icon className="mr-2 h-4 w-4" />}
+                              {category.name}
+                              <span className="ml-1 text-muted-foreground text-xs">({category.count})</span>
+                            </Label>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                   
@@ -269,20 +283,23 @@ export default function Services() {
                 <div className="mb-6">
                   <h4 className="text-sm font-medium mb-2">Категорії</h4>
                   <div className="space-y-2">
-                    {serviceCategories.map(category => (
-                      <div key={category.id} className="flex items-center">
-                        <Checkbox
-                          id={`category-${category.id}`}
-                          checked={selectedCategories.includes(category.id)}
-                          onCheckedChange={() => handleCategoryChange(category.id)}
-                        />
-                        <Label htmlFor={`category-${category.id}`} className="ml-2 flex items-center">
-                          <span className="mr-2">{category.icon}</span>
-                          {category.name}
-                          <span className="ml-1 text-muted-foreground text-xs">({category.count})</span>
-                        </Label>
-                      </div>
-                    ))}
+                    {serviceCategories.map(category => {
+                      const Icon = iconMap[category.icon];
+                      return (
+                        <div key={category.id} className="flex items-center">
+                          <Checkbox
+                            id={`category-${category.id}`}
+                            checked={selectedCategories.includes(category.id)}
+                            onCheckedChange={() => handleCategoryChange(category.id)}
+                          />
+                          <Label htmlFor={`category-${category.id}`} className="ml-2 flex items-center">
+                            {Icon && <Icon className="mr-2 h-4 w-4" />}
+                            {category.name}
+                            <span className="ml-1 text-muted-foreground text-xs">({category.count})</span>
+                          </Label>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
                 
