@@ -1,11 +1,8 @@
 import logging
 from datetime import datetime, timedelta
-<<<<<<< HEAD
 from telegram import Update, ParseMode, InlineKeyboardButton, InlineKeyboardMarkup
-=======
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.constants import ParseMode
->>>>>>> aaa1955 (feat: Add main bot functionality with conversation handling and command integration)
 from telegram.ext import CallbackContext, ConversationHandler
 
 import api
