@@ -38,7 +38,7 @@ if [ ! -f ".env" ]; then
     if [ -f ".env.example" ]; then
         echo "Створення .env файлу з .env.example..."
         cp .env.example .env
-        echo "ПОПЕРЕДЖЕННЯ: Налаштуйте TELEGRAM_BOT_TOKEN в .env файлі!"
+        echo "ПОПЕРЕДЖЕННЯ: Налаштуйте TG_API в .env файлі!"
     else
         echo "ПОМИЛКА: .env.example файл не знайдено. Створіть .env файл з налаштуваннями бота."
         exit 1
@@ -46,11 +46,11 @@ if [ ! -f ".env" ]; then
 fi
 
 # Перевірка наявності токена бота
-if ! grep -q "TELEGRAM_BOT_TOKEN=" .env || grep -q "TELEGRAM_BOT_TOKEN=$" .env; then
-    echo "ПОПЕРЕДЖЕННЯ: TELEGRAM_BOT_TOKEN не налаштовано в .env файлі!"
+if ! grep -q "TG_API=" .env || grep -q "TG_API=$" .env; then
+    echo "ПОПЕРЕДЖЕННЯ: TG_API не налаштовано в .env файлі!"
     echo "Отримайте токен від @BotFather в Telegram та додайте його до .env файлу"
 fi
 
 # Запуск бота
 echo "Запуск Telegram бота..."
-python bot.py
+python main.py

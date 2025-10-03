@@ -14,6 +14,8 @@ CREATE TABLE users (
     bio TEXT,
     rating DECIMAL(3, 2) CHECK (rating >= 0 AND rating <= 5),
     telegram_id VARCHAR(255) UNIQUE,
+    telegram_chat_id VARCHAR(255) UNIQUE,
+    language_code VARCHAR(10) DEFAULT 'en',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -267,6 +269,7 @@ CREATE INDEX idx_dispute_messages_dispute_sender ON dispute_messages(dispute_id,
 CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_users_role ON users(role);
 CREATE INDEX idx_users_telegram_id ON users(telegram_id);
+CREATE INDEX idx_users_telegram_chat_id ON users(telegram_chat_id);
 
 CREATE INDEX idx_services_price ON services(price);
 

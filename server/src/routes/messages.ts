@@ -76,7 +76,7 @@ router.post('/', async (req: Request, res: Response) => {
     await createNotification(
       receiverId,
       'message',
-      `Нове повідомлення у замовленні "${title}"`,
+      `You have a new message in order: "${title}"`,
       orderId
     );
 

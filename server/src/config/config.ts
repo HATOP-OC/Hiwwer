@@ -7,6 +7,7 @@ dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 export const config = {
   port: Number(process.env.PORT) || 3000,
   jwtSecret: process.env.JWT_SECRET || 'change_me',
+  telegramBotToken: process.env.TELEGRAM_BOT_TOKEN || '',
   db: {
     connectionString: process.env.DATABASE_URL || 'postgresql://hiwwer_user:hiwwer_password@localhost:5432/hiwwer_db'
   },
