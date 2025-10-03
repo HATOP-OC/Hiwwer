@@ -1,13 +1,15 @@
 import logging
 from datetime import datetime, timedelta
-from telegram import Update, ParseMode, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.constants import ParseMode
-from telegram.ext import CallbackContext, ConversationHandler
+from telegram.ext import ContextTypes, ConversationHandler
+
+ContextType = ContextTypes.DEFAULT_TYPE
 
 import api
 import keyboards
 import localization
+from localization import get_text
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -15,11 +17,11 @@ logger = logging.getLogger(__name__)
 # Conversation states
 MAIN_MENU, ORDER_MENU, CHAT_MENU, ASSISTANT_MENU, LANGUAGE_MENU = range(5)
 
-def _get_lang(context: CallbackContext) -> str:
+def _get_lang(context: ContextType) -> str:
     """Safely get user's language code, defaulting to 'en'."""
     return context.user_data.get("user", {}).get("languageCode", "en")
 
-async def start(update: Update, context: CallbackContext) -> int:
+async def start(update: Update, context: ContextType) -> int:
     """Handle the /start command."""
     user = update.effective_user
     telegram_id = str(user.id)
@@ -45,7 +47,7 @@ async def start(update: Update, context: CallbackContext) -> int:
 
     return MAIN_MENU
 
-async def my_orders(update: Update, context: CallbackContext) -> int:
+async def my_orders(update: Update, context: ContextType) -> int:
     """Show user's orders."""
     query = update.callback_query
     await query.answer()
@@ -72,7 +74,7 @@ async def my_orders(update: Update, context: CallbackContext) -> int:
 
     return ORDER_MENU
 
-async def view_order(update: Update, context: CallbackContext) -> int:
+async def view_order(update: Update, context: ContextType) -> int:
     """Show details of a specific order."""
     query = update.callback_query
     await query.answer()
@@ -124,7 +126,7 @@ async def view_order(update: Update, context: CallbackContext) -> int:
 
     return ORDER_MENU
 
-async def chat_list(update: Update, context: CallbackContext) -> int:
+async def chat_list(update: Update, context: ContextType) -> int:
     """Show list of chats."""
     query = update.callback_query
     await query.answer()
@@ -175,7 +177,7 @@ async def chat_list(update: Update, context: CallbackContext) -> int:
 
     return CHAT_MENU
 
-async def view_chat(update: Update, context: CallbackContext) -> int:
+async def view_chat(update: Update, context: ContextType) -> int:
     """Display the chat for a specific order."""
     query = update.callback_query
     await query.answer()
@@ -221,7 +223,7 @@ async def view_chat(update: Update, context: CallbackContext) -> int:
 
     return CHAT_MENU
 
-async def send_message_prompt(update: Update, context: CallbackContext) -> int:
+async def send_message_prompt(update: Update, context: ContextType) -> int:
     """Prompt user to type their message."""
     query = update.callback_query
     await query.answer()
@@ -236,7 +238,7 @@ async def send_message_prompt(update: Update, context: CallbackContext) -> int:
 
     return CHAT_MENU
 
-async def handle_message(update: Update, context: CallbackContext) -> int:
+async def handle_message(update: Update, context: ContextType) -> int:
     """Handle and send a text message for a chat."""
     order_id = context.user_data.get("message_for_order")
     token = context.user_data.get("token")
@@ -265,7 +267,7 @@ async def handle_message(update: Update, context: CallbackContext) -> int:
 
     return CHAT_MENU
 
-async def handle_order_action(update: Update, context: CallbackContext) -> int:
+async def handle_order_action(update: Update, context: ContextType) -> int:
     """Handle order actions by calling the API."""
     query = update.callback_query
     await query.answer()
@@ -301,7 +303,7 @@ async def handle_order_action(update: Update, context: CallbackContext) -> int:
 
     return ORDER_MENU
 
-async def start_assistant(update: Update, context: CallbackContext) -> int:
+async def start_assistant(update: Update, context: ContextType) -> int:
     """Start the AI assistant conversation."""
     query = update.callback_query
     await query.answer()
@@ -314,7 +316,7 @@ async def start_assistant(update: Update, context: CallbackContext) -> int:
 
     return ASSISTANT_MENU
 
-async def handle_assistant_message(update: Update, context: CallbackContext) -> int:
+async def handle_assistant_message(update: Update, context: ContextType) -> int:
     """Handle messages sent to the AI assistant."""
     user_message = update.message.text
     session_id = str(update.effective_user.id)
@@ -337,7 +339,7 @@ async def handle_assistant_message(update: Update, context: CallbackContext) -> 
 
     return ASSISTANT_MENU
 
-async def language_command(update: Update, context: CallbackContext) -> int:
+async def language_command(update: Update, context: ContextType) -> int:
     """Handle the /language command."""
     lang_code = _get_lang(context)
     await update.message.reply_text(
@@ -346,7 +348,7 @@ async def language_command(update: Update, context: CallbackContext) -> int:
     )
     return LANGUAGE_MENU
 
-async def change_language(update: Update, context: CallbackContext) -> int:
+async def change_language(update: Update, context: ContextType) -> int:
     """Display language selection options via a button press."""
     query = update.callback_query
     await query.answer()
@@ -358,7 +360,7 @@ async def change_language(update: Update, context: CallbackContext) -> int:
     )
     return LANGUAGE_MENU
 
-async def set_language(update: Update, context: CallbackContext) -> int:
+async def set_language(update: Update, context: ContextType) -> int:
     """Set the user's chosen language."""
     query = update.callback_query
     await query.answer()
@@ -387,7 +389,7 @@ async def set_language(update: Update, context: CallbackContext) -> int:
 
     return MAIN_MENU
 
-async def back_to_main(update: Update, context: CallbackContext) -> int:
+async def back_to_main(update: Update, context: ContextType) -> int:
     """Return to the main menu."""
     query = update.callback_query
     await query.answer()
@@ -400,17 +402,17 @@ async def back_to_main(update: Update, context: CallbackContext) -> int:
 
     return MAIN_MENU
 
-async def help_command(update: Update, context: CallbackContext) -> None:
+async def help_command(update: Update, context: ContextType) -> None:
     """Send a message when the command /help is issued."""
     lang_code = _get_lang(context)
     await update.message.reply_text(get_text('help_command_text', lang_code))
 
-async def cancel(update: Update, context: CallbackContext) -> int:
+async def cancel(update: Update, context: ContextType) -> int:
     """Cancel conversation."""
     lang_code = _get_lang(context)
     await update.message.reply_text(get_text('cancel_operation', lang_code))
     return ConversationHandler.END
 
-async def error_handler(update: object, context: CallbackContext) -> None:
+async def error_handler(update: object, context: ContextType) -> None:
     """Log errors caused by updates."""
     logger.error(f'Update "{update}" caused error "{context.error}"')

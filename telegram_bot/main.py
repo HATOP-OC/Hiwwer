@@ -2,13 +2,15 @@ import os
 import logging
 from dotenv import load_dotenv
 
+from telegram import Update
 from telegram.ext import (
-    Updater,
+    Application,
     CommandHandler,
     CallbackQueryHandler,
     MessageHandler,
-    Filters,
     ConversationHandler,
+    ContextTypes,
+    filters,
 )
 
 import handlers
@@ -30,8 +32,20 @@ def main() -> None:
         logger.error("No TG_API token provided! Set the environment variable.")
         return
 
-    updater = Updater(token)
-    dispatcher = updater.dispatcher
+    async def post_init(application):
+        logger.info("Hiwwer Bot started...")
+
+    async def post_shutdown(application):
+        logger.info("Shutting down bot...")
+        await api.api_client.close()
+
+    application = (
+        Application.builder()
+        .token(token)
+        .post_init(post_init)
+        .post_shutdown(post_shutdown)
+        .build()
+    )
 
     # Setup conversation handler with states
     conv_handler = ConversationHandler(
@@ -56,11 +70,11 @@ def main() -> None:
                 CallbackQueryHandler(handlers.view_order, pattern='^order_'),
                 CallbackQueryHandler(handlers.chat_list, pattern='^messages$'),
                 CallbackQueryHandler(handlers.back_to_main, pattern='^back_to_main$'),
-                MessageHandler(Filters.text & ~Filters.command, handlers.handle_message),
+                MessageHandler(filters.TEXT & ~filters.COMMAND, handlers.handle_message),
             ],
             handlers.ASSISTANT_MENU: [
                 CallbackQueryHandler(handlers.back_to_main, pattern='^back_to_main$'),
-                MessageHandler(Filters.text & ~Filters.command, handlers.handle_assistant_message),
+                MessageHandler(filters.TEXT & ~filters.COMMAND, handlers.handle_assistant_message),
             ],
             handlers.LANGUAGE_MENU: [
                 CallbackQueryHandler(handlers.set_language, pattern='^set_lang_'),
@@ -69,34 +83,21 @@ def main() -> None:
         },
         fallbacks=[CommandHandler('cancel', handlers.cancel), CommandHandler('start', handlers.start)],
         per_user=True,
-        # Allow re-entry into the conversation
+        per_message=False,
         allow_reentry=True
     )
 
-    dispatcher.add_handler(conv_handler)
+    application.add_handler(conv_handler)
 
     # Add standalone command handlers
-    dispatcher.add_handler(CommandHandler('help', handlers.help_command))
-    dispatcher.add_handler(CommandHandler('language', handlers.language_command))
+    application.add_handler(CommandHandler('help', handlers.help_command))
+    application.add_handler(CommandHandler('language', handlers.language_command))
 
     # Add error handler
-    dispatcher.add_error_handler(handlers.error_handler)
+    application.add_error_handler(handlers.error_handler)
 
     # Start the Bot
-    updater.start_polling()
-    logger.info("Hiwwer Bot started...")
-
-    # Run the bot until you press Ctrl-C
-    updater.idle()
-
-    # Clean up resources
-    # This part is not strictly necessary for polling, but good practice
-    # For a webhook based bot, this would be more complex.
-    # We need to run the close method of our api_client
-    import asyncio
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(api_client.close())
-    loop.run_until_complete(api.api_client.close())
+    application.run_polling()
 
 
 if __name__ == '__main__':
