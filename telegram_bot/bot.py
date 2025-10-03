@@ -8,16 +8,17 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any, Union
 
 from dotenv import load_dotenv
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ParseMode, WebAppInfo
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 from telegram.ext import (
-    Updater,
+    Application,
     CommandHandler,
     MessageHandler,
     CallbackQueryHandler,
-    Filters,
-    CallbackContext,
+    filters,
+    ContextTypes,
     ConversationHandler,
 )
+from telegram.constants import ParseMode
 
 # Load environment variables from .env file
 load_dotenv()
@@ -67,7 +68,7 @@ mock_chats = {
 user_data = {}
 
 
-def start(update: Update, context: CallbackContext) -> int:
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Send a message when the command /start is issued."""
     user = update.effective_user
     
@@ -81,7 +82,7 @@ def start(update: Update, context: CallbackContext) -> int:
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
-    update.message.reply_text(
+    await update.message.reply_text(
         f'Hello {user.first_name}! Welcome to Hiwwer Bot.\n\n'
         f'I can help you manage your orders and communicate with clients/performers.',
         reply_markup=reply_markup
@@ -90,7 +91,7 @@ def start(update: Update, context: CallbackContext) -> int:
     return MAIN_MENU
 
 
-def help_command(update: Update, context: CallbackContext) -> None:
+async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Send a message when the command /help is issued."""
     help_text = (
         "Hiwwer Bot Commands:\n\n"
@@ -99,13 +100,13 @@ def help_command(update: Update, context: CallbackContext) -> None:
         "/chat - Access your conversations\n"
         "/help - Show this help message\n"
     )
-    update.message.reply_text(help_text)
+    await update.message.reply_text(help_text)
 
 
-def my_orders(update: Update, context: CallbackContext) -> int:
+async def my_orders(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Show user's orders."""
     query = update.callback_query
-    query.answer()
+    await query.answer()
     
     # In a real implementation, fetch user orders from API
     # For now, use mock data based on user's role
@@ -120,7 +121,7 @@ def my_orders(update: Update, context: CallbackContext) -> int:
             user_orders.append(order)
     
     if not user_orders:
-        query.edit_message_text(
+        await query.edit_message_text(
             text="You don't have any orders yet.",
             reply_markup=InlineKeyboardMarkup([
                 [InlineKeyboardButton("Back to Main Menu", callback_data='back_to_main')]
@@ -147,7 +148,7 @@ def my_orders(update: Update, context: CallbackContext) -> int:
     
     order_buttons.append([InlineKeyboardButton("Back to Main Menu", callback_data='back_to_main')])
     
-    query.edit_message_text(
+    await query.edit_message_text(
         text="Your orders:",
         reply_markup=InlineKeyboardMarkup(order_buttons)
     )
@@ -155,16 +156,16 @@ def my_orders(update: Update, context: CallbackContext) -> int:
     return ORDER_MENU
 
 
-def view_order(update: Update, context: CallbackContext) -> int:
+async def view_order(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Show details of a specific order."""
     query = update.callback_query
-    query.answer()
+    await query.answer()
     
     order_id = query.data.split('_')[1]
     order = mock_orders.get(order_id)
     
     if not order:
-        query.edit_message_text(
+        await query.edit_message_text(
             text="Order not found.",
             reply_markup=InlineKeyboardMarkup([
                 [InlineKeyboardButton("Back to Orders", callback_data='my_orders')]
@@ -213,7 +214,7 @@ def view_order(update: Update, context: CallbackContext) -> int:
     
     keyboard.append([InlineKeyboardButton("Back to Orders", callback_data='my_orders')])
     
-    query.edit_message_text(
+    await query.edit_message_text(
         text=message,
         reply_markup=InlineKeyboardMarkup(keyboard),
         parse_mode=ParseMode.MARKDOWN
@@ -222,10 +223,10 @@ def view_order(update: Update, context: CallbackContext) -> int:
     return ORDER_MENU
 
 
-def chat_list(update: Update, context: CallbackContext) -> int:
+async def chat_list(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Show list of chats."""
     query = update.callback_query
-    query.answer()
+    await query.answer()
     
     # In a real implementation, fetch user chats from API
     user_telegram_id = str(update.effective_user.id)
@@ -245,7 +246,7 @@ def chat_list(update: Update, context: CallbackContext) -> int:
             })
     
     if not user_chats:
-        query.edit_message_text(
+        await query.edit_message_text(
             text="You don't have any chats yet.",
             reply_markup=InlineKeyboardMarkup([
                 [InlineKeyboardButton("Back to Main Menu", callback_data='back_to_main')]
@@ -264,7 +265,7 @@ def chat_list(update: Update, context: CallbackContext) -> int:
     
     chat_buttons.append([InlineKeyboardButton("Back to Main Menu", callback_data='back_to_main')])
     
-    query.edit_message_text(
+    await query.edit_message_text(
         text="Your conversations:",
         reply_markup=InlineKeyboardMarkup(chat_buttons)
     )
@@ -272,17 +273,17 @@ def chat_list(update: Update, context: CallbackContext) -> int:
     return CHAT_MENU
 
 
-def view_chat(update: Update, context: CallbackContext) -> int:
+async def view_chat(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Show chat for a specific order."""
     query = update.callback_query
-    query.answer()
+    await query.answer()
     
     order_id = query.data.split('_')[1]
     order = mock_orders.get(order_id)
     chat = mock_chats.get(order_id, [])
     
     if not order:
-        query.edit_message_text(
+        await query.edit_message_text(
             text="Chat not found.",
             reply_markup=InlineKeyboardMarkup([
                 [InlineKeyboardButton("Back to Chats", callback_data='messages')]
@@ -310,7 +311,7 @@ def view_chat(update: Update, context: CallbackContext) -> int:
         [InlineKeyboardButton("Back to Chats", callback_data='messages')]
     ]
     
-    query.edit_message_text(
+    await query.edit_message_text(
         text=message,
         reply_markup=InlineKeyboardMarkup(keyboard),
         parse_mode=ParseMode.MARKDOWN
@@ -319,14 +320,14 @@ def view_chat(update: Update, context: CallbackContext) -> int:
     return CHAT_MENU
 
 
-def send_message_prompt(update: Update, context: CallbackContext) -> int:
+async def send_message_prompt(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Prompt user to send a message."""
     query = update.callback_query
-    query.answer()
+    await query.answer()
     
     order_id = query.data.split('_')[2]
     
-    query.edit_message_text(
+    await query.edit_message_text(
         text=f"Please type your message for order #{order_id}. I'll deliver it to the other party.",
     )
     
@@ -336,12 +337,12 @@ def send_message_prompt(update: Update, context: CallbackContext) -> int:
     return CHAT_MENU
 
 
-def handle_message(update: Update, context: CallbackContext) -> int:
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Handle incoming messages for chats."""
     order_id = context.user_data.get("message_for_order")
     
     if not order_id or order_id not in mock_orders:
-        update.message.reply_text(
+        await update.message.reply_text(
             "I'm not sure which conversation this message is for. Please use the menu to select a chat first.",
             reply_markup=InlineKeyboardMarkup([
                 [InlineKeyboardButton("Main Menu", callback_data='back_to_main')]
@@ -376,7 +377,7 @@ def handle_message(update: Update, context: CallbackContext) -> int:
         [InlineKeyboardButton("Back to Main Menu", callback_data='back_to_main')]
     ]
     
-    update.message.reply_text(
+    await update.message.reply_text(
         "Message sent! The other party will be notified.",
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
@@ -392,10 +393,10 @@ def handle_message(update: Update, context: CallbackContext) -> int:
     return MAIN_MENU
 
 
-def back_to_main(update: Update, context: CallbackContext) -> int:
+async def back_to_main(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Return to main menu."""
     query = update.callback_query
-    query.answer()
+    await query.answer()
     
     keyboard = [
         [InlineKeyboardButton("Открыть маркетплейс", web_app=WebAppInfo(url=web_app_url))],
@@ -403,7 +404,7 @@ def back_to_main(update: Update, context: CallbackContext) -> int:
         [InlineKeyboardButton("Сообщения", callback_data='messages')],
     ]
     
-    query.edit_message_text(
+    await query.edit_message_text(
         text="Hiwwer Bot Main Menu",
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
@@ -411,10 +412,10 @@ def back_to_main(update: Update, context: CallbackContext) -> int:
     return MAIN_MENU
 
 
-def handle_order_action(update: Update, context: CallbackContext) -> int:
+async def handle_order_action(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Handle order actions like complete, revision, etc."""
     query = update.callback_query
-    query.answer()
+    await query.answer()
     
     # Extract action and order_id from callback data
     # Format: action_order_id (e.g., complete_123456)
@@ -423,7 +424,7 @@ def handle_order_action(update: Update, context: CallbackContext) -> int:
     order_id = parts[1]
     
     if order_id not in mock_orders:
-        query.edit_message_text(
+        await query.edit_message_text(
             text="Order not found.",
             reply_markup=InlineKeyboardMarkup([
                 [InlineKeyboardButton("Back to Orders", callback_data='my_orders')]
@@ -452,7 +453,7 @@ def handle_order_action(update: Update, context: CallbackContext) -> int:
         [InlineKeyboardButton("Back to Orders", callback_data='my_orders')]
     ]
     
-    query.edit_message_text(
+    await query.edit_message_text(
         text=message,
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
@@ -460,13 +461,13 @@ def handle_order_action(update: Update, context: CallbackContext) -> int:
     return ORDER_MENU
 
 
-def cancel(update: Update, context: CallbackContext) -> int:
+async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Cancel conversation."""
-    update.message.reply_text('Operation canceled.')
+    await update.message.reply_text('Operation canceled.')
     return ConversationHandler.END
 
 
-def error_handler(update: Update, context: CallbackContext) -> None:
+async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Log errors caused by updates."""
     logger.error(f'Update "{update}" caused error "{context.error}"')
 
@@ -479,9 +480,8 @@ def main() -> None:
         logger.error("No token provided! Set the TG_API environment variable.")
         return
     
-    # Create updater and dispatcher
-    updater = Updater(token)
-    dispatcher = updater.dispatcher
+    # Create application
+    application = Application.builder().token(token).build()
     
     # Set up conversation handler
     conv_handler = ConversationHandler(
@@ -501,26 +501,25 @@ def main() -> None:
                 CallbackQueryHandler(view_chat, pattern='^chat_'),
                 CallbackQueryHandler(back_to_main, pattern='^back_to_main$'),
                 CallbackQueryHandler(send_message_prompt, pattern='^send_msg_'),
-                MessageHandler(Filters.text & ~Filters.command, handle_message),
+                MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message),
             ],
         },
         fallbacks=[CommandHandler('cancel', cancel)],
     )
     
-    dispatcher.add_handler(conv_handler)
+    application.add_handler(conv_handler)
     
     # Add standalone command handlers
-    dispatcher.add_handler(CommandHandler('help', help_command))
-    dispatcher.add_handler(CommandHandler('myorders', lambda update, context: my_orders(update, context)))
+    application.add_handler(CommandHandler('help', help_command))
     
     # Add error handler
-    dispatcher.add_error_handler(error_handler)
+    application.add_error_handler(error_handler)
     
     # Start the Bot
-    updater.start_polling()
     logger.info("Bot started. Press Ctrl+C to stop.")
-    updater.idle()
+    application.run_polling(allowed_updates=Update.ALL_TYPES)
 
 
 if __name__ == '__main__':
+    main()
     main()
