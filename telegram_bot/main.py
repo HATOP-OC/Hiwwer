@@ -95,7 +95,11 @@ def main() -> None:
     # We need to run the close method of our api_client
     import asyncio
     loop = asyncio.get_event_loop()
+<<<<<<< HEAD
     loop.run_until_complete(api_client.close())
+=======
+    loop.run_until_complete(api.api_client.close())
+>>>>>>> aaa1955 (feat: Add main bot functionality with conversation handling and command integration)
 
 
 if __name__ == '__main__':
