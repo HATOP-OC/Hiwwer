@@ -15,11 +15,36 @@ from localization import get_text
 logger = logging.getLogger(__name__)
 
 # Conversation states
-MAIN_MENU, ORDER_MENU, CHAT_MENU, ASSISTANT_MENU, LANGUAGE_MENU = range(5)
+MAIN_MENU, ORDER_MENU, CHAT_MENU, ASSISTANT_MENU, LANGUAGE_MENU, COMMANDS_MENU = range(6)
 
 def _get_lang(context: ContextType) -> str:
     """Safely get user's language code, defaulting to 'en'."""
     return context.user_data.get("user", {}).get("languageCode", "en")
+
+async def link_account(update: Update, context: ContextType) -> None:
+    """Handle the /link <code> command."""
+    user = update.effective_user
+    lang_code = user.language_code if user.language_code in ['en', 'uk'] else 'en'
+
+    if not context.args:
+        await update.message.reply_text(get_text('link_usage', lang_code))
+        return
+
+    code = context.args[0].upper()
+    telegram_id = str(user.id)
+    chat_id = str(update.effective_chat.id)
+    telegram_username = user.username
+
+    api_response = await api.api_client.link_telegram_account(code, telegram_id, telegram_username, chat_id)
+
+    if api_response and "message" in api_response:
+        await update.message.reply_text(get_text('link_success', lang_code))
+        # Trigger the /start logic again to show the main menu
+        await start(update, context)
+    else:
+        # A more specific error could be sent from the backend if needed
+        await update.message.reply_text(get_text('link_fail', lang_code))
+
 
 async def start(update: Update, context: ContextType) -> int:
     """Handle the /start command."""
@@ -416,3 +441,56 @@ async def cancel(update: Update, context: ContextType) -> int:
 async def error_handler(update: object, context: ContextType) -> None:
     """Log errors caused by updates."""
     logger.error(f'Update "{update}" caused error "{context.error}"')
+
+async def handle_help_callback(update: Update, context: ContextType) -> None:
+    """Handle help callback from inline keyboard."""
+    query = update.callback_query
+    await query.answer()
+    lang_code = _get_lang(context)
+    help_text = get_text('help_command_text', lang_code)
+    await query.edit_message_text(text=help_text)
+
+async def handle_about_callback(update: Update, context: ContextType) -> None:
+    """Handle about callback from inline keyboard."""
+    query = update.callback_query
+    await query.answer()
+    lang_code = _get_lang(context)
+    about_text = get_text('about_text', lang_code)
+    await query.edit_message_text(text=about_text)
+
+async def handle_command_callback(update: Update, context: ContextType) -> None:
+    """Handle individual command callbacks from commands menu."""
+    query = update.callback_query
+    await query.answer()
+    lang_code = _get_lang(context)
+    
+    command = query.data.split('_', 1)[1]  # Remove 'cmd_' prefix
+    
+    if command == 'start':
+        await start(update, context)
+    elif command == 'help':
+        help_text = get_text('help_command_text', lang_code)
+        await query.edit_message_text(
+            text=help_text,
+            reply_markup=keyboards.get_commands_menu_keyboard(lang_code)
+        )
+    elif command == 'language':
+        await change_language(update, context)
+    elif command == 'link':
+        await query.edit_message_text(
+            text=get_text('link_usage', lang_code),
+            reply_markup=keyboards.get_commands_menu_keyboard(lang_code)
+        )
+
+async def handle_commands_menu_callback(update: Update, context: ContextType) -> int:
+    """Handle commands menu callback from inline keyboard."""
+    query = update.callback_query
+    await query.answer()
+    lang_code = _get_lang(context)
+    
+    await query.edit_message_text(
+        text=get_text('commands_menu_title', lang_code),
+        reply_markup=keyboards.get_commands_menu_keyboard(lang_code)
+    )
+    
+    return COMMANDS_MENU

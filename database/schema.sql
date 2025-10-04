@@ -14,6 +14,7 @@ CREATE TABLE users (
     bio TEXT,
     rating DECIMAL(3, 2) CHECK (rating >= 0 AND rating <= 5),
     telegram_id VARCHAR(255) UNIQUE,
+    telegram_username VARCHAR(255) UNIQUE,
     telegram_chat_id VARCHAR(255) UNIQUE,
     language_code VARCHAR(10) DEFAULT 'en',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -364,3 +365,15 @@ CREATE TABLE ai_chat_history (
 );
 
 CREATE INDEX idx_ai_chat_history_session_id ON ai_chat_history(session_id);
+
+-- Telegram Linking Codes Table
+CREATE TABLE telegram_linking_codes (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    code VARCHAR(255) NOT NULL UNIQUE,
+    expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_telegram_linking_codes_user_id ON telegram_linking_codes(user_id);
+CREATE INDEX idx_telegram_linking_codes_code ON telegram_linking_codes(code);

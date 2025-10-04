@@ -1,24 +1,41 @@
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 import os
+from dotenv import load_dotenv
 import localization
 
-WEBAPP_URL = os.getenv("WEBAPP_URL", "http://localhost:5173")
+load_dotenv()
+WEBAPP_URL = os.getenv("WEBAPP_URL", "").rstrip('/')
 
 def get_main_menu_keyboard(lang_code: str) -> InlineKeyboardMarkup:
     """Returns the main menu keyboard."""
     keyboard = [
-        [InlineKeyboardButton(localization.localization.get_text('open_marketplace', lang_code), web_app=WebAppInfo(url=WEBAPP_URL))],
+        [InlineKeyboardButton(localization.get_text('open_marketplace', lang_code), web_app=WebAppInfo(url=WEBAPP_URL))],
         [InlineKeyboardButton(localization.get_text('my_orders', lang_code), callback_data='my_orders')],
         [InlineKeyboardButton(localization.get_text('messages', lang_code), callback_data='messages')],
         [InlineKeyboardButton(localization.get_text('assistant', lang_code), callback_data='assistant')],
-        [InlineKeyboardButton("🌐 Language", callback_data='change_language')],
+        [InlineKeyboardButton("📋 " + localization.get_text('commands_menu', lang_code), callback_data='commands_menu')],
+        [InlineKeyboardButton("🌐 " + localization.get_text('change_language', lang_code), callback_data='change_language')],
+        [InlineKeyboardButton("ℹ️ " + localization.get_text('about_bot', lang_code), callback_data='about')],
+    ]
+    return InlineKeyboardMarkup(keyboard)
+
+def get_commands_menu_keyboard(lang_code: str) -> InlineKeyboardMarkup:
+    """Returns the commands menu keyboard."""
+    keyboard = [
+        [InlineKeyboardButton("/start - " + localization.get_text('start_command', lang_code), callback_data='cmd_start')],
+        [InlineKeyboardButton("/help - " + localization.get_text('help_command', lang_code), callback_data='cmd_help')],
+        [InlineKeyboardButton("/language - " + localization.get_text('language_command', lang_code), callback_data='cmd_language')],
+        [InlineKeyboardButton("/link - " + localization.get_text('link_command', lang_code), callback_data='cmd_link')],
+        [InlineKeyboardButton("⬅️ " + localization.get_text('back_to_main', lang_code), callback_data='back_to_main')],
     ]
     return InlineKeyboardMarkup(keyboard)
 
 def get_unregistered_user_keyboard(telegram_id: str, lang_code: str) -> InlineKeyboardMarkup:
-    """Returns the keyboard for an unregistered user."""
+    """Returns the keyboard for unregistered users."""
     keyboard = [
-        [InlineKeyboardButton(localization.get_text('register_button', lang_code), web_app=WebAppInfo(url=f"{WEBAPP_URL}/auth/telegram?telegram_id={telegram_id}"))]
+        [InlineKeyboardButton(localization.get_text('register_button', lang_code), web_app=WebAppInfo(url=WEBAPP_URL))],
+        [InlineKeyboardButton("🌐 " + localization.get_text('change_language', lang_code), callback_data='change_language')],
+        [InlineKeyboardButton("ℹ️ " + localization.get_text('about_bot', lang_code), callback_data='about')],
     ]
     return InlineKeyboardMarkup(keyboard)
 

@@ -20,6 +20,7 @@ interface AuthContextType {
   register: (name: string, email: string, password: string, role: UserRole) => Promise<void>;
   logout: () => void;
   telegramLogin: (telegramData: any) => Promise<void>;
+  fetchUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -27,47 +28,63 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  // Використовуємо відносний шлях до API та проксі Vite
   const API_BASE = '/v1';
 
-  useEffect(() => {
-    // Check for stored user on mount
-    const storedUser = localStorage.getItem('user');
-    const storedToken = localStorage.getItem('token');
-    console.log('AuthContext: checking stored auth');
-    console.log('AuthContext: storedUser:', storedUser);
-    console.log('AuthContext: storedToken:', storedToken ? 'present' : 'missing');
-    
-    if (storedUser && storedToken) {
-      const parsed: User = JSON.parse(storedUser);
-      // Використовуємо роль з токена
-      setUser(parsed);
-      console.log('AuthContext: user restored from storage:', parsed);
-    } else {
-      console.log('AuthContext: no stored auth found');
+  const logout = () => {
+    setUser(null);
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+  };
+
+  const fetchUser = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setIsLoading(false);
+      return;
     }
-    setIsLoading(false);
+    setIsLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/users/profile`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!res.ok) {
+        if (res.status === 401) logout();
+        return;
+      }
+      const userData: User = await res.json();
+      const updatedUser = { ...userData, telegramId: userData.telegramId || undefined };
+      setUser(updatedUser);
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+    } catch (error) {
+      console.error("Failed to fetch user", error);
+      logout();
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUser();
   }, []);
 
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      // Call API for login
       const res = await fetch(`${API_BASE}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
-      if (!res.ok) throw new Error('Invalid credentials');
-      const { id, name, role: apiRole, token } = await res.json();
-      // Store token and user data
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Invalid credentials');
+      }
+      const { token } = await res.json();
       localStorage.setItem('token', token);
-      const userData = { id, name, email, role: apiRole };
-      setUser(userData);
-      localStorage.setItem('user', JSON.stringify(userData));
+      await fetchUser();
     } catch (error: any) {
-      console.error('Login error:', error);
-      throw new Error(error.message || 'Login failed');
+      logout();
+      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -76,24 +93,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const register = async (name: string, email: string, password: string, role: UserRole) => {
     setIsLoading(true);
     try {
-      // Використовуємо роль, яку передав бекенд
-      const assignedRole = role;
-      // Call API for register
       const res = await fetch(`${API_BASE}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password, role: assignedRole }),
+        body: JSON.stringify({ name, email, password, role }),
       });
-      if (!res.ok) throw new Error('Registration failed');
-      const { id, role: apiRole, token } = await res.json();
-      // Store token and user data
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Registration failed');
+      }
+      const { token } = await res.json();
       localStorage.setItem('token', token);
-      const userData = { id, name, email, role: apiRole };
-      setUser(userData);
-      localStorage.setItem('user', JSON.stringify(userData));
+      await fetchUser();
     } catch (error: any) {
-      console.error('Register error:', error);
-      throw new Error(error.message || 'Registration failed');
+      logout();
+      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -102,36 +116,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const telegramLogin = async (telegramData: any) => {
     setIsLoading(true);
     try {
-      // In a real app, this would verify the Telegram data with your API
-      // For now, we'll simulate a successful login with mock data
-      const mockUser: User = {
-        id: '2',
-        name: telegramData.first_name || 'Telegram User',
-        email: `user_${telegramData.id}@telegram.org`,
-        role: 'client',
-        avatar: telegramData.photo_url || '/placeholder.svg',
-        telegramId: telegramData.id.toString(),
-        rating: 0
-      };
-      const userData = mockUser; // using mock role from data
-      setUser(userData);
-      localStorage.setItem('user', JSON.stringify(userData));
+      const res = await fetch(`${API_BASE}/auth/login-with-telegram`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ telegramId: telegramData.id }),
+      });
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Telegram login failed');
+      }
+      const { token } = await res.json();
+      localStorage.setItem('token', token);
+      await fetchUser();
     } catch (error) {
-      console.error('Telegram login failed:', error);
+      logout();
       throw error;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
-  };
-
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, register, logout, telegramLogin }}>
+    <AuthContext.Provider value={{ user, isLoading, login, register, logout, telegramLogin, fetchUser }}>
       {children}
     </AuthContext.Provider>
   );

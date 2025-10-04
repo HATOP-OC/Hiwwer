@@ -32,6 +32,7 @@ import {
   X
 } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
+import TelegramIntegration from '@/components/Profile/TelegramIntegration';
 
 export default function Profile() {
   const { user, logout } = useAuth();
@@ -315,6 +316,9 @@ export default function Profile() {
                 )}
               </CardContent>
             </Card>
+
+            {/* Telegram Integration */}
+            <TelegramIntegration />
 
             {/* Account Settings */}
             <Card>

@@ -82,6 +82,16 @@ class APIClient:
         """Get a reply from the AI assistant."""
         return await self._request("POST", "/assistant", json={"message": message, "sessionId": session_id})
 
+    async def link_telegram_account(self, code: str, telegram_id: str, telegram_username: Optional[str], chat_id: str) -> Optional[Dict[str, Any]]:
+        """Link a Telegram account to a web user account using a linking code."""
+        payload = {
+            "code": code,
+            "telegramId": telegram_id,
+            "telegramUsername": telegram_username,
+            "chatId": chat_id,
+        }
+        return await self._request("POST", "/auth/link-telegram-account", json=payload)
+
 # Singleton instance of the API client
 BACKEND_API_URL = os.getenv("BACKEND_API_URL", "http://localhost:8080/v1")
 api_client = APIClient(BACKEND_API_URL)

@@ -11,6 +11,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import TelegramAuth from "./pages/TelegramAuth";
 import Profile from "./pages/Profile";
 import MyOrders from "./pages/MyOrders";
 import OrderDetail from "./pages/OrderDetail";
@@ -67,6 +68,7 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/auth/telegram" element={<TelegramAuth />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/my-orders" element={<MyOrders />} />
               <Route path="/my-services" element={<MyServices />} />
