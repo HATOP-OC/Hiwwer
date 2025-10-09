@@ -14,8 +14,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Bell, Menu, Moon, Search, Sun, X } from "lucide-react";
 import NotificationMenu from '../NotificationMenu';
+import LanguageSwitcher from '../LanguageSwitcher';
+import { useTranslation } from 'react-i18next';
 
 export default function Navbar() {
+  const { t } = useTranslation();
   const { theme, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -30,15 +33,15 @@ export default function Navbar() {
           
           <nav className="hidden md:flex gap-6">
             <Link to="/services" className="text-sm font-medium hover:text-primary transition-colors">
-              Services
+              {t('navbar.services')}
             </Link>
             {user?.role === 'performer' && (
               <Link to="/dashboard" className="text-sm font-medium hover:text-primary transition-colors">
-                Dashboard
+                {t('navbar.dashboard')}
               </Link>
             )}
             <Link to="/how-it-works" className="text-sm font-medium hover:text-primary transition-colors">
-              How It Works
+              {t('navbar.howItWorks')}
             </Link>
           </nav>
         </div>
@@ -57,10 +60,14 @@ export default function Navbar() {
             {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </Button>
 
+          <div className="hidden md:flex">
+            <LanguageSwitcher />
+          </div>
+
           {user ? (
             <>
               <Button asChild size="sm" className="hidden md:flex">
-                <Link to="/services">Створити замовлення</Link>
+                <Link to="/services">{t('navbar.createOrder')}</Link>
               </Button>
               
               <div className="hidden md:flex">
@@ -81,24 +88,24 @@ export default function Navbar() {
                   <DropdownMenuLabel className="text-xs text-muted-foreground">{user.role}</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
-                    <Link to="/profile">Profile</Link>
+                    <Link to="/profile">{t('navbar.profile')}</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link to="/my-orders">My Orders</Link>
+                    <Link to="/my-orders">{t('navbar.myOrders')}</Link>
                   </DropdownMenuItem>
                   {user.role === 'performer' && (
                     <DropdownMenuItem asChild>
-                      <Link to="/my-services">My Services</Link>
+                      <Link to="/my-services">{t('navbar.myServices')}</Link>
                     </DropdownMenuItem>
                   )}
                   {user.role === 'admin' && (
                     <DropdownMenuItem asChild>
-                      <Link to="/admin">Admin Panel</Link>
+                      <Link to="/admin">{t('navbar.adminPanel')}</Link>
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={logout}>
-                    Log out
+                    {t('navbar.logout')}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -106,10 +113,10 @@ export default function Navbar() {
           ) : (
             <div className="hidden md:flex gap-2">
               <Button variant="ghost" asChild>
-                <Link to="/login">Log In</Link>
+                <Link to="/login">{t('navbar.login')}</Link>
               </Button>
               <Button asChild>
-                <Link to="/register">Sign Up</Link>
+                <Link to="/register">{t('navbar.signUp')}</Link>
               </Button>
             </div>
           )}
@@ -134,7 +141,7 @@ export default function Navbar() {
               className="px-4 py-2 text-sm font-medium hover:bg-muted rounded-md"
               onClick={() => setIsMenuOpen(false)}
             >
-              Services
+              {t('navbar.services')}
             </Link>
             {user?.role === 'performer' && (
               <Link 
@@ -142,7 +149,7 @@ export default function Navbar() {
                 className="px-4 py-2 text-sm font-medium hover:bg-muted rounded-md"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Dashboard
+                {t('navbar.dashboard')}
               </Link>
             )}
             <Link 
@@ -150,7 +157,7 @@ export default function Navbar() {
               className="px-4 py-2 text-sm font-medium hover:bg-muted rounded-md"
               onClick={() => setIsMenuOpen(false)}
             >
-              How It Works
+              {t('navbar.howItWorks')}
             </Link>
           </div>
           
@@ -161,22 +168,19 @@ export default function Navbar() {
               onClick={toggleTheme}
             >
               {theme === 'dark' ? <Sun className="h-4 w-4 mr-2" /> : <Moon className="h-4 w-4 mr-2" />}
-              {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+              {theme === 'dark' ? t('navbar.lightMode') : t('navbar.darkMode')}
             </Button>
             
-            <Button variant="outline" size="sm">
-              <Search className="h-4 w-4 mr-2" />
-              Search
-            </Button>
+            <LanguageSwitcher />
           </div>
 
           {!user && (
             <div className="flex flex-col space-y-2 pt-2 border-t">
               <Button variant="outline" asChild>
-                <Link to="/login" onClick={() => setIsMenuOpen(false)}>Log In</Link>
+                <Link to="/login" onClick={() => setIsMenuOpen(false)}>{t('navbar.login')}</Link>
               </Button>
               <Button asChild>
-                <Link to="/register" onClick={() => setIsMenuOpen(false)}>Sign Up</Link>
+                <Link to="/register" onClick={() => setIsMenuOpen(false)}>{t('navbar.signUp')}</Link>
               </Button>
             </div>
           )}

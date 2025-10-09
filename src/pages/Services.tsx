@@ -12,7 +12,8 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Link } from 'react-router-dom';
 import { Star, Search, Filter as FilterIcon, ChevronDown, ChevronUp, Palette, Code, PenSquare, TrendingUp, Film, Music, Briefcase, BookOpen } from 'lucide-react';
-import { fetchServices, Service } from '@/lib/api';
+import { fetchServices, fetchServiceCategories, Service, ServiceCategory } from '@/lib/api';
+import { useTranslation } from 'react-i18next';
 
 const iconMap: { [key: string]: React.ElementType } = {
   design: Palette,
@@ -25,51 +26,69 @@ const iconMap: { [key: string]: React.ElementType } = {
   learning: BookOpen,
 };
 
-// Реальні категорії послуг
-const serviceCategories = [
-  { id: '1', name: 'Дизайн', icon: 'design', count: 156 },
-  { id: '2', name: 'Розробка', icon: 'development', count: 243 },
-  { id: '3', name: 'Тексти', icon: 'writing', count: 112 },
-  { id: '4', name: 'Маркетинг', icon: 'marketing', count: 98 },
-  { id: '5', name: 'Відео', icon: 'video', count: 67 },
-  { id: '6', name: 'Аудіо', icon: 'audio', count: 45 },
-  { id: '7', name: 'Бізнес', icon: 'business', count: 78 },
-  { id: '8', name: 'Навчання', icon: 'learning', count: 53 }
-];
-
 export default function Services() {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const { t } = useTranslation();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [allServices, setAllServices] = useState<Service[]>([]);
   const [services, setServices] = useState<Service[]>([]);
+  const [categories, setCategories] = useState<ServiceCategory[]>([]);
   const [loading, setLoading] = useState(true);
-  const [priceRange, setPriceRange] = useState<number[]>([0, 500]);
+  const [priceRange, setPriceRange] = useState<number[]>([0, 10000]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedRating, setSelectedRating] = useState<number | null>(null);
   const [showFilters, setShowFilters] = useState(false);
 
-  // Отримання початкової категорії з URL, якщо вона є
+  const iconMap: { [key: string]: React.ElementType } = {
+    design: Palette,
+    development: Code,
+    writing: PenSquare,
+    marketing: TrendingUp,
+    video: Film,
+    audio: Music,
+    business: Briefcase,
+    learning: BookOpen,
+  };
+
+  // Завантаження категорій при монтуванні компонента
+  useEffect(() => {
+    fetchServiceCategories()
+      .then(data => {
+        console.log('Categories loaded:', data);
+        setCategories(data);
+      })
+      .catch(error => {
+        console.error('Error loading categories:', error);
+      });
+  }, []);
+
+  // Обробка параметра category з URL
   useEffect(() => {
     const categoryParam = searchParams.get('category');
-    if (categoryParam) {
-      const matchedCategory = serviceCategories.find(
-        c => c.name.toLowerCase() === categoryParam.toLowerCase()
+    if (categoryParam && categories.length > 0) {
+      const matchedCategory = categories.find(
+        c => c.slug.toLowerCase() === categoryParam.toLowerCase()
       );
       if (matchedCategory) {
-        setSelectedCategories([matchedCategory.id]);
+        setSelectedCategories([matchedCategory.slug]);
       }
+    } else if (!categoryParam) {
+      // Якщо немає параметра категорії в URL, очищаємо вибрані категорії
+      setSelectedCategories([]);
     }
-  }, [searchParams]);
+  }, [searchParams, categories]);
 
-  // Завантаження послуг з API
+  // Завантаження послуг
   useEffect(() => {
     console.log('Services: Starting to fetch services...');
-    fetchServices()
+    const categoryParam = searchParams.get('category');
+    fetchServices(1, 100, categoryParam || undefined)
       .then(data => {
         console.log('Services: Received data:', data);
         setAllServices(data);
+        // Якщо є параметр категорії, не фільтруємо додатково - дані вже відфільтровані
         setServices(data);
       })
       .catch(error => {
@@ -79,10 +98,18 @@ export default function Services() {
         console.log('Services: Finished loading');
         setLoading(false);
       });
-  }, []);
+  }, [searchParams]);
 
-  // Фільтрація послуг на основі пошуку та фільтрів
+  // Фільтрація послуг на фронтенді (тільки якщо немає параметра category в URL)
   useEffect(() => {
+    const categoryParam = searchParams.get('category');
+    
+    // Якщо є параметр category в URL, показуємо всі завантажені послуги без фільтрації
+    if (categoryParam) {
+      setServices(allServices);
+      return;
+    }
+    
     let filtered = [...allServices];
     
     if (searchTerm) {
@@ -92,9 +119,8 @@ export default function Services() {
       );
     }
     
-    // Фільтрація по категоріях
     if (selectedCategories.length > 0) {
-      filtered = filtered.filter(s => selectedCategories.includes(s.category.id));
+      filtered = filtered.filter(s => selectedCategories.includes(s.category.slug));
     }
     
     filtered = filtered.filter(service => 
@@ -106,14 +132,14 @@ export default function Services() {
     }
     
     setServices(filtered);
-  }, [searchTerm, selectedCategories, priceRange, selectedRating, allServices]);
+  }, [searchTerm, selectedCategories, priceRange, selectedRating, allServices, searchParams]);
 
-  const handleCategoryChange = (categoryId: string) => {
+  const handleCategoryChange = (categorySlug: string) => {
     setSelectedCategories(prev => {
-      if (prev.includes(categoryId)) {
-        return prev.filter(id => id !== categoryId);
+      if (prev.includes(categorySlug)) {
+        return prev.filter(slug => slug !== categorySlug);
       } else {
-        return [...prev, categoryId];
+        return [...prev, categorySlug];
       }
     });
   };
@@ -129,21 +155,20 @@ export default function Services() {
   };
 
   const handleOrderService = (serviceId: string, e: React.MouseEvent) => {
-    e.preventDefault(); // Запобігає переходу по Link
+    e.preventDefault();
     e.stopPropagation();
     
     if (!user) {
       navigate('/login', { state: { returnTo: `/create-order/${serviceId}` } });
       return;
     }
-    // Переходимо прямо до створення замовлення
     navigate(`/create-order/${serviceId}`);
   };
 
   if (loading) {
     return (
       <div className="text-center py-12">
-        <p>Завантаження послуг...</p>
+        <p>{t('servicesPage.loading')}</p>
       </div>
     );
   }
@@ -151,17 +176,16 @@ export default function Services() {
   return (
     <Layout>
       <div className="container mx-auto py-8 px-4">
-        {/* Заголовок та пошук */}
         <div className="mb-8">
           <div className="flex justify-between items-start mb-4">
             <div>
-              <h1 className="text-3xl font-bold mb-2">Знайдіть ідеальну послугу</h1>
-              <p className="text-muted-foreground">Оберіть послугу та створіть замовлення прямо зараз</p>
+              <h1 className="text-3xl font-bold mb-2">{t('servicesPage.title')}</h1>
+              <p className="text-muted-foreground">{t('servicesPage.subtitle')}</p>
             </div>
             {user && (
               <Button asChild>
                 <Link to="/my-orders">
-                  Мої замовлення
+                  {t('servicesPage.myOrders')}
                 </Link>
               </Button>
             )}
@@ -169,7 +193,7 @@ export default function Services() {
           <div className="relative max-w-xl">
             <Input
               type="text"
-              placeholder="Шукайте за ключовими словами, навичками, описом..."
+              placeholder={t('servicesPage.searchPlaceholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pr-10"
@@ -179,7 +203,6 @@ export default function Services() {
         </div>
 
         <div className="flex flex-col md:flex-row gap-6">
-          {/* Фільтри для мобільних */}
           <div className="md:hidden mb-4">
             <Button 
               variant="outline" 
@@ -188,7 +211,7 @@ export default function Services() {
             >
               <div className="flex items-center">
                 <FilterIcon className="mr-2 h-4 w-4" />
-                <span>Фільтри</span>
+                <span>{t('servicesPage.filters')}</span>
               </div>
               {showFilters ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
             </Button>
@@ -196,23 +219,24 @@ export default function Services() {
             {showFilters && (
               <Card className="mt-2">
                 <CardContent className="pt-4">
-                  {/* Фільтри категорій для мобільних */}
                   <div className="mb-6">
-                    <h3 className="font-medium mb-2">Категорії</h3>
+                    <h3 className="font-medium mb-2">{t('servicesPage.categories')}</h3>
                     <div className="space-y-2">
-                      {serviceCategories.map(category => {
-                        const Icon = iconMap[category.icon];
+                      {categories.map(category => {
+                        const Icon = iconMap[category.slug] || Briefcase;
                         return (
                           <div key={category.id} className="flex items-center">
                             <Checkbox
                               id={`mobile-category-${category.id}`}
-                              checked={selectedCategories.includes(category.id)}
-                              onCheckedChange={() => handleCategoryChange(category.id)}
+                              checked={selectedCategories.includes(category.slug)}
+                              onCheckedChange={() => handleCategoryChange(category.slug)}
                             />
                             <Label htmlFor={`mobile-category-${category.id}`} className="ml-2 flex items-center">
                               {Icon && <Icon className="mr-2 h-4 w-4" />}
                               {category.name}
-                              <span className="ml-1 text-muted-foreground text-xs">({category.count})</span>
+                              {category.service_count !== undefined && (
+                                <span className="ml-1 text-muted-foreground text-xs">({category.service_count})</span>
+                              )}
                             </Label>
                           </div>
                         );
@@ -222,9 +246,8 @@ export default function Services() {
                   
                   <Separator className="my-4" />
                   
-                  {/* Фільтр ціни для мобільних */}
                   <div className="mb-6">
-                    <h3 className="font-medium mb-2">Ціна (USD)</h3>
+                    <h3 className="font-medium mb-2">{t('servicesPage.price')}</h3>
                     <Slider
                       defaultValue={priceRange}
                       max={500}
@@ -241,9 +264,8 @@ export default function Services() {
                   
                   <Separator className="my-4" />
                   
-                  {/* Фільтр рейтингу для мобільних */}
                   <div>
-                    <h3 className="font-medium mb-2">Мінімальний рейтинг</h3>
+                    <h3 className="font-medium mb-2">{t('servicesPage.minRating')}</h3>
                     <div className="space-y-2">
                       {[4, 4.5, 4.8].map(rating => (
                         <div key={rating} className="flex items-center">
@@ -266,36 +288,36 @@ export default function Services() {
                     className="w-full mt-4"
                     onClick={resetFilters}
                   >
-                    Скинути фільтри
+                    {t('servicesPage.resetFilters')}
                   </Button>
                 </CardContent>
               </Card>
             )}
           </div>
 
-          {/* Сайдбар з фільтрами (десктоп) */}
           <div className="hidden md:block w-64 shrink-0">
             <Card>
               <CardContent className="p-4">
-                <h3 className="font-medium mb-4">Фільтри</h3>
+                <h3 className="font-medium mb-4">{t('servicesPage.filters')}</h3>
                 
-                {/* Фільтр категорій */}
                 <div className="mb-6">
-                  <h4 className="text-sm font-medium mb-2">Категорії</h4>
+                  <h4 className="text-sm font-medium mb-2">{t('servicesPage.categories')}</h4>
                   <div className="space-y-2">
-                    {serviceCategories.map(category => {
-                      const Icon = iconMap[category.icon];
+                    {categories.map(category => {
+                      const Icon = iconMap[category.slug] || Briefcase;
                       return (
                         <div key={category.id} className="flex items-center">
                           <Checkbox
                             id={`category-${category.id}`}
-                            checked={selectedCategories.includes(category.id)}
-                            onCheckedChange={() => handleCategoryChange(category.id)}
+                            checked={selectedCategories.includes(category.slug)}
+                            onCheckedChange={() => handleCategoryChange(category.slug)}
                           />
                           <Label htmlFor={`category-${category.id}`} className="ml-2 flex items-center">
                             {Icon && <Icon className="mr-2 h-4 w-4" />}
                             {category.name}
-                            <span className="ml-1 text-muted-foreground text-xs">({category.count})</span>
+                            {category.service_count !== undefined && (
+                              <span className="ml-1 text-muted-foreground text-xs">({category.service_count})</span>
+                            )}
                           </Label>
                         </div>
                       );
@@ -305,9 +327,8 @@ export default function Services() {
                 
                 <Separator className="my-4" />
                 
-                {/* Фільтр ціни */}
                 <div className="mb-6">
-                  <h4 className="text-sm font-medium mb-2">Ціна (USD)</h4>
+                  <h4 className="text-sm font-medium mb-2">{t('servicesPage.price')}</h4>
                   <Slider
                     defaultValue={priceRange}
                     max={500}
@@ -324,9 +345,8 @@ export default function Services() {
                 
                 <Separator className="my-4" />
                 
-                {/* Фільтр рейтингу */}
                 <div>
-                  <h4 className="text-sm font-medium mb-2">Мінімальний рейтинг</h4>
+                  <h4 className="text-sm font-medium mb-2">{t('servicesPage.minRating')}</h4>
                   <div className="space-y-2">
                     {[4, 4.5, 4.8].map(rating => (
                       <div key={rating} className="flex items-center">
@@ -349,24 +369,23 @@ export default function Services() {
                   className="w-full mt-6"
                   onClick={resetFilters}
                 >
-                  Скинути фільтри
+                  {t('servicesPage.resetFilters')}
                 </Button>
               </CardContent>
             </Card>
           </div>
 
-          {/* Основний контент - список послуг */}
           <div className="flex-1">
             <div className="flex justify-between items-center mb-6">
               <div>
-                <h2 className="text-xl font-semibold">Знайдено послуг: {services.length}</h2>
+                <h2 className="text-xl font-semibold">{t('servicesPage.servicesFound', { count: services.length })}</h2>
               </div>
               <div className="flex gap-3">
                 <Button 
                   variant="outline"
                   onClick={() => navigate('/create-custom-order')}
                 >
-                  Створити власне замовлення
+                  {t('servicesPage.createCustomOrder')}
                 </Button>
               </div>
             </div>
@@ -397,7 +416,7 @@ export default function Services() {
                             <span className="ml-1 text-sm font-semibold">{service.rating}</span>
                             <span className="ml-1 text-xs text-muted-foreground">({service.review_count})</span>
                           </div>
-                          <span className="ml-auto text-xs text-muted-foreground">{service.delivery_time} дн.</span>
+                          <span className="ml-auto text-xs text-muted-foreground">{t('servicesPage.deliveryTime', { count: service.delivery_time })}</span>
                         </div>
                         <h3 className="font-bold mb-2 line-clamp-2 hover:text-primary transition-colors">{service.title}</h3>
                         <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{service.description}</p>
@@ -416,7 +435,6 @@ export default function Services() {
                         <span className="text-sm">{service.performer?.name}</span>
                       </div>
                       
-                      {/* Кнопки дій */}
                       <div className="flex gap-2 mt-auto">
                         <Button 
                           variant="outline" 
@@ -425,7 +443,7 @@ export default function Services() {
                           asChild
                         >
                           <Link to={`/services/${service.id}`}>
-                            Детальніше
+                            {t('servicesPage.details')}
                           </Link>
                         </Button>
                         <Button 
@@ -433,7 +451,7 @@ export default function Services() {
                           className="flex-1"
                           onClick={(e) => handleOrderService(service.id, e)}
                         >
-                          {user ? 'Замовити' : 'Увійти і замовити'}
+                          {user ? t('servicesPage.order') : t('servicesPage.loginAndOrder')}
                         </Button>
                       </div>
                     </CardContent>
@@ -444,19 +462,19 @@ export default function Services() {
               <Card className="p-8 text-center">
                 <div className="text-muted-foreground mb-4">
                   <Search className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                  <h3 className="text-lg font-medium">Нічого не знайдено</h3>
+                  <h3 className="text-lg font-medium">{t('servicesPage.noResults.title')}</h3>
                 </div>
-                <p className="mb-6">Спробуйте змінити параметри пошуку або фільтри</p>
+                <p className="mb-6">{t('servicesPage.noResults.subtitle')}</p>
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
                   <Button onClick={resetFilters} variant="outline">
-                    Скинути всі фільтри
+                    {t('servicesPage.resetFilters')}
                   </Button>
                   <Button onClick={() => navigate('/create-custom-order')}>
-                    Створити власне замовлення
+                    {t('servicesPage.noResults.createCustomOrder')}
                   </Button>
                 </div>
                 <p className="text-sm text-muted-foreground mt-4">
-                  Не знайшли те, що шукали? Створіть власне замовлення з вашими вимогами
+                  {t('servicesPage.noResults.customOrderDesc')}
                 </p>
               </Card>
             )}

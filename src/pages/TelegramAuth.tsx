@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const TelegramAuth = () => {
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
@@ -11,21 +13,20 @@ const TelegramAuth = () => {
     const telegramId = searchParams.get('telegram_id');
 
     if (!telegramId) {
-      setError('Відсутній Telegram ID');
+      setError(t('telegramAuth.missingIdError'));
       setTimeout(() => navigate('/register'), 2000);
       return;
     }
 
-    // Перенаправляємо на реєстрацію з Telegram ID
     navigate(`/register?telegram_id=${telegramId}`);
-  }, [searchParams, navigate]);
+  }, [searchParams, navigate, t]);
 
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
           <p className="text-destructive mb-4">{error}</p>
-          <p className="text-muted-foreground">Перенаправлення...</p>
+          <p className="text-muted-foreground">{t('telegramAuth.redirecting')}</p>
         </div>
       </div>
     );
@@ -35,8 +36,8 @@ const TelegramAuth = () => {
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="text-center">
         <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4 text-primary" />
-        <p className="text-lg">Підключення до Telegram...</p>
-        <p className="text-muted-foreground mt-2">Зачекайте, будь ласка</p>
+        <p className="text-lg">{t('telegramAuth.connecting')}</p>
+        <p className="text-muted-foreground mt-2">{t('telegramAuth.pleaseWait')}</p>
       </div>
     </div>
   );

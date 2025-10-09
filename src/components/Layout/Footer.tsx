@@ -1,7 +1,8 @@
-
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 export default function Footer() {
+  const { t } = useTranslation();
   const currentYear = new Date().getFullYear();
 
   return (
@@ -11,68 +12,68 @@ export default function Footer() {
           <div>
             <h3 className="text-lg font-semibold mb-4">Hiwwer</h3>
             <p className="text-sm text-muted-foreground">
-              Your one-stop platform for digital services with seamless Telegram integration.
+              {t('footer.description')}
             </p>
           </div>
           
           <div>
-            <h3 className="text-lg font-semibold mb-4">For Clients</h3>
+            <h3 className="text-lg font-semibold mb-4">{t('footer.forClients')}</h3>
             <ul className="space-y-2">
               <li>
                 <Link to="/services" className="text-sm hover:text-primary transition-colors">
-                  Browse Services
+                  {t('footer.browseServices')}
                 </Link>
               </li>
               <li>
                 <Link to="/how-to-order" className="text-sm hover:text-primary transition-colors">
-                  How to Order
+                  {t('footer.howToOrder')}
                 </Link>
               </li>
               <li>
                 <Link to="/faq/client" className="text-sm hover:text-primary transition-colors">
-                  Client FAQ
+                  {t('footer.clientFAQ')}
                 </Link>
               </li>
             </ul>
           </div>
           
           <div>
-            <h3 className="text-lg font-semibold mb-4">For Performers</h3>
+            <h3 className="text-lg font-semibold mb-4">{t('footer.forPerformers')}</h3>
             <ul className="space-y-2">
               <li>
                 <Link to="/become-performer" className="text-sm hover:text-primary transition-colors">
-                  Become a Performer
+                  {t('footer.becomeAPerformer')}
                 </Link>
               </li>
               <li>
                 <Link to="/performer-guidelines" className="text-sm hover:text-primary transition-colors">
-                  Performer Guidelines
+                  {t('footer.performerGuidelines')}
                 </Link>
               </li>
               <li>
                 <Link to="/faq/performer" className="text-sm hover:text-primary transition-colors">
-                  Performer FAQ
+                  {t('footer.performerFAQ')}
                 </Link>
               </li>
             </ul>
           </div>
           
           <div>
-            <h3 className="text-lg font-semibold mb-4">Legal</h3>
+            <h3 className="text-lg font-semibold mb-4">{t('footer.legal')}</h3>
             <ul className="space-y-2">
               <li>
                 <Link to="/terms-of-service" className="text-sm hover:text-primary transition-colors">
-                  Terms of Service
+                  {t('footer.termsOfService')}
                 </Link>
               </li>
               <li>
                 <Link to="/privacy-policy" className="text-sm hover:text-primary transition-colors">
-                  Privacy Policy
+                  {t('footer.privacyPolicy')}
                 </Link>
               </li>
               <li>
                 <Link to="/contact-us" className="text-sm hover:text-primary transition-colors">
-                  Contact Us
+                  {t('footer.contactUs')}
                 </Link>
               </li>
             </ul>
@@ -81,21 +82,21 @@ export default function Footer() {
         
         <div className="mt-8 border-t pt-6 flex flex-col md:flex-row gap-4 justify-between">
           <p className="text-sm text-muted-foreground">
-            © {currentYear} Hiwwer. All rights reserved.
+            {t('footer.copyright', { year: currentYear })}
           </p>
           
           <div className="flex gap-4">
             <Link to="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-              Twitter
+              {t('footer.twitter')}
             </Link>
             <Link to="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-              Facebook
+              {t('footer.facebook')}
             </Link>
             <Link to="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-              Instagram
+              {t('footer.instagram')}
             </Link>
             <Link to="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-              Telegram
+              {t('footer.telegram')}
             </Link>
           </div>
         </div>

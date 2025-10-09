@@ -65,10 +65,14 @@ export interface Service {
   tags: Array<{ id: string; name: string }>;
 }
 
-export async function fetchServices(page = 1, limit = 10): Promise<Service[]> {
-  console.log('API: fetchServices called with page:', page, 'limit:', limit);
-  console.log('API: Making request to:', `${API_BASE}/services?page=${page}&limit=${limit}`);
-  const res = await fetch(`${API_BASE}/services?page=${page}&limit=${limit}`);
+export async function fetchServices(page = 1, limit = 10, category?: string): Promise<Service[]> {
+  console.log('API: fetchServices called with page:', page, 'limit:', limit, 'category:', category);
+  let url = `${API_BASE}/services?page=${page}&limit=${limit}`;
+  if (category) {
+    url += `&category=${category}`;
+  }
+  console.log('API: Making request to:', url);
+  const res = await fetch(url);
   console.log('API: Response status:', res.status);
   if (!res.ok) throw new Error(`Failed to fetch services: ${res.status}`);
   const json = await res.json();
@@ -83,6 +87,22 @@ export async function fetchServiceById(serviceId: string): Promise<Service> {
   });
   if (!res.ok) throw new Error(`Failed to fetch service: ${res.status}`);
   return res.json();
+}
+
+export interface ServiceCategory {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  service_count?: number;
+}
+
+/** Fetch all service categories */
+export async function fetchServiceCategories(): Promise<ServiceCategory[]> {
+  const res = await fetch(`${API_BASE}/services/categories`);
+  if (!res.ok) throw new Error(`Failed to fetch categories: ${res.status}`);
+  const json = await res.json();
+  return json.categories || [];
 }
 
 export interface FAQItem {

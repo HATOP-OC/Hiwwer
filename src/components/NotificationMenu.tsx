@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel } from '@/components/ui/dropdown-menu';
 import { Bell } from 'lucide-react';
@@ -6,6 +7,7 @@ import { fetchNotifications, markNotificationRead, Notification } from '@/lib/ap
 import { Badge } from '@/components/ui/badge';
 
 export default function NotificationMenu() {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { data: notifications = [] } = useQuery<Notification[], Error>({
     queryKey: ['notifications'],
@@ -35,10 +37,10 @@ export default function NotificationMenu() {
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-64">
-        <DropdownMenuLabel>Сповіщення</DropdownMenuLabel>
+        <DropdownMenuLabel>{t('notificationMenu.title')}</DropdownMenuLabel>
         {notifications.length === 0 && (
           <DropdownMenuItem asChild>
-            <div className="text-sm text-muted-foreground">Немає сповіщень</div>
+            <div className="text-sm text-muted-foreground">{t('notificationMenu.noNotifications')}</div>
           </DropdownMenuItem>
         )}
         {notifications.map(n => (

@@ -10,9 +10,10 @@ import { useWebSocket } from '@/hooks/useWebSocket';
 import { useAuth } from '@/contexts/AuthContext';
 import { DisputeChatMessage, DisputeChatTyping } from '@/types/websocket';
 import { format } from 'date-fns';
-import { uk } from 'date-fns/locale';
+import { uk, enUS } from 'date-fns/locale';
 import { validateFile, getAcceptString } from '@/lib/fileTypes';
 import FilePreview from '@/components/FilePreview';
+import { useTranslation } from 'react-i18next';
 
 interface DisputeMessage {
   id: string;
@@ -53,6 +54,7 @@ export default function DisputeChat({
   userRole = 'client',
   onDisputeResolve
 }: DisputeChatProps) {
+  const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const [messages, setMessages] = useState<DisputeMessage[]>(initialMessages);
   const [messageText, setMessageText] = useState('');
@@ -297,7 +299,7 @@ export default function DisputeChat({
     if (senderId === participants.client.id) return participants.client;
     if (senderId === participants.performer.id) return participants.performer;
     if (senderId === participants.moderator?.id) return participants.moderator;
-    return { id: senderId, name: 'Невідомий користувач' };
+    return { id: senderId, name: t('disputeChat.unknownUser') };
   };
 
   const getTypingUsersNames = () => {
@@ -310,10 +312,10 @@ export default function DisputeChat({
   };
 
   const getSenderRole = (senderId: string) => {
-    if (senderId === participants.client.id) return 'Клієнт';
-    if (senderId === participants.performer.id) return 'Виконавець';
-    if (senderId === participants.moderator?.id) return 'Модератор';
-    return 'Невідомий';
+    if (senderId === participants.client.id) return t('disputeChat.roles.client');
+    if (senderId === participants.performer.id) return t('disputeChat.roles.performer');
+    if (senderId === participants.moderator?.id) return t('disputeChat.roles.moderator');
+    return t('disputeChat.roles.unknown');
   };
 
   return (
@@ -322,7 +324,7 @@ export default function DisputeChat({
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <AlertTriangle className="h-5 w-5 text-orange-600" />
-            <CardTitle className="text-lg">Чат спору</CardTitle>
+            <CardTitle className="text-lg">{t('disputeChat.title')}</CardTitle>
           </div>
           <div className="flex items-center space-x-2">
             {canResolve && disputeStatus !== 'resolved' && (
@@ -334,18 +336,18 @@ export default function DisputeChat({
                 className="text-green-600 border-green-600 hover:bg-green-50"
               >
                 {isResolvingDispute 
-                  ? (userRole === 'admin' ? 'Вирішення...' : 'Закриття...') 
-                  : (userRole === 'admin' ? 'Вирішити спір' : 'Закрити спір по згоді')
+                  ? (userRole === 'admin' ? t('disputeChat.resolving') : t('disputeChat.closing'))
+                  : (userRole === 'admin' ? t('disputeChat.resolveDispute') : t('disputeChat.closeDisputeByAgreement'))
                 }
               </Button>
             )}
             {webSocket.isConnected ? (
               <Badge variant="outline" className="text-green-600 border-green-600">
-                Онлайн
+                {t('disputeChat.online')}
               </Badge>
             ) : (
               <Badge variant="outline" className="text-orange-600 border-orange-600">
-                Оффлайн
+                {t('disputeChat.offline')}
               </Badge>
             )}
           </div>
@@ -370,8 +372,8 @@ export default function DisputeChat({
                     <Avatar className="h-8 w-8 flex-shrink-0">
                       <AvatarImage src={sender?.avatar} />
                       <AvatarFallback className={
-                        senderRole === 'Модератор' ? 'bg-purple-100 text-purple-600' :
-                        senderRole === 'Клієнт' ? 'bg-blue-100 text-blue-600' :
+                        senderRole === t('disputeChat.roles.moderator') ? 'bg-purple-100 text-purple-600' :
+                        senderRole === t('disputeChat.roles.client') ? 'bg-blue-100 text-blue-600' :
                         'bg-green-100 text-green-600'
                       }>
                         {sender?.name?.charAt(0)?.toUpperCase() || '?'}
@@ -387,7 +389,7 @@ export default function DisputeChat({
                           {senderRole}
                         </Badge>
                         <span className="text-xs text-muted-foreground">
-                          {format(new Date(message.createdAt), 'HH:mm', { locale: uk })}
+                          {format(new Date(message.createdAt), 'HH:mm', { locale: i18n.language === 'uk' ? uk : enUS })}
                         </span>
                       </div>
                       
@@ -395,7 +397,7 @@ export default function DisputeChat({
                         className={`rounded-lg px-3 py-2 text-sm ${
                           isOwn
                             ? 'bg-primary text-primary-foreground'
-                            : senderRole === 'Модератор'
+                            : senderRole === t('disputeChat.roles.moderator')
                             ? 'bg-purple-100 text-purple-900 border border-purple-200'
                             : 'bg-muted'
                         }`}
@@ -447,7 +449,7 @@ export default function DisputeChat({
                                         className="rounded-lg max-w-full h-auto"
                                         style={{ maxHeight: '200px' }}
                                       >
-                                        Ваш браузер не підтримує відтворення відео.
+                                        {t('disputeChat.videoNotSupported')}
                                       </video>
                                       <p className="text-xs text-muted-foreground mt-1">{attachment.fileName}</p>
                                     </div>
@@ -458,7 +460,7 @@ export default function DisputeChat({
                                         controls
                                         className="w-full"
                                       >
-                                        Ваш браузер не підтримує відтворення аудіо.
+                                        {t('disputeChat.audioNotSupported')}
                                       </audio>
                                       <p className="text-xs text-muted-foreground mt-1">{attachment.fileName}</p>
                                     </div>
@@ -482,7 +484,7 @@ export default function DisputeChat({
                                         href={attachment.fileUrl}
                                         download={attachment.fileName}
                                         className="p-1 hover:bg-muted rounded"
-                                        title="Завантажити файл"
+                                        title={t('disputeChat.downloadFile')}
                                       >
                                         <Download className="h-4 w-4 text-muted-foreground" />
                                       </a>
@@ -507,7 +509,7 @@ export default function DisputeChat({
                   <div className="bg-muted rounded-lg px-3 py-2">
                     <div className="flex items-center space-x-1">
                       <span className="text-sm text-muted-foreground">
-                        {getTypingUsersNames().join(', ')} друкує
+                        {getTypingUsersNames().join(', ')} {t('disputeChat.typing')}
                       </span>
                       <div className="flex space-x-1">
                         <div className="w-1 h-1 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
@@ -528,7 +530,7 @@ export default function DisputeChat({
         <div className="border-t p-4">
           <div className="mb-2 text-xs text-muted-foreground bg-orange-50 text-orange-700 p-2 rounded">
             <AlertTriangle className="h-3 w-3 inline mr-1" />
-            Це чат спору. Усі повідомлення можуть бути розглянуті модератором.
+            {t('disputeChat.moderatorWarning')}
           </div>
           
           {/* Dispute resolution controls */}
@@ -537,12 +539,12 @@ export default function DisputeChat({
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-green-800 mb-1">
-                    {userRole === 'admin' ? 'Адміністративні дії' : 'Закриття спору'}
+                    {userRole === 'admin' ? t('disputeChat.adminActions') : t('disputeChat.closeDispute')}
                   </p>
                   <p className="text-xs text-green-700">
                     {userRole === 'admin' 
-                      ? 'Ви можете закрити цей спір після його розгляду'
-                      : 'Ви можете закрити спір по взаємній згоді сторін'
+                      ? t('disputeChat.adminCanClose')
+                      : t('disputeChat.canCloseByAgreement')
                     }
                   </p>
                 </div>
@@ -552,7 +554,7 @@ export default function DisputeChat({
                   size="sm"
                   className="bg-green-600 hover:bg-green-700"
                 >
-                  {isResolvingDispute ? 'Закриваю...' : (userRole === 'admin' ? 'Вирішити спір' : 'Закрити по згоді')}
+                  {isResolvingDispute ? t('disputeChat.closing') : (userRole === 'admin' ? t('disputeChat.resolveDispute') : t('disputeChat.closeByAgreement'))}
                 </Button>
               </div>
             </div>
@@ -561,7 +563,7 @@ export default function DisputeChat({
           {/* Show loading indicator */}
           {isLoading && (
             <div className="mb-2 text-center text-sm text-muted-foreground">
-              Завантаження повідомлень...
+              {t('disputeChat.loadingMessages')}
             </div>
           )}
           
@@ -569,7 +571,7 @@ export default function DisputeChat({
           {attachments.length > 0 && (
             <div className="mb-2 space-y-2">
               <div className="text-sm font-medium text-muted-foreground">
-                Прикріплені файли:
+                {t('disputeChat.attachedFiles')}:
               </div>
               {attachments.map((file, index) => (
                 <div
@@ -602,7 +604,7 @@ export default function DisputeChat({
             <Input
               value={messageText}
               onChange={handleInputChange}
-              placeholder="Напишіть повідомлення..."
+              placeholder={t('disputeChat.placeholder')}
               className="flex-1"
               disabled={isSending}
             />

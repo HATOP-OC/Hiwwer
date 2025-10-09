@@ -12,9 +12,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
 } from '@/components/ui/card';
 import {
   Select,
@@ -25,7 +22,6 @@ import {
 } from '@/components/ui/select';
 import { 
   Search,
-  Filter,
   Clock,
   CheckCircle,
   AlertCircle,
@@ -33,7 +29,6 @@ import {
   Eye,
   MessageSquare,
   Calendar,
-  DollarSign,
   User,
   Star,
   Package,
@@ -41,26 +36,26 @@ import {
   PlusCircle,
   Loader2
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export default function MyOrders() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   
-  // Always call useQuery, but disable it when no user
-  const { data: orders = [], refetch, isLoading } = useQuery({
+  const { data: orders = [], isLoading } = useQuery({
     queryKey: ['orders', statusFilter, searchTerm],
     queryFn: () => fetchOrders({ status: statusFilter, search: searchTerm }),
     enabled: !!user
   });
 
-  // Early return AFTER all hooks
   if (!user) {
     return (
       <Layout>
         <div className="container max-w-4xl py-16">
           <div className="text-center">
-            <h1 className="text-2xl font-bold">Будь ласка, увійдіть для перегляду замовлень</h1>
+            <h1 className="text-2xl font-bold">{t('myOrdersPage.pleaseLogin')}</h1>
           </div>
         </div>
       </Layout>
@@ -119,7 +114,7 @@ export default function MyOrders() {
   const OrderCard = ({ order }: { order: Order }) => {
     const isClient = user?.role === 'client';
     const otherParty = isClient ? order.performer : order.client;
-    const isCustomOrder = !order.serviceId; // Кастомне замовлення - без прив'язки до конкретної послуги
+    const isCustomOrder = !order.serviceId;
     const deadline = new Date(order.deadline);
     const daysLeft = Math.ceil((deadline.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
 
@@ -132,7 +127,7 @@ export default function MyOrders() {
                 <h3 className="font-semibold text-lg">{order.title}</h3>
                 {order.unreadMessages > 0 && (
                   <Badge variant="destructive" className="text-xs">
-                    {order.unreadMessages} новых
+                    {t('myOrdersPage.orderCard.newMessages', { count: order.unreadMessages })}
                   </Badge>
                 )}
               </div>
@@ -167,11 +162,11 @@ export default function MyOrders() {
               {isCustomOrder && isClient && !order.performer ? (
                 <div className="flex items-center space-x-2">
                   <div className="h-8 w-8 bg-orange-100 rounded-full flex items-center justify-center">
-                    <span className="text-sm font-medium text-orange-600">К</span>
+                    <span className="text-sm font-medium text-orange-600">C</span>
                   </div>
                   <div>
-                    <div className="text-sm font-medium text-orange-600">Кастомне замовлення</div>
-                    <div className="text-xs text-muted-foreground">Очікує виконавця</div>
+                    <div className="text-sm font-medium text-orange-600">{t('myOrdersPage.orderCard.customOrder')}</div>
+                    <div className="text-xs text-muted-foreground">{t('myOrdersPage.orderCard.awaitingPerformer')}</div>
                   </div>
                 </div>
               ) : otherParty ? (
@@ -198,8 +193,8 @@ export default function MyOrders() {
                     <span className="text-sm font-medium text-gray-600">?</span>
                   </div>
                   <div>
-                    <div className="text-sm font-medium text-gray-600">Без виконавця</div>
-                    <div className="text-xs text-muted-foreground">Очікує призначення</div>
+                    <div className="text-sm font-medium text-gray-600">{t('myOrdersPage.orderCard.noPerformer')}</div>
+                    <div className="text-xs text-muted-foreground">{t('myOrdersPage.orderCard.awaitingAssignment')}</div>
                   </div>
                 </div>
               )}
@@ -208,9 +203,9 @@ export default function MyOrders() {
               <div className="flex items-center space-x-1">
                 <Calendar className="h-4 w-4" />
                 <span>
-                  {daysLeft > 0 ? `${daysLeft} днів` : 
-                   daysLeft === 0 ? 'Сьогодні' : 
-                   `Прострочено на ${Math.abs(daysLeft)} днів`}
+                  {daysLeft > 0 ? t('myOrdersPage.orderCard.daysLeft', { count: daysLeft }) :
+                   daysLeft === 0 ? t('myOrdersPage.orderCard.today') :
+                   t('myOrdersPage.orderCard.overdueBy', { count: Math.abs(daysLeft) })}
                 </span>
               </div>
             </div>
@@ -220,13 +215,13 @@ export default function MyOrders() {
             <Button variant="outline" size="sm" className="flex-1" asChild>
               <Link to={`/order/${order.id}`}>
                 <Eye className="h-4 w-4 mr-2" />
-                Деталі
+                {t('myOrdersPage.orderCard.details')}
               </Link>
             </Button>
             <Button variant="outline" size="sm" className="flex-1" asChild>
               <Link to={`/order/${order.id}#chat`}>
                 <MessageSquare className="h-4 w-4 mr-2" />
-                Чат
+                {t('myOrdersPage.orderCard.chat')}
               </Link>
             </Button>
           </div>
@@ -241,7 +236,7 @@ export default function MyOrders() {
         <div className="container max-w-7xl py-8">
           <div className="flex items-center justify-center py-16">
             <Loader2 className="h-8 w-8 animate-spin" />
-            <span className="ml-2">Завантаження замовлень...</span>
+            <span className="ml-2">{t('myOrdersPage.loading')}</span>
           </div>
         </div>
       </Layout>
@@ -251,33 +246,31 @@ export default function MyOrders() {
   return (
     <Layout>
       <div className="container max-w-7xl py-8">
-        {/* Header */}
         <div className="mb-8">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-foreground">Мої замовлення</h1>
+              <h1 className="text-3xl font-bold text-foreground">{t('myOrdersPage.title')}</h1>
               <p className="text-muted-foreground mt-2">
-                Керуйте вашими замовленнями та слідкуйте за прогресом
+                {t('myOrdersPage.subtitle')}
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3">
               <Button asChild className="w-full sm:w-auto">
                 <Link to="/services">
                   <PlusCircle className="h-4 w-4 mr-2" />
-                  Створити замовлення
+                  {t('myOrdersPage.createOrder')}
                 </Link>
               </Button>
               <Button variant="outline" asChild className="w-full sm:w-auto">
                 <Link to="/services">
                   <Search className="h-4 w-4 mr-2" />
-                  Переглянути послуги
+                  {t('myOrdersPage.browseServices')}
                 </Link>
               </Button>
             </div>
           </div>
         </div>
 
-        {/* Stats Cards */}
         <div className="grid gap-4 md:grid-cols-4 mb-8">
           <Card>
             <CardContent className="pt-6">
@@ -285,7 +278,7 @@ export default function MyOrders() {
                 <Package className="h-8 w-8 text-blue-500" />
                 <div>
                   <div className="text-2xl font-bold">{orders.length}</div>
-                  <div className="text-sm text-muted-foreground">Всього замовлень</div>
+                  <div className="text-sm text-muted-foreground">{t('myOrdersPage.stats.totalOrders')}</div>
                 </div>
               </div>
             </CardContent>
@@ -297,7 +290,7 @@ export default function MyOrders() {
                 <Clock className="h-8 w-8 text-yellow-500" />
                 <div>
                   <div className="text-2xl font-bold">{getOrdersByStatus('in_progress').length}</div>
-                  <div className="text-sm text-muted-foreground">В роботі</div>
+                  <div className="text-sm text-muted-foreground">{t('myOrdersPage.stats.inProgress')}</div>
                 </div>
               </div>
             </CardContent>
@@ -309,7 +302,7 @@ export default function MyOrders() {
                 <CheckCircle className="h-8 w-8 text-green-500" />
                 <div>
                   <div className="text-2xl font-bold">{getOrdersByStatus('completed').length}</div>
-                  <div className="text-sm text-muted-foreground">Завершені</div>
+                  <div className="text-sm text-muted-foreground">{t('myOrdersPage.stats.completed')}</div>
                 </div>
               </div>
             </CardContent>
@@ -321,19 +314,18 @@ export default function MyOrders() {
                 <TrendingUp className="h-8 w-8 text-purple-500" />
                 <div>
                   <div className="text-2xl font-bold">${totalEarnings}</div>
-                  <div className="text-sm text-muted-foreground">Загальна вартість</div>
+                  <div className="text-sm text-muted-foreground">{t('myOrdersPage.stats.totalValue')}</div>
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Filters */}
         <div className="flex items-center space-x-4 mb-6">
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
-              placeholder="Пошук замовлень..."
+              placeholder={t('myOrdersPage.searchPlaceholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
@@ -342,27 +334,26 @@ export default function MyOrders() {
           
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-48">
-              <SelectValue placeholder="Фільтр за статусом" />
+              <SelectValue placeholder={t('myOrdersPage.filterPlaceholder')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Всі статуси</SelectItem>
-              <SelectItem value="pending">Очікують</SelectItem>
-              <SelectItem value="in_progress">В роботі</SelectItem>
-              <SelectItem value="revision">На доопрацюванні</SelectItem>
-              <SelectItem value="completed">Завершені</SelectItem>
-              <SelectItem value="canceled">Скасовані</SelectItem>
+              <SelectItem value="all">{t('myOrdersPage.statuses.all')}</SelectItem>
+              <SelectItem value="pending">{t('myOrdersPage.statuses.pending')}</SelectItem>
+              <SelectItem value="in_progress">{t('myOrdersPage.statuses.in_progress')}</SelectItem>
+              <SelectItem value="revision">{t('myOrdersPage.statuses.revision')}</SelectItem>
+              <SelectItem value="completed">{t('myOrdersPage.statuses.completed')}</SelectItem>
+              <SelectItem value="canceled">{t('myOrdersPage.statuses.canceled')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
-        {/* Orders Tabs */}
         <Tabs defaultValue="all" className="space-y-6">
           <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="all">Всі замовлення</TabsTrigger>
-            <TabsTrigger value="pending">Очікують</TabsTrigger>
-            <TabsTrigger value="in_progress">В роботі</TabsTrigger>
-            <TabsTrigger value="completed">Завершені</TabsTrigger>
-            <TabsTrigger value="canceled">Скасовані</TabsTrigger>
+            <TabsTrigger value="all">{t('myOrdersPage.tabs.all')}</TabsTrigger>
+            <TabsTrigger value="pending">{t('myOrdersPage.tabs.pending')}</TabsTrigger>
+            <TabsTrigger value="in_progress">{t('myOrdersPage.tabs.in_progress')}</TabsTrigger>
+            <TabsTrigger value="completed">{t('myOrdersPage.tabs.completed')}</TabsTrigger>
+            <TabsTrigger value="canceled">{t('myOrdersPage.tabs.canceled')}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="all" className="space-y-4">
@@ -377,17 +368,17 @@ export default function MyOrders() {
                     <div className="w-16 h-16 bg-gradient-to-br from-primary to-primary/70 rounded-full flex items-center justify-center">
                       <Package className="h-8 w-8 text-white" />
                     </div>
-                    <h3 className="text-xl font-semibold">Ваші замовлення з'являться тут</h3>
+                    <h3 className="text-xl font-semibold">{t('myOrdersPage.emptyStates.all_title')}</h3>
                     <p className="text-muted-foreground max-w-md">
                       {searchTerm || statusFilter !== 'all' 
-                        ? 'Спробуйте змінити фільтри пошуку або створіть нове замовлення'
-                        : 'Почніть роботу з платформою Hiwwer та створіть ваше перше замовлення'
+                        ? t('myOrdersPage.emptyStates.all_subtitle_filtered')
+                        : t('myOrdersPage.emptyStates.all_subtitle_initial')
                       }
                     </p>
                     <Button asChild className="mt-4">
                       <Link to="/services">
                         <PlusCircle className="mr-2 h-4 w-4" />
-                        Створити нове замовлення
+                        {t('myOrdersPage.emptyStates.all_button')}
                       </Link>
                     </Button>
                   </div>
@@ -405,14 +396,14 @@ export default function MyOrders() {
               <Card>
                 <CardContent className="py-16 text-center">
                   <Clock className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">Немає замовлень що очікують</h3>
+                  <h3 className="text-lg font-semibold mb-2">{t('myOrdersPage.emptyStates.pending_title')}</h3>
                   <p className="text-muted-foreground mb-4">
-                    У вас немає замовлень, які очікують на підтвердження.
+                    {t('myOrdersPage.emptyStates.pending_subtitle')}
                   </p>
                   <Button asChild>
                     <Link to="/services">
                       <PlusCircle className="mr-2 h-4 w-4" />
-                      Створити нове замовлення
+                      {t('myOrdersPage.createOrder')}
                     </Link>
                   </Button>
                 </CardContent>
@@ -429,14 +420,14 @@ export default function MyOrders() {
               <Card>
                 <CardContent className="py-16 text-center">
                   <AlertCircle className="h-12 w-12 text-blue-500 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">Немає замовлень в роботі</h3>
+                  <h3 className="text-lg font-semibold mb-2">{t('myOrdersPage.emptyStates.in_progress_title')}</h3>
                   <p className="text-muted-foreground mb-4">
-                    У вас немає активних замовлень в процесі виконання.
+                    {t('myOrdersPage.emptyStates.in_progress_subtitle')}
                   </p>
                   <Button asChild>
                     <Link to="/services">
                       <PlusCircle className="mr-2 h-4 w-4" />
-                      Створити нове замовлення
+                      {t('myOrdersPage.createOrder')}
                     </Link>
                   </Button>
                 </CardContent>
@@ -453,14 +444,14 @@ export default function MyOrders() {
               <Card>
                 <CardContent className="py-16 text-center">
                   <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">Немає завершених замовлень</h3>
+                  <h3 className="text-lg font-semibold mb-2">{t('myOrdersPage.emptyStates.completed_title')}</h3>
                   <p className="text-muted-foreground mb-4">
-                    Ваші завершені замовлення з'являться тут.
+                    {t('myOrdersPage.emptyStates.completed_subtitle')}
                   </p>
                   <Button asChild>
                     <Link to="/services">
                       <PlusCircle className="mr-2 h-4 w-4" />
-                      Створити нове замовлення
+                      {t('myOrdersPage.createOrder')}
                     </Link>
                   </Button>
                 </CardContent>
@@ -477,9 +468,9 @@ export default function MyOrders() {
               <Card>
                 <CardContent className="py-16 text-center">
                   <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">Немає скасованих замовлень</h3>
+                  <h3 className="text-lg font-semibold mb-2">{t('myOrdersPage.emptyStates.canceled_title')}</h3>
                   <p className="text-muted-foreground">
-                    Чудово! У вас немає скасованих замовлень.
+                    {t('myOrdersPage.emptyStates.canceled_subtitle')}
                   </p>
                 </CardContent>
               </Card>

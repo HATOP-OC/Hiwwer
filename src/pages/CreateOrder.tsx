@@ -13,8 +13,10 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Package } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export default function CreateOrder() {
+  const { t } = useTranslation();
   const { serviceId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -38,15 +40,15 @@ export default function CreateOrder() {
     mutationFn: (orderData: any) => createOrder(orderData),
     onSuccess: () => {
       toast({
-        title: 'Замовлення створено',
-        description: 'Ваше замовлення успішно створено. Ви можете відстежувати його статус в розділі "Мої замовлення".'
+        title: t('createOrderPage.toast.orderCreated'),
+        description: t('createOrderPage.toast.orderCreatedDesc')
       });
       navigate('/my-orders');
     },
     onError: (error: any) => {
       toast({
-        title: 'Помилка',
-        description: error.message || 'Не вдалося створити замовлення',
+        title: t('createOrderPage.toast.error'),
+        description: error.message || t('createOrderPage.toast.createFailed'),
         variant: 'destructive'
       });
     }
@@ -63,8 +65,8 @@ export default function CreateOrder() {
     if (isCustomOrder) {
       if (!customTitle.trim()) {
         toast({
-          title: 'Помилка',
-          description: 'Будь ласка, вкажіть назву замовлення',
+          title: t('createOrderPage.toast.error'),
+          description: t('createOrderPage.toast.titleRequired'),
           variant: 'destructive'
         });
         return;
@@ -72,8 +74,8 @@ export default function CreateOrder() {
       
       if (!customDescription.trim()) {
         toast({
-          title: 'Помилка',
-          description: 'Будь ласка, опишіть ваше замовлення',
+          title: t('createOrderPage.toast.error'),
+          description: t('createOrderPage.toast.descriptionRequired'),
           variant: 'destructive'
         });
         return;
@@ -81,8 +83,8 @@ export default function CreateOrder() {
       
       if (!customBudget.trim()) {
         toast({
-          title: 'Помилка',
-          description: 'Будь ласка, вкажіть ваш бюджет',
+          title: t('createOrderPage.toast.error'),
+          description: t('createOrderPage.toast.budgetRequired'),
           variant: 'destructive'
         });
         return;
@@ -91,8 +93,8 @@ export default function CreateOrder() {
 
     if (!requirements.trim()) {
       toast({
-        title: 'Помилка',
-        description: 'Будь ласка, опишіть ваші вимоги до замовлення',
+        title: t('createOrderPage.toast.error'),
+        description: t('createOrderPage.toast.requirementsRequired'),
         variant: 'destructive'
       });
       return;
@@ -100,8 +102,8 @@ export default function CreateOrder() {
 
     if (!deadline) {
       toast({
-        title: 'Помилка',
-        description: 'Будь ласка, вкажіть бажаний термін виконання',
+        title: t('createOrderPage.toast.error'),
+        description: t('createOrderPage.toast.deadlineRequired'),
         variant: 'destructive'
       });
       return;
@@ -128,20 +130,19 @@ export default function CreateOrder() {
     createOrderMutation.mutate(orderData);
   };
 
-  // Early return AFTER all hooks
   if (!user) {
     return (
       <Layout>
         <div className="container max-w-4xl py-16">
           <div className="text-center">
-            <h1 className="text-2xl font-bold mb-4">Увійдіть, щоб створити замовлення</h1>
-            <p className="text-muted-foreground mb-8">Для створення замовлення необхідно мати аккаунт на платформі</p>
+            <h1 className="text-2xl font-bold mb-4">{t('createOrderPage.pleaseLoginTitle')}</h1>
+            <p className="text-muted-foreground mb-8">{t('createOrderPage.pleaseLoginSubtitle')}</p>
             <div className="space-x-4">
               <Button onClick={() => navigate('/login')}>
-                Увійти
+                {t('createOrderPage.login')}
               </Button>
               <Button variant="outline" onClick={() => navigate('/register')}>
-                Зареєструватися
+                {t('createOrderPage.register')}
               </Button>
             </div>
           </div>
@@ -155,7 +156,7 @@ export default function CreateOrder() {
       <Layout>
         <div className="container max-w-4xl py-16">
           <div className="text-center">
-            <h1 className="text-2xl font-bold">Завантаження...</h1>
+            <h1 className="text-2xl font-bold">{t('createOrderPage.loading')}</h1>
           </div>
         </div>
       </Layout>
@@ -167,10 +168,10 @@ export default function CreateOrder() {
       <Layout>
         <div className="container max-w-4xl py-16">
           <div className="text-center">
-            <h1 className="text-2xl font-bold">Послугу не знайдено</h1>
+            <h1 className="text-2xl font-bold">{t('createOrderPage.serviceNotFound')}</h1>
             <Button className="mt-4" onClick={() => navigate('/services')}>
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Повернутися до послуг
+              {t('createOrderPage.backToServices')}
             </Button>
           </div>
         </div>
@@ -184,49 +185,48 @@ export default function CreateOrder() {
         <div className="mb-8">
           <Button variant="outline" onClick={() => navigate(-1)} className="mb-4">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Назад
+            {t('createOrderPage.back')}
           </Button>
           <h1 className="text-3xl font-bold">
-            {isCustomOrder ? 'Створити власне замовлення' : 'Створити замовлення'}
+            {isCustomOrder ? t('createOrderPage.createCustomOrderTitle') : t('createOrderPage.createOrderTitle')}
           </h1>
           <p className="text-muted-foreground">
             {isCustomOrder 
-              ? 'Опишіть ваше замовлення і знайдіть ідеального виконавця'
-              : 'Заповніть форму нижче, щоб створити замовлення'
+              ? t('createOrderPage.customOrderSubtitle')
+              : t('createOrderPage.orderSubtitle')
             }
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-8">
           <div className="grid gap-8 lg:grid-cols-2">
-            {/* Ліва колонка */}
             <Card>
               <CardHeader>
                 <CardTitle>
-                  {isCustomOrder ? 'Деталі замовлення' : 'Обрана послуга'}
+                  {isCustomOrder ? t('createOrderPage.orderDetailsTitle') : t('createOrderPage.selectedServiceTitle')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {isCustomOrder ? (
                   <>
                     <div className="space-y-2">
-                      <Label htmlFor="customTitle">Назва замовлення*</Label>
+                      <Label htmlFor="customTitle">{t('createOrderPage.customOrderNameLabel')}</Label>
                       <Input
                         id="customTitle"
                         value={customTitle}
                         onChange={(e) => setCustomTitle(e.target.value)}
-                        placeholder="Наприклад: Розробка логотипу для стартапу"
+                        placeholder={t('createOrderPage.customOrderNamePlaceholder')}
                         required
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="customDescription">Опис замовлення*</Label>
+                      <Label htmlFor="customDescription">{t('createOrderPage.customOrderDescLabel')}</Label>
                       <Textarea
                         id="customDescription"
                         value={customDescription}
                         onChange={(e) => setCustomDescription(e.target.value)}
-                        placeholder="Детально опишіть, що вам потрібно..."
+                        placeholder={t('createOrderPage.customOrderDescPlaceholder')}
                         rows={4}
                         required
                       />
@@ -234,34 +234,34 @@ export default function CreateOrder() {
 
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="customBudget">Бюджет (USD)*</Label>
+                        <Label htmlFor="customBudget">{t('createOrderPage.budgetLabel')}</Label>
                         <Input
                           id="customBudget"
                           type="number"
                           value={customBudget}
                           onChange={(e) => setCustomBudget(e.target.value)}
-                          placeholder="100"
+                          placeholder={t('createOrderPage.budgetPlaceholder')}
                           min="1"
                           required
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="customCategory">Категорія</Label>
+                        <Label htmlFor="customCategory">{t('createOrderPage.categoryLabel')}</Label>
                         <select
                           id="customCategory"
                           value={customCategory}
                           onChange={(e) => setCustomCategory(e.target.value)}
                           className="w-full px-3 py-2 border border-input bg-background rounded-md"
                         >
-                          <option value="">Оберіть категорію</option>
-                          <option value="web-development">Веб-розробка</option>
-                          <option value="design">Дизайн</option>
-                          <option value="marketing">Маркетинг</option>
-                          <option value="copywriting">Копірайтинг</option>
-                          <option value="translation">Переклад</option>
-                          <option value="video">Відео</option>
-                          <option value="audio">Аудіо</option>
-                          <option value="other">Інше</option>
+                          <option value="">{t('createOrderPage.selectCategory')}</option>
+                          <option value="web-development">{t('createOrderPage.categories.web-development')}</option>
+                          <option value="design">{t('createOrderPage.categories.design')}</option>
+                          <option value="marketing">{t('createOrderPage.categories.marketing')}</option>
+                          <option value="copywriting">{t('createOrderPage.categories.copywriting')}</option>
+                          <option value="translation">{t('createOrderPage.categories.translation')}</option>
+                          <option value="video">{t('createOrderPage.categories.video')}</option>
+                          <option value="audio">{t('createOrderPage.categories.audio')}</option>
+                          <option value="other">{t('createOrderPage.categories.other')}</option>
                         </select>
                       </div>
                     </div>
@@ -282,7 +282,7 @@ export default function CreateOrder() {
                     </div>
                     <Separator />
                     <div className="flex justify-between">
-                      <span>Ціна:</span>
+                      <span>{t('createOrderPage.price')}</span>
                       <span className="font-bold">${service?.price} USD</span>
                     </div>
                   </>
@@ -290,26 +290,25 @@ export default function CreateOrder() {
               </CardContent>
             </Card>
 
-            {/* Права колонка */}
             <Card>
               <CardHeader>
-                <CardTitle>Деталі замовлення</CardTitle>
+                <CardTitle>{t('createOrderPage.orderDetailsTitle')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="requirements">Ваші вимоги*</Label>
+                  <Label htmlFor="requirements">{t('createOrderPage.requirementsLabel')}</Label>
                   <Textarea
                     id="requirements"
                     value={requirements}
                     onChange={(e) => setRequirements(e.target.value)}
-                    placeholder="Опишіть детально, що саме вам потрібно..."
+                    placeholder={t('createOrderPage.requirementsPlaceholder')}
                     rows={5}
                     required
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="deadline">Бажаний термін виконання*</Label>
+                  <Label htmlFor="deadline">{t('createOrderPage.deadlineLabel')}</Label>
                   <Input
                     id="deadline"
                     type="datetime-local"
@@ -324,13 +323,13 @@ export default function CreateOrder() {
                   <>
                     <Separator />
                     <div className="space-y-2">
-                      <h4 className="font-medium">Підсумок</h4>
+                      <h4 className="font-medium">{t('createOrderPage.summaryTitle')}</h4>
                       <div className="flex justify-between">
-                        <span>Вартість:</span>
+                        <span>{t('createOrderPage.cost')}</span>
                         <span>${service?.price} USD</span>
                       </div>
                       <div className="flex justify-between font-bold">
-                        <span>Загалом:</span>
+                        <span>{t('createOrderPage.total')}</span>
                         <span>${service?.price} USD</span>
                       </div>
                     </div>
@@ -343,7 +342,7 @@ export default function CreateOrder() {
                   disabled={createOrderMutation.isPending}
                 >
                   <Package className="mr-2 h-4 w-4" />
-                  {createOrderMutation.isPending ? 'Створення...' : 'Створити замовлення'}
+                  {createOrderMutation.isPending ? t('createOrderPage.creating') : t('createOrderPage.createOrderButton')}
                 </Button>
               </CardContent>
             </Card>

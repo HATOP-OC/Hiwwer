@@ -14,15 +14,14 @@ import {
   BarChart, 
   Clock,
   CheckCircle,
-  MessageCircle,
   Star,
   ArrowRight,
   FileCheck,
   ShieldCheck
 } from 'lucide-react';
 import { submitPerformerApplication } from '@/lib/api';
+import { useTranslation } from 'react-i18next';
 
-// Типи для форми
 interface ApplicationFormData {
   name: string;
   email: string;
@@ -33,6 +32,7 @@ interface ApplicationFormData {
 }
 
 export default function BecomePerformer() {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<ApplicationFormData>({
     name: '',
     email: '',
@@ -62,7 +62,6 @@ export default function BecomePerformer() {
       setIsSubmitted(true);
     } catch (error) {
       console.error(error);
-      // optional: show toast notification for error
     } finally {
       setIsSubmitting(false);
     }
@@ -74,64 +73,60 @@ export default function BecomePerformer() {
   return (
     <Layout>
       <div className="container mx-auto py-12 px-4">
-        {/* Головний банер */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4">Станьте виконавцем на Hiwwer</h1>
+          <h1 className="text-4xl font-bold mb-4">{t('becomePerformerPage.title')}</h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Пропонуйте свої послуги тисячам клієнтів та розвивайте свій бізнес з нашою платформою
+            {t('becomePerformerPage.subtitle')}
           </p>
         </div>
 
-        {/* Показуємо або форму, або сторінку успішної подачі заявки */}
         {!isSubmitted ? (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Ліва колонка - форма заявки */}
             <div className="lg:col-span-2">
               <Card>
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl font-semibold">Заявка на реєстрацію виконавця</h2>
+                    <h2 className="text-2xl font-semibold">{t('becomePerformerPage.formTitle')}</h2>
                     <div className="text-sm text-muted-foreground">
-                      Крок {step} з 3
+                      {t('becomePerformerPage.step')} {step} {t('becomePerformerPage.of')} 3
                     </div>
                   </div>
                   
                   <form onSubmit={handleSubmit}>
-                    {/* Крок 1: Основна інформація */}
                     {step === 1 && (
                       <div className="space-y-4">
                         <div className="grid grid-cols-1 gap-4">
                           <div>
-                            <Label htmlFor="name">Повне ім'я</Label>
+                            <Label htmlFor="name">{t('becomePerformerPage.form.nameLabel')}</Label>
                             <Input
                               id="name"
                               name="name"
                               value={formData.name}
                               onChange={handleChange}
-                              placeholder="Введіть ваше повне ім'я"
+                              placeholder={t('becomePerformerPage.form.namePlaceholder')}
                               required
                             />
                           </div>
                           <div>
-                            <Label htmlFor="email">Email</Label>
+                            <Label htmlFor="email">{t('becomePerformerPage.form.emailLabel')}</Label>
                             <Input
                               id="email"
                               name="email"
                               type="email"
                               value={formData.email}
                               onChange={handleChange}
-                              placeholder="Ваш контактний email"
+                              placeholder={t('becomePerformerPage.form.emailPlaceholder')}
                               required
                             />
                           </div>
                           <div>
-                            <Label htmlFor="skills">Ваші навички (через кому)</Label>
+                            <Label htmlFor="skills">{t('becomePerformerPage.form.skillsLabel')}</Label>
                             <Input
                               id="skills"
                               name="skills"
                               value={formData.skills}
                               onChange={handleChange}
-                              placeholder="Напр.: дизайн логотипів, брендинг, UI/UX дизайн"
+                              placeholder={t('becomePerformerPage.form.skillsPlaceholder')}
                               required
                             />
                           </div>
@@ -139,61 +134,59 @@ export default function BecomePerformer() {
                         
                         <div className="flex justify-end mt-6">
                           <Button type="button" onClick={nextStep}>
-                            Продовжити
+                            {t('becomePerformerPage.form.continue')}
                           </Button>
                         </div>
                       </div>
                     )}
                     
-                    {/* Крок 2: Досвід та портфоліо */}
                     {step === 2 && (
                       <div className="space-y-4">
                         <div>
-                          <Label htmlFor="experience">Ваш досвід</Label>
+                          <Label htmlFor="experience">{t('becomePerformerPage.form.experienceLabel')}</Label>
                           <Textarea
                             id="experience"
                             name="experience"
                             value={formData.experience}
                             onChange={handleChange}
-                            placeholder="Розкажіть про ваш професійний досвід, проєкти та клієнтів"
+                            placeholder={t('becomePerformerPage.form.experiencePlaceholder')}
                             className="min-h-[100px]"
                             required
                           />
                         </div>
                         <div>
-                          <Label htmlFor="portfolio">Посилання на портфоліо або приклади робіт</Label>
+                          <Label htmlFor="portfolio">{t('becomePerformerPage.form.portfolioLabel')}</Label>
                           <Input
                             id="portfolio"
                             name="portfolio"
                             value={formData.portfolio}
                             onChange={handleChange}
-                            placeholder="Веб-сайт, Behance, GitHub, тощо"
+                            placeholder={t('becomePerformerPage.form.portfolioPlaceholder')}
                             required
                           />
                         </div>
                         
                         <div className="flex justify-between mt-6">
                           <Button type="button" variant="outline" onClick={prevStep}>
-                            Назад
+                            {t('becomePerformerPage.form.back')}
                           </Button>
                           <Button type="button" onClick={nextStep}>
-                            Продовжити
+                            {t('becomePerformerPage.form.continue')}
                           </Button>
                         </div>
                       </div>
                     )}
                     
-                    {/* Крок 3: Опис послуг */}
                     {step === 3 && (
                       <div className="space-y-4">
                         <div>
-                          <Label htmlFor="description">Опишіть послуги, які ви хочете пропонувати</Label>
+                          <Label htmlFor="description">{t('becomePerformerPage.form.descriptionLabel')}</Label>
                           <Textarea
                             id="description"
                             name="description"
                             value={formData.description}
                             onChange={handleChange}
-                            placeholder="Детально опишіть, які послуги ви можете надавати, ваші унікальні переваги та ціновий діапазон"
+                            placeholder={t('becomePerformerPage.form.descriptionPlaceholder')}
                             className="min-h-[150px]"
                             required
                           />
@@ -201,17 +194,16 @@ export default function BecomePerformer() {
                         
                         <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-100 dark:bg-blue-950 dark:border-blue-900">
                           <p className="text-sm">
-                            <strong>Примітка:</strong> Після подачі заявки наша команда перегляне її протягом 1-3 робочих днів. 
-                            Ми можемо зв'язатися з вами для уточнення деталей або запросити додаткові матеріали.
+                            <strong>{t('becomePerformerPage.form.note')}</strong> {t('becomePerformerPage.form.noteText')}
                           </p>
                         </div>
                         
                         <div className="flex justify-between mt-6">
                           <Button type="button" variant="outline" onClick={prevStep}>
-                            Назад
+                            {t('becomePerformerPage.form.back')}
                           </Button>
                           <Button type="submit" disabled={isSubmitting}>
-                            {isSubmitting ? "Відправка..." : "Відправити заявку"}
+                            {isSubmitting ? t('becomePerformerPage.form.submitting') : t('becomePerformerPage.form.submit')}
                           </Button>
                         </div>
                       </div>
@@ -221,11 +213,10 @@ export default function BecomePerformer() {
               </Card>
             </div>
             
-            {/* Права колонка - переваги */}
             <div>
               <Card>
                 <CardContent className="p-6">
-                  <h3 className="text-xl font-semibold mb-4">Переваги для виконавців</h3>
+                  <h3 className="text-xl font-semibold mb-4">{t('becomePerformerPage.benefits.title')}</h3>
                   
                   <div className="space-y-4">
                     <div className="flex">
@@ -233,9 +224,9 @@ export default function BecomePerformer() {
                         <DollarSign className="h-5 w-5 text-green-500" />
                       </div>
                       <div>
-                        <h4 className="font-medium">Збільшуйте дохід</h4>
+                        <h4 className="font-medium">{t('becomePerformerPage.benefits.increaseIncome_title')}</h4>
                         <p className="text-sm text-muted-foreground">
-                          Отримуйте замовлення від клієнтів по всьому світу без обмежень.
+                          {t('becomePerformerPage.benefits.increaseIncome_desc')}
                         </p>
                       </div>
                     </div>
@@ -245,9 +236,9 @@ export default function BecomePerformer() {
                         <Users className="h-5 w-5 text-blue-500" />
                       </div>
                       <div>
-                        <h4 className="font-medium">Розширюйте клієнтську базу</h4>
+                        <h4 className="font-medium">{t('becomePerformerPage.benefits.expandClientBase_title')}</h4>
                         <p className="text-sm text-muted-foreground">
-                          Знаходьте нових клієнтів без витрат на маркетинг і рекламу.
+                          {t('becomePerformerPage.benefits.expandClientBase_desc')}
                         </p>
                       </div>
                     </div>
@@ -257,9 +248,9 @@ export default function BecomePerformer() {
                         <BarChart className="h-5 w-5 text-purple-500" />
                       </div>
                       <div>
-                        <h4 className="font-medium">Аналітика та зростання</h4>
+                        <h4 className="font-medium">{t('becomePerformerPage.benefits.analyticsAndGrowth_title')}</h4>
                         <p className="text-sm text-muted-foreground">
-                          Відстежуйте показники ефективності та постійно покращуйте свої послуги.
+                          {t('becomePerformerPage.benefits.analyticsAndGrowth_desc')}
                         </p>
                       </div>
                     </div>
@@ -269,9 +260,9 @@ export default function BecomePerformer() {
                         <Clock className="h-5 w-5 text-amber-500" />
                       </div>
                       <div>
-                        <h4 className="font-medium">Гнучкий графік</h4>
+                        <h4 className="font-medium">{t('becomePerformerPage.benefits.flexibleSchedule_title')}</h4>
                         <p className="text-sm text-muted-foreground">
-                          Працюйте у зручний для вас час та керуйте своїм навантаженням.
+                          {t('becomePerformerPage.benefits.flexibleSchedule_desc')}
                         </p>
                       </div>
                     </div>
@@ -280,26 +271,26 @@ export default function BecomePerformer() {
                   <Separator className="my-6" />
                   
                   <div className="space-y-3">
-                    <h4 className="font-medium">Виконавці отримують:</h4>
+                    <h4 className="font-medium">{t('becomePerformerPage.performersGet.title')}</h4>
                     <div className="flex items-center">
                       <Check className="h-4 w-4 mr-2 text-green-500" />
-                      <span className="text-sm">Безкоштовний профіль виконавця</span>
+                      <span className="text-sm">{t('becomePerformerPage.performersGet.item1')}</span>
                     </div>
                     <div className="flex items-center">
                       <Check className="h-4 w-4 mr-2 text-green-500" />
-                      <span className="text-sm">Доступ до тисяч клієнтів</span>
+                      <span className="text-sm">{t('becomePerformerPage.performersGet.item2')}</span>
                     </div>
                     <div className="flex items-center">
                       <Check className="h-4 w-4 mr-2 text-green-500" />
-                      <span className="text-sm">Безпечну систему платежів</span>
+                      <span className="text-sm">{t('becomePerformerPage.performersGet.item3')}</span>
                     </div>
                     <div className="flex items-center">
                       <Check className="h-4 w-4 mr-2 text-green-500" />
-                      <span className="text-sm">Telegram інтеграцію для зручної роботи</span>
+                      <span className="text-sm">{t('becomePerformerPage.performersGet.item4')}</span>
                     </div>
                     <div className="flex items-center">
                       <Check className="h-4 w-4 mr-2 text-green-500" />
-                      <span className="text-sm">Професійні інструменти для зростання</span>
+                      <span className="text-sm">{t('becomePerformerPage.performersGet.item5')}</span>
                     </div>
                   </div>
                 </CardContent>
@@ -307,7 +298,6 @@ export default function BecomePerformer() {
             </div>
           </div>
         ) : (
-          /* Сторінка успішної подачі заявки */
           <div className="max-w-2xl mx-auto">
             <Card>
               <CardContent className="p-8 text-center">
@@ -315,18 +305,17 @@ export default function BecomePerformer() {
                   <CheckCircle className="h-8 w-8 text-green-600" />
                 </div>
                 
-                <h2 className="text-2xl font-bold mb-4">Заявку успішно подано!</h2>
+                <h2 className="text-2xl font-bold mb-4">{t('becomePerformerPage.submissionSuccess.title')}</h2>
                 <p className="text-muted-foreground mb-6">
-                  Дякуємо за інтерес до співпраці з Hiwwer! Ми отримали вашу заявку та розглянемо її протягом 1-3 робочих днів. 
-                  Очікуйте лист на вказану електронну пошту з подальшими інструкціями.
+                  {t('becomePerformerPage.submissionSuccess.desc')}
                 </p>
                 
                 <div className="flex flex-col sm:flex-row justify-center gap-4">
                   <Button asChild>
-                    <Link to="/">Повернутися на головну</Link>
+                    <Link to="/">{t('becomePerformerPage.submissionSuccess.backToHome')}</Link>
                   </Button>
                   <Button variant="outline" asChild>
-                    <Link to="/performer-guidelines">Ознайомитись з правилами для виконавців</Link>
+                    <Link to="/performer-guidelines">{t('becomePerformerPage.submissionSuccess.readGuidelines')}</Link>
                   </Button>
                 </div>
               </CardContent>
@@ -334,11 +323,10 @@ export default function BecomePerformer() {
           </div>
         )}
 
-        {/* Інформаційні блоки */}
         {!isSubmitted && (
           <>
             <div className="mt-16">
-              <h2 className="text-3xl font-bold mb-8 text-center">Як це працює</h2>
+              <h2 className="text-3xl font-bold mb-8 text-center">{t('becomePerformerPage.howItWorks.title')}</h2>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <Card>
@@ -346,9 +334,9 @@ export default function BecomePerformer() {
                     <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-4">
                       <FileCheck className="h-6 w-6 text-blue-600" />
                     </div>
-                    <h3 className="text-xl font-semibold mb-2">1. Подайте заявку</h3>
+                    <h3 className="text-xl font-semibold mb-2">{t('becomePerformerPage.howItWorks.step1_title')}</h3>
                     <p className="text-muted-foreground">
-                      Заповніть форму із вашими навичками, досвідом та пропонованими послугами.
+                      {t('becomePerformerPage.howItWorks.step1_desc')}
                     </p>
                   </CardContent>
                 </Card>
@@ -358,9 +346,9 @@ export default function BecomePerformer() {
                     <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center mx-auto mb-4">
                       <ShieldCheck className="h-6 w-6 text-purple-600" />
                     </div>
-                    <h3 className="text-xl font-semibold mb-2">2. Пройдіть перевірку</h3>
+                    <h3 className="text-xl font-semibold mb-2">{t('becomePerformerPage.howItWorks.step2_title')}</h3>
                     <p className="text-muted-foreground">
-                      Ми перевіримо вашу заявку та профіль, щоб гарантувати якість для наших клієнтів.
+                      {t('becomePerformerPage.howItWorks.step2_desc')}
                     </p>
                   </CardContent>
                 </Card>
@@ -370,18 +358,17 @@ export default function BecomePerformer() {
                     <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
                       <DollarSign className="h-6 w-6 text-green-600" />
                     </div>
-                    <h3 className="text-xl font-semibold mb-2">3. Починайте заробляти</h3>
+                    <h3 className="text-xl font-semibold mb-2">{t('becomePerformerPage.howItWorks.step3_title')}</h3>
                     <p className="text-muted-foreground">
-                      Створюйте послуги, отримуйте замовлення та розвивайте свій бізнес на Hiwwer.
+                      {t('becomePerformerPage.howItWorks.step3_desc')}
                     </p>
                   </CardContent>
                 </Card>
               </div>
             </div>
 
-            {/* Відгуки виконавців */}
             <div className="mt-16">
-              <h2 className="text-3xl font-bold mb-8 text-center">Відгуки виконавців</h2>
+              <h2 className="text-3xl font-bold mb-8 text-center">{t('becomePerformerPage.testimonials.title')}</h2>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <Card>
@@ -390,13 +377,13 @@ export default function BecomePerformer() {
                       <div className="w-10 h-10 rounded-full overflow-hidden mr-3">
                         <img 
                           src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?w=150&h=150&fit=crop&q=80" 
-                          alt="Андрій К."
+                          alt={t('becomePerformerPage.testimonials.andriy.name')}
                           className="w-full h-full object-cover"
                         />
                       </div>
                       <div>
-                        <h4 className="font-semibold">Андрій К.</h4>
-                        <p className="text-sm text-muted-foreground">Веб-розробник</p>
+                        <h4 className="font-semibold">{t('becomePerformerPage.testimonials.andriy.name')}</h4>
+                        <p className="text-sm text-muted-foreground">{t('becomePerformerPage.testimonials.andriy.role')}</p>
                       </div>
                     </div>
                     <div className="flex mb-4 text-amber-400">
@@ -407,8 +394,7 @@ export default function BecomePerformer() {
                       <Star className="h-4 w-4 fill-amber-400" />
                     </div>
                     <p className="text-muted-foreground text-sm">
-                      "Hiwwer дозволив мені знайти клієнтів з різних країн без значних витрат на маркетинг. 
-                      Зручний інтерфейс і прозора система оплати дозволяють зосередитись на роботі."
+                      "{t('becomePerformerPage.testimonials.andriy.text')}"
                     </p>
                   </CardContent>
                 </Card>
@@ -419,13 +405,13 @@ export default function BecomePerformer() {
                       <div className="w-10 h-10 rounded-full overflow-hidden mr-3">
                         <img 
                           src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&q=80" 
-                          alt="Марія Л."
+                          alt={t('becomePerformerPage.testimonials.maria.name')}
                           className="w-full h-full object-cover"
                         />
                       </div>
                       <div>
-                        <h4 className="font-semibold">Марія Л.</h4>
-                        <p className="text-sm text-muted-foreground">Копірайтер</p>
+                        <h4 className="font-semibold">{t('becomePerformerPage.testimonials.maria.name')}</h4>
+                        <p className="text-sm text-muted-foreground">{t('becomePerformerPage.testimonials.maria.role')}</p>
                       </div>
                     </div>
                     <div className="flex mb-4 text-amber-400">
@@ -436,8 +422,7 @@ export default function BecomePerformer() {
                       <Star className="h-4 w-4 fill-amber-400" />
                     </div>
                     <p className="text-muted-foreground text-sm">
-                      "Після реєстрації на Hiwwer мій дохід від фрілансу зріс удвічі. 
-                      Особливо подобається інтеграція з Telegram, яка дозволяє миттєво спілкуватися з клієнтами."
+                      "{t('becomePerformerPage.testimonials.maria.text')}"
                     </p>
                   </CardContent>
                 </Card>
@@ -448,13 +433,13 @@ export default function BecomePerformer() {
                       <div className="w-10 h-10 rounded-full overflow-hidden mr-3">
                         <img 
                           src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=150&h=150&fit=crop&q=80" 
-                          alt="Олег С."
+                          alt={t('becomePerformerPage.testimonials.oleh.name')}
                           className="w-full h-full object-cover"
                         />
                       </div>
                       <div>
-                        <h4 className="font-semibold">Олег С.</h4>
-                        <p className="text-sm text-muted-foreground">Графічний дизайнер</p>
+                        <h4 className="font-semibold">{t('becomePerformerPage.testimonials.oleh.name')}</h4>
+                        <p className="text-sm text-muted-foreground">{t('becomePerformerPage.testimonials.oleh.role')}</p>
                       </div>
                     </div>
                     <div className="flex mb-4 text-amber-400">
@@ -465,64 +450,61 @@ export default function BecomePerformer() {
                       <Star className="h-4 w-4 fill-amber-400" />
                     </div>
                     <p className="text-muted-foreground text-sm">
-                      "Найкраща платформа для фрілансерів, яку я використовував. 
-                      Безпечні платежі, чесна комісія та якісна підтримка роблять роботу комфортною."
+                      "{t('becomePerformerPage.testimonials.oleh.text')}"
                     </p>
                   </CardContent>
                 </Card>
               </div>
             </div>
 
-            {/* Поширені запитання */}
             <div className="mt-16 max-w-3xl mx-auto">
-              <h2 className="text-2xl font-bold mb-6 text-center">Поширені запитання</h2>
+              <h2 className="text-2xl font-bold mb-6 text-center">{t('becomePerformerPage.faq.title')}</h2>
               
               <div className="space-y-4">
                 <div className="border rounded-lg p-4">
-                  <h3 className="font-semibold mb-2">Скільки коштує реєстрація виконавця?</h3>
+                  <h3 className="font-semibold mb-2">{t('becomePerformerPage.faq.q1')}</h3>
                   <p className="text-sm text-muted-foreground">
-                    Реєстрація виконавця на Hiwwer абсолютно безкоштовна. Комісія стягується лише за успішно виконані замовлення.
+                    {t('becomePerformerPage.faq.a1')}
                   </p>
                 </div>
                 
                 <div className="border rounded-lg p-4">
-                  <h3 className="font-semibold mb-2">Яка комісія платформи?</h3>
+                  <h3 className="font-semibold mb-2">{t('becomePerformerPage.faq.q2')}</h3>
                   <p className="text-sm text-muted-foreground">
-                    Hiwwer стягує комісію у розмірі 15% від суми кожного успішно виконаного замовлення. Ця комісія включає обробку платежів, маркетингову підтримку та розвиток платформи.
+                    {t('becomePerformerPage.faq.a2')}
                   </p>
                 </div>
                 
                 <div className="border rounded-lg p-4">
-                  <h3 className="font-semibold mb-2">Коли я отримую оплату за виконані замовлення?</h3>
+                  <h3 className="font-semibold mb-2">{t('becomePerformerPage.faq.q3')}</h3>
                   <p className="text-sm text-muted-foreground">
-                    Оплата надходить на ваш рахунок протягом 24 годин після того, як клієнт підтвердить прийняття роботи. Ви можете вивести кошти в будь-який зручний час.
+                    {t('becomePerformerPage.faq.a3')}
                   </p>
                 </div>
                 
                 <div className="border rounded-lg p-4">
-                  <h3 className="font-semibold mb-2">Які вимоги до виконавців?</h3>
+                  <h3 className="font-semibold mb-2">{t('becomePerformerPage.faq.q4')}</h3>
                   <p className="text-sm text-muted-foreground">
-                    Основні вимоги: підтверджені професійні навички, портфоліо або приклади робіт, чітке розуміння правил платформи та зобов'язання надавати якісні послуги клієнтам.
+                    {t('becomePerformerPage.faq.a4')}
                   </p>
                 </div>
                 
                 <div className="mt-6 text-center">
                   <Link to="/faq/performer" className="text-primary hover:underline inline-flex items-center">
-                    Переглянути всі запитання
+                    {t('becomePerformerPage.faq.viewAll')}
                     <ArrowRight className="ml-1 h-4 w-4" />
                   </Link>
                 </div>
               </div>
             </div>
 
-            {/* Заклик до дії */}
             <div className="mt-16 text-center">
-              <h2 className="text-2xl font-bold mb-4">Готові почати?</h2>
+              <h2 className="text-2xl font-bold mb-4">{t('becomePerformerPage.cta.title')}</h2>
               <p className="text-muted-foreground mb-6 max-w-xl mx-auto">
-                Приєднуйтесь до тисяч успішних виконавців на Hiwwer та розвивайте свій бізнес
+                {t('becomePerformerPage.cta.subtitle')}
               </p>
               <Button size="lg" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-                Подати заявку зараз
+                {t('becomePerformerPage.cta.button')}
               </Button>
             </div>
           </>

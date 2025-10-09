@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
@@ -8,6 +9,7 @@ import { CheckCircle, Link, Copy } from 'lucide-react';
 const API_BASE = '/v1';
 
 export default function TelegramIntegration() {
+  const { t } = useTranslation();
   const { user, fetchUser } = useAuth();
   const [linkingCode, setLinkingCode] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -30,12 +32,12 @@ export default function TelegramIntegration() {
 
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData.message || 'Failed to generate code');
+        throw new Error(errorData.message || t('telegramIntegration.errors.generateCode'));
       }
 
       const { code } = await res.json();
       setLinkingCode(code);
-      toast.success('Linking code generated. It will expire in 10 minutes.');
+      toast.success(t('telegramIntegration.toasts.codeGenerated'));
     } catch (error: any) {
       toast.error(error.message);
     } finally {
@@ -46,13 +48,13 @@ export default function TelegramIntegration() {
   const copyToClipboard = () => {
     if (linkingCode) {
       navigator.clipboard.writeText(linkingCode);
-      toast.success('Code copied to clipboard!');
+      toast.success(t('telegramIntegration.toasts.codeCopied'));
     }
   };
 
   const handleRefresh = async () => {
     await fetchUser();
-    toast.info("Profile data refreshed.");
+    toast.info(t('telegramIntegration.toasts.refreshed'));
   };
 
   return (
@@ -60,10 +62,10 @@ export default function TelegramIntegration() {
       <CardHeader>
         <CardTitle className="flex items-center space-x-2">
           <Link className="h-5 w-5" />
-          <span>Telegram Integration</span>
+          <span>{t('telegramIntegration.title')}</span>
         </CardTitle>
         <CardDescription>
-          Link your Telegram account to receive notifications and manage orders on the go.
+          {t('telegramIntegration.description')}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -71,14 +73,14 @@ export default function TelegramIntegration() {
           <div className="flex items-center space-x-3 bg-green-50 p-4 rounded-md border border-green-200">
             <CheckCircle className="h-6 w-6 text-green-600" />
             <div>
-              <p className="font-semibold text-green-800">Your account is linked to Telegram.</p>
-              <p className="text-sm text-green-700">You can now use the bot's features.</p>
+              <p className="font-semibold text-green-800">{t('telegramIntegration.linked.title')}</p>
+              <p className="text-sm text-green-700">{t('telegramIntegration.linked.subtitle')}</p>
             </div>
           </div>
         ) : (
           <div>
             <p className="text-sm text-muted-foreground mb-4">
-              To link your account, generate a code and send it to the Hiwwer bot on Telegram.
+              {t('telegramIntegration.unlinked.instructions')}
             </p>
             {linkingCode ? (
               <div className="flex items-center space-x-2">
@@ -91,13 +93,13 @@ export default function TelegramIntegration() {
               </div>
             ) : (
               <Button onClick={generateLinkCode} disabled={isLoading} className="w-full">
-                {isLoading ? 'Generating...' : 'Generate Linking Code'}
+                {isLoading ? t('telegramIntegration.unlinked.generatingButton') : t('telegramIntegration.unlinked.generateButton')}
               </Button>
             )}
           </div>
         )}
          <Button variant="outline" onClick={handleRefresh} className="w-full mt-2">
-            Refresh Status
+            {t('telegramIntegration.refreshButton')}
         </Button>
       </CardContent>
     </Card>

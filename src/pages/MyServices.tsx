@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import Layout from '@/components/Layout/Layout';
@@ -9,28 +8,28 @@ import { Star, Edit, Trash2, Plus, Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Service } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from 'react-i18next';
 
 export default function MyServices() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
-  // Отримання послуг користувача
-  const { data: services = [], isLoading, refetch } = useQuery<Service[]>({
+  const { data: services = [], isLoading } = useQuery<Service[]>({
     queryKey: ['my-services'],
     queryFn: async () => {
       const token = localStorage.getItem('token');
       const res = await fetch('/v1/services/my', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      if (!res.ok) throw new Error('Failed to fetch services');
+      if (!res.ok) throw new Error(t('myServicesPage.fetchError'));
       const data = await res.json();
       return data.services;
     },
     enabled: !!user && user.role === 'performer',
   });
 
-  // Видалення послуги
   const deleteMutation = useMutation({
     mutationFn: async (serviceId: string) => {
       const token = localStorage.getItem('token');
@@ -40,20 +39,19 @@ export default function MyServices() {
       });
       if (!res.ok) {
         const error = await res.json();
-        throw new Error(error.message || 'Failed to delete service');
+        throw new Error(error.message || t('myServicesPage.deleteErrorToast'));
       }
       return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['my-services'] });
       toast({
-        title: 'Успіх',
-        description: 'Послугу успішно видалено',
+        title: t('myServicesPage.deleteSuccessToast'),
       });
     },
     onError: (error: Error) => {
       toast({
-        title: 'Помилка',
+        title: t('toast.errorTitle'),
         description: error.message,
         variant: 'destructive',
       });
@@ -61,18 +59,17 @@ export default function MyServices() {
   });
 
   const handleDeleteService = async (serviceId: string, serviceTitle: string) => {
-    if (confirm(`Ви впевнені, що хочете видалити послугу "${serviceTitle}"?`)) {
+    if (confirm(t('myServicesPage.deleteConfirmation', { title: serviceTitle }))) {
       deleteMutation.mutate(serviceId);
     }
   };
 
-  // Перевірка доступу ПІСЛЯ всіх хуків
   if (user?.role !== 'performer') {
     return (
       <Layout>
         <div className="py-12 text-center">
-          <h1 className="text-2xl font-bold text-red-600">Доступ заборонено</h1>
-          <p className="mt-2">Ця сторінка доступна тільки для виконавців.</p>
+          <h1 className="text-2xl font-bold text-red-600">{t('myServicesPage.accessDenied')}</h1>
+          <p className="mt-2">{t('myServicesPage.onlyForPerformers')}</p>
         </div>
       </Layout>
     );
@@ -81,7 +78,7 @@ export default function MyServices() {
   if (isLoading) {
     return (
       <Layout>
-        <div className="py-12 text-center">Завантаження...</div>
+        <div className="py-12 text-center">{t('myServicesPage.loading')}</div>
       </Layout>
     );
   }
@@ -91,15 +88,15 @@ export default function MyServices() {
       <div className="max-w-6xl mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold">Мої послуги</h1>
+            <h1 className="text-3xl font-bold">{t('myServicesPage.title')}</h1>
             <p className="text-muted-foreground mt-2">
-              Керуйте своїми послугами та переглядайте статистику
+              {t('myServicesPage.subtitle')}
             </p>
           </div>
           <Button asChild>
             <Link to="/create-service">
               <Plus className="h-4 w-4 mr-2" />
-              Створити послугу
+              {t('myServicesPage.createService')}
             </Link>
           </Button>
         </div>
@@ -111,12 +108,12 @@ export default function MyServices() {
                 <div className="w-16 h-16 mx-auto mb-4 bg-muted rounded-full flex items-center justify-center">
                   <Plus className="h-8 w-8" />
                 </div>
-                <h3 className="text-lg font-semibold mb-2">Поки що немає послуг</h3>
-                <p>Створіть свою першу послугу, щоб почати отримувати замовлення</p>
+                <h3 className="text-lg font-semibold mb-2">{t('myServicesPage.noServicesTitle')}</h3>
+                <p>{t('myServicesPage.noServicesSubtitle')}</p>
               </div>
               <Button asChild>
                 <Link to="/create-service">
-                  Створити послугу
+                  {t('myServicesPage.createService')}
                 </Link>
               </Button>
             </CardContent>
@@ -170,7 +167,7 @@ export default function MyServices() {
                   <div className="flex items-center justify-between">
                     <Badge variant="secondary">{service.category.name}</Badge>
                     <div className="text-sm text-muted-foreground">
-                      {service.delivery_time} днів
+                      {t('myServicesPage.deliveryTime', { count: service.delivery_time })}
                     </div>
                   </div>
                   

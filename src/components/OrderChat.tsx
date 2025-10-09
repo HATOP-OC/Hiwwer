@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -45,8 +46,8 @@ import { Message } from '@/lib/api';
 import { fetchMessages, sendMessage, uploadOrderAttachment, editMessage, deleteMessage } from '@/lib/api';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
-import { uk } from 'date-fns/locale';
-import { getAcceptString, getMaxFileSize, validateFile } from '@/lib/fileTypes';
+import { uk, enUS } from 'date-fns/locale';
+import { getAcceptString, validateFile } from '@/lib/fileTypes';
 import FilePreview from './FilePreview';
 
 interface OrderChatProps {
@@ -58,6 +59,7 @@ interface OrderChatProps {
 }
 
 export default function OrderChat({ orderId, participants }: OrderChatProps) {
+  const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [messageText, setMessageText] = useState('');
@@ -75,14 +77,12 @@ export default function OrderChat({ orderId, participants }: OrderChatProps) {
 
   const webSocket = useWebSocket();
 
-  // Fetch messages
   const { data: messages = [], isLoading } = useQuery({
     queryKey: ['messages', orderId],
     queryFn: () => fetchMessages(orderId),
-    refetchInterval: !webSocket.isConnected ? 5000 : false, // Fallback polling if WebSocket is not connected
+    refetchInterval: !webSocket.isConnected ? 5000 : false,
   });
 
-  // Send message mutation
   const sendMessageMutation = useMutation({
     mutationFn: (data: { content: string; attachments?: any[] }) => 
       sendMessage(orderId, data),
@@ -92,7 +92,6 @@ export default function OrderChat({ orderId, participants }: OrderChatProps) {
     },
   });
 
-  // Edit message mutation
   const editMessageMutation = useMutation({
     mutationFn: ({ messageId, content }: { messageId: string; content: string }) =>
       editMessage(orderId, messageId, content),
@@ -103,7 +102,6 @@ export default function OrderChat({ orderId, participants }: OrderChatProps) {
     },
   });
 
-  // Delete message mutation
   const deleteMessageMutation = useMutation({
     mutationFn: (messageId: string) => deleteMessage(orderId, messageId),
     onSuccess: () => {
@@ -111,7 +109,6 @@ export default function OrderChat({ orderId, participants }: OrderChatProps) {
     },
   });
 
-  // WebSocket event handlers
   const handleNewMessage = useCallback((message: OrderChatMessage) => {
     if (message.orderId === orderId) {
       queryClient.setQueryData(['messages', orderId], (oldMessages: Message[] = []) => [
@@ -128,7 +125,6 @@ export default function OrderChat({ orderId, participants }: OrderChatProps) {
         }
       ]);
       
-      // Mark messages as read if we're the receiver
       if (message.receiverId === user?.id) {
         webSocket.markOrderMessagesRead(orderId);
       }
@@ -166,14 +162,13 @@ export default function OrderChat({ orderId, participants }: OrderChatProps) {
       queryClient.setQueryData(['messages', orderId], (oldMessages: Message[] = []) =>
         oldMessages.map(msg =>
           msg.id === data.messageId
-            ? { ...msg, content: '[Повідомлення видалено]', deleted: true }
+            ? { ...msg, content: t('orderChat.messageDeleted'), deleted: true }
             : msg
         )
       );
     }
-  }, [orderId, queryClient]);
+  }, [orderId, queryClient, t]);
 
-  // Set up WebSocket listeners
   useEffect(() => {
     if (webSocket.socket && webSocket.isConnected) {
       webSocket.joinOrderChat(orderId);
@@ -192,25 +187,21 @@ export default function OrderChat({ orderId, participants }: OrderChatProps) {
     }
   }, [webSocket, webSocket.socket, webSocket.isConnected, orderId, handleNewMessage, handleTyping, handleMessageEdit, handleMessageDelete]);
 
-  // Auto-scroll to bottom
   useEffect(() => {
     const scrollToBottom = () => {
       if (messagesEndRef.current) {
         messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
       }
-      // Alternative: scroll the ScrollArea viewport
       const viewport = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]') as HTMLElement;
       if (viewport) {
         viewport.scrollTop = viewport.scrollHeight;
       }
     };
     
-    // Small delay to ensure DOM is updated
     const timer = setTimeout(scrollToBottom, 100);
     return () => clearTimeout(timer);
   }, [messages]);
 
-  // Handle typing indicator
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setMessageText(e.target.value);
     
@@ -219,12 +210,10 @@ export default function OrderChat({ orderId, participants }: OrderChatProps) {
       webSocket.setOrderTyping(orderId, true);
     }
     
-    // Clear existing timeout
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
     }
     
-    // Set new timeout
     typingTimeoutRef.current = setTimeout(() => {
       setIsTyping(false);
       webSocket.setOrderTyping(orderId, false);
@@ -236,7 +225,6 @@ export default function OrderChat({ orderId, participants }: OrderChatProps) {
     
     if (!messageText.trim()) return;
     
-    // Clear typing indicator
     if (isTyping) {
       setIsTyping(false);
       webSocket.setOrderTyping(orderId, false);
@@ -250,25 +238,22 @@ export default function OrderChat({ orderId, participants }: OrderChatProps) {
     });
   };
 
-  // File upload functionality
   const handleFileSelect = () => {
     fileInputRef.current?.click();
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Валідація файлу
-      const validation = validateFile(file);
+      const validation = await validateFile(file);
       if (!validation.isValid) {
-        alert(validation.error);
+        alert(validation.error); // This part is not localized yet
         if (fileInputRef.current) {
           fileInputRef.current.value = '';
         }
         return;
       }
 
-      // Показуємо попередній перегляд
       setPreviewFile(file);
       setShowFilePreview(true);
     }
@@ -295,7 +280,6 @@ export default function OrderChat({ orderId, participants }: OrderChatProps) {
     try {
       const attachment = await uploadOrderAttachment(orderId, file);
       
-      // Визначаємо тип файлу для іконки
       const fileExtension = file.name.split('.').pop()?.toLowerCase();
       const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(fileExtension || '');
       const isVideo = ['mp4', 'avi', 'mov', 'wmv', 'flv', 'webm'].includes(fileExtension || '');
@@ -310,7 +294,6 @@ export default function OrderChat({ orderId, participants }: OrderChatProps) {
       else if (['xls', 'xlsx'].includes(fileExtension || '')) emoji = '📊';
       else if (['zip', 'rar', '7z'].includes(fileExtension || '')) emoji = '🗜️';
       
-      // Send message with attachment
       sendMessageMutation.mutate({
         content: messageText.trim() || `${emoji} ${file.name}`,
         attachments: [{
@@ -325,14 +308,14 @@ export default function OrderChat({ orderId, participants }: OrderChatProps) {
       }
     } catch (error) {
       console.error('File upload failed:', error);
-      alert('Помилка завантаження файлу. Спробуйте ще раз.');
+      alert(t('orderChat.uploadError'));
     }
   };
 
   const getMessageSender = (senderId: string) => {
     if (senderId === participants.client.id) return participants.client;
     if (senderId === participants.performer?.id) return participants.performer;
-    return { id: senderId, name: 'Невідомий користувач' };
+    return { id: senderId, name: t('orderChat.unknownUser') };
   };
 
   const getTypingUsersNames = () => {
@@ -383,15 +366,15 @@ export default function OrderChat({ orderId, participants }: OrderChatProps) {
     <Card className="h-[600px] flex flex-col">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">Чат замовлення</CardTitle>
+          <CardTitle className="text-lg">{t('orderChat.title')}</CardTitle>
           <div className="flex items-center space-x-2">
             {webSocket.isConnected ? (
               <Badge variant="outline" className="text-green-600 border-green-600">
-                Онлайн
+                {t('orderChat.online')}
               </Badge>
             ) : (
               <Badge variant="outline" className="text-orange-600 border-orange-600">
-                Оффлайн
+                {t('orderChat.offline')}
               </Badge>
             )}
             <Button variant="ghost" size="sm">
@@ -402,7 +385,6 @@ export default function OrderChat({ orderId, participants }: OrderChatProps) {
       </CardHeader>
       
       <CardContent className="flex-1 flex flex-col p-0 min-h-0">
-        {/* Messages area */}
         <ScrollArea ref={scrollAreaRef} className="flex-1 px-6 min-h-0">
           <div className="space-y-4 py-4">
             {messages.map((message) => {
@@ -430,10 +412,10 @@ export default function OrderChat({ orderId, participants }: OrderChatProps) {
                             {sender?.name}
                           </span>
                           <span className="text-xs text-muted-foreground">
-                            {format(new Date(message.createdAt), 'HH:mm', { locale: uk })}
+                            {format(new Date(message.createdAt), 'HH:mm', { locale: i18n.language === 'uk' ? uk : enUS })}
                             {message.edited && (
                               <span className="ml-1 text-xs text-muted-foreground italic">
-                                (відредаговано)
+                                {t('orderChat.edited')}
                               </span>
                             )}
                           </span>
@@ -449,29 +431,29 @@ export default function OrderChat({ orderId, participants }: OrderChatProps) {
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem onClick={() => handleEditMessage(message.id, message.content)}>
                                 <Edit2 className="mr-2 h-4 w-4" />
-                                Редагувати
+                                {t('orderChat.edit')}
                               </DropdownMenuItem>
                               <AlertDialog>
                                 <AlertDialogTrigger asChild>
                                   <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                                     <Trash2 className="mr-2 h-4 w-4" />
-                                    Видалити
+                                    {t('orderChat.delete')}
                                   </DropdownMenuItem>
                                 </AlertDialogTrigger>
                                 <AlertDialogContent>
                                   <AlertDialogHeader>
-                                    <AlertDialogTitle>Видалити повідомлення?</AlertDialogTitle>
+                                    <AlertDialogTitle>{t('orderChat.deleteConfirm.title')}</AlertDialogTitle>
                                     <AlertDialogDescription>
-                                      Це дію неможливо скасувати. Повідомлення буде видалено назавжди.
+                                      {t('orderChat.deleteConfirm.description')}
                                     </AlertDialogDescription>
                                   </AlertDialogHeader>
                                   <AlertDialogFooter>
-                                    <AlertDialogCancel>Скасувати</AlertDialogCancel>
+                                    <AlertDialogCancel>{t('orderChat.cancel')}</AlertDialogCancel>
                                     <AlertDialogAction 
                                       onClick={() => handleDeleteMessage(message.id)}
                                       className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                     >
-                                      Видалити
+                                      {t('orderChat.deleteConfirm.confirm')}
                                     </AlertDialogAction>
                                   </AlertDialogFooter>
                                 </AlertDialogContent>
@@ -494,7 +476,7 @@ export default function OrderChat({ orderId, participants }: OrderChatProps) {
                                 handleCancelEdit();
                               }
                             }}
-                            placeholder="Відредагуйте повідомлення..."
+                            placeholder={t('orderChat.editPlaceholder')}
                             className="w-full"
                             autoFocus
                           />
@@ -505,7 +487,7 @@ export default function OrderChat({ orderId, participants }: OrderChatProps) {
                               disabled={!editingText.trim() || editMessageMutation.isPending}
                             >
                               <Check className="h-3 w-3 mr-1" />
-                              Зберегти
+                              {t('orderChat.save')}
                             </Button>
                             <Button 
                               size="sm" 
@@ -513,7 +495,7 @@ export default function OrderChat({ orderId, participants }: OrderChatProps) {
                               onClick={handleCancelEdit}
                             >
                               <X className="h-3 w-3 mr-1" />
-                              Скасувати
+                              {t('orderChat.cancel')}
                             </Button>
                           </div>
                         </div>
@@ -531,10 +513,9 @@ export default function OrderChat({ orderId, participants }: OrderChatProps) {
                             <div className="mt-2 space-y-2">
                               {message.attachments.map((attachment, index) => {
                                 const fileUrl = typeof attachment === 'string' ? attachment : attachment.fileUrl || '';
-                                const fileName = typeof attachment === 'string' ? `Вкладення ${index + 1}` : attachment.fileName;
+                                const fileName = typeof attachment === 'string' ? t('orderChat.attachmentName', {index: index + 1}) : attachment.fileName;
                                 const fileExtension = fileName?.split('.').pop()?.toLowerCase() || '';
                                 
-                                // Визначаємо тип файлу
                                 const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(fileExtension);
                                 const isVideo = ['mp4', 'avi', 'mov', 'wmv', 'flv', 'webm'].includes(fileExtension);
                                 const isAudio = ['mp3', 'wav', 'flac', 'aac', 'ogg'].includes(fileExtension);
@@ -543,7 +524,6 @@ export default function OrderChat({ orderId, participants }: OrderChatProps) {
                                 const isArchive = ['zip', 'rar', '7z', 'tar', 'gz'].includes(fileExtension);
                                 const isCode = ['js', 'ts', 'jsx', 'tsx', 'py', 'java', 'cpp', 'c', 'cs', 'php', 'rb', 'go', 'rs', 'swift'].includes(fileExtension);
                                 
-                                // Вибираємо іконку
                                 let FileIcon = Paperclip;
                                 if (isImage) FileIcon = FileImage;
                                 else if (isVideo) FileIcon = FileVideo;
@@ -573,7 +553,7 @@ export default function OrderChat({ orderId, participants }: OrderChatProps) {
                                           className="rounded-lg max-w-full h-auto"
                                           style={{ maxHeight: '200px' }}
                                         >
-                                          Ваш браузер не підтримує відтворення відео.
+                                          {t('orderChat.videoNotSupported')}
                                         </video>
                                         <p className="text-xs text-gray-500 mt-1">{fileName}</p>
                                       </div>
@@ -584,7 +564,7 @@ export default function OrderChat({ orderId, participants }: OrderChatProps) {
                                           controls
                                           className="w-full"
                                         >
-                                          Ваш браузер не підтримує відтворення аудіо.
+                                          {t('orderChat.audioNotSupported')}
                                         </audio>
                                         <p className="text-xs text-gray-500 mt-1">{fileName}</p>
                                       </div>
@@ -608,7 +588,7 @@ export default function OrderChat({ orderId, participants }: OrderChatProps) {
                                           href={fileUrl}
                                           download={fileName}
                                           className="p-1 hover:bg-gray-300 dark:hover:bg-gray-600 rounded"
-                                          title="Завантажити файл"
+                                          title={t('orderChat.downloadFile')}
                                         >
                                           <Download className="h-4 w-4 text-gray-600 dark:text-gray-400" />
                                         </a>
@@ -627,14 +607,13 @@ export default function OrderChat({ orderId, participants }: OrderChatProps) {
               );
             })}
             
-            {/* Typing indicator */}
             {typingUsers.size > 0 && (
               <div className="flex justify-start">
                 <div className="flex space-x-2 max-w-[70%]">
                   <div className="bg-muted rounded-lg px-3 py-2">
                     <div className="flex items-center space-x-1">
                       <span className="text-sm text-muted-foreground">
-                        {getTypingUsersNames().join(', ')} друкує
+                        {t('orderChat.typing', { users: getTypingUsersNames().join(', '), count: typingUsers.size })}
                       </span>
                       <div className="flex space-x-1">
                         <div className="w-1 h-1 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
@@ -651,7 +630,6 @@ export default function OrderChat({ orderId, participants }: OrderChatProps) {
           </div>
         </ScrollArea>
         
-        {/* Message input */}
         <div className="border-t p-4">
           <form onSubmit={handleSendMessage} className="flex items-center space-x-2">
             <Button type="button" variant="ghost" size="sm" onClick={handleFileSelect}>
@@ -661,7 +639,7 @@ export default function OrderChat({ orderId, participants }: OrderChatProps) {
             <Input
               value={messageText}
               onChange={handleInputChange}
-              placeholder="Напишіть повідомлення..."
+              placeholder={t('orderChat.inputPlaceholder')}
               className="flex-1"
               disabled={sendMessageMutation.isPending}
             />
@@ -674,7 +652,6 @@ export default function OrderChat({ orderId, participants }: OrderChatProps) {
               <Send className="h-4 w-4" />
             </Button>
             
-            {/* Hidden file input */}
             <input
               type="file"
               ref={fileInputRef}
@@ -686,7 +663,6 @@ export default function OrderChat({ orderId, participants }: OrderChatProps) {
         </div>
       </CardContent>
 
-      {/* File Preview Dialog */}
       <FilePreview
         file={previewFile}
         isOpen={showFilePreview}

@@ -9,11 +9,22 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { Star, ArrowLeft, ShoppingCart, Clock, DollarSign, User, Package } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export default function ServiceDetail() {
+  const { t } = useTranslation();
   const { serviceId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+
+  // Перевірка чи це UUID
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  
+  // Якщо serviceId не є UUID, перенаправляємо на сторінку послуг
+  if (serviceId && !uuidRegex.test(serviceId)) {
+    navigate('/services', { replace: true });
+    return null;
+  }
 
   const { data: service, isLoading, error } = useQuery({
     queryKey: ['service', serviceId],
@@ -34,7 +45,7 @@ export default function ServiceDetail() {
       <Layout>
         <div className="container max-w-6xl py-8">
           <div className="text-center py-16">
-            <h1 className="text-2xl font-bold">Завантаження...</h1>
+            <h1 className="text-2xl font-bold">{t('serviceDetailPage.loading')}</h1>
           </div>
         </div>
       </Layout>
@@ -46,10 +57,10 @@ export default function ServiceDetail() {
       <Layout>
         <div className="container max-w-6xl py-8">
           <div className="text-center py-16">
-            <h1 className="text-2xl font-bold">Послугу не знайдено</h1>
+            <h1 className="text-2xl font-bold">{t('serviceDetailPage.serviceNotFound')}</h1>
             <Button className="mt-4" onClick={() => navigate('/services')}>
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Повернутися до послуг
+              {t('serviceDetailPage.backToServices')}
             </Button>
           </div>
         </div>
@@ -63,7 +74,7 @@ export default function ServiceDetail() {
         <div className="mb-8">
           <Button variant="outline" onClick={() => navigate(-1)} className="mb-4">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Назад
+            {t('serviceDetailPage.back')}
           </Button>
         </div>
 
@@ -91,7 +102,7 @@ export default function ServiceDetail() {
                   <div className="flex items-center">
                     <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
                     <span className="ml-1 font-medium">{service.rating?.toFixed(1) || '0.0'}</span>
-                    <span className="ml-1 text-muted-foreground">({service.review_count || 0} відгуків)</span>
+                    <span className="ml-1 text-muted-foreground">{t('serviceDetailPage.reviews', { count: service.review_count || 0 })}</span>
                   </div>
                   <Badge>{service.category?.name}</Badge>
                 </div>
@@ -103,7 +114,7 @@ export default function ServiceDetail() {
 
                 {service.tags && service.tags.length > 0 && (
                   <div className="space-y-2">
-                    <h4 className="font-medium">Теги:</h4>
+                    <h4 className="font-medium">{t('serviceDetailPage.tags')}</h4>
                     <div className="flex flex-wrap gap-2">
                       {service.tags.map((tag: any) => (
                         <Badge key={tag.id} variant="outline">
@@ -119,7 +130,7 @@ export default function ServiceDetail() {
             {/* Інформація про виконавця */}
             <Card>
               <CardHeader>
-                <CardTitle>Про виконавця</CardTitle>
+                <CardTitle>{t('serviceDetailPage.aboutPerformer')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex items-start space-x-4">
@@ -141,11 +152,11 @@ export default function ServiceDetail() {
                       </div>
                       <div className="flex items-center">
                         <User className="h-4 w-4 mr-1" />
-                        Досвідчений виконавець
+                        {t('serviceDetailPage.experiencedPerformer')}
                       </div>
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      Професійний виконавець на платформі
+                      {t('serviceDetailPage.professionalOnPlatform')}
                     </p>
                   </div>
                 </div>
@@ -158,13 +169,13 @@ export default function ServiceDetail() {
             <Card className="sticky top-8">
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
-                  <span>Замовити послугу</span>
+                  <span>{t('serviceDetailPage.orderService')}</span>
                   <div className="text-2xl font-bold text-green-600">
                     ${service.price}
                   </div>
                 </CardTitle>
                 <CardDescription>
-                  Натисніть кнопку нижче, щоб створити замовлення
+                  {t('serviceDetailPage.orderServiceDescription')}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -172,15 +183,15 @@ export default function ServiceDetail() {
                   <div className="flex items-center justify-between text-sm">
                     <div className="flex items-center">
                       <Clock className="h-4 w-4 mr-2 text-muted-foreground" />
-                      <span>Час виконання:</span>
+                      <span>{t('serviceDetailPage.executionTime')}</span>
                     </div>
-                    <span className="font-medium">{service.delivery_time} днів</span>
+                    <span className="font-medium">{t('serviceDetailPage.days', { count: service.delivery_time })}</span>
                   </div>
                   
                   <div className="flex items-center justify-between text-sm">
                     <div className="flex items-center">
                       <DollarSign className="h-4 w-4 mr-2 text-muted-foreground" />
-                      <span>Валюта:</span>
+                      <span>{t('serviceDetailPage.currency')}</span>
                     </div>
                     <span className="font-medium">{service.currency}</span>
                   </div>
@@ -188,7 +199,7 @@ export default function ServiceDetail() {
                   <div className="flex items-center justify-between text-sm">
                     <div className="flex items-center">
                       <Package className="h-4 w-4 mr-2 text-muted-foreground" />
-                      <span>Категорія:</span>
+                      <span>{t('serviceDetailPage.category')}</span>
                     </div>
                     <span className="font-medium">{service.category?.name}</span>
                   </div>
@@ -198,16 +209,16 @@ export default function ServiceDetail() {
 
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span>Вартість послуги:</span>
+                    <span>{t('serviceDetailPage.serviceCost')}</span>
                     <span>${service.price}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span>Комісія платформи:</span>
+                    <span>{t('serviceDetailPage.platformFee')}</span>
                     <span>$0</span>
                   </div>
                   <Separator />
                   <div className="flex justify-between font-bold">
-                    <span>Загальна сума:</span>
+                    <span>{t('serviceDetailPage.totalAmount')}</span>
                     <span>${service.price}</span>
                   </div>
                 </div>
@@ -218,12 +229,12 @@ export default function ServiceDetail() {
                   onClick={handleCreateOrder}
                 >
                   <ShoppingCart className="mr-2 h-4 w-4" />
-                  {user ? 'Замовити послугу' : 'Увійти та замовити'}
+                  {user ? t('serviceDetailPage.orderNow') : t('serviceDetailPage.loginToOrder')}
                 </Button>
 
                 {!user && (
                   <p className="text-xs text-center text-muted-foreground">
-                    Для створення замовлення необхідно увійти в акаунт
+                    {t('serviceDetailPage.loginRequired')}
                   </p>
                 )}
               </CardContent>
@@ -232,24 +243,24 @@ export default function ServiceDetail() {
             {/* Додаткова інформація */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-sm">Що включено в послугу:</CardTitle>
+                <CardTitle className="text-sm">{t('serviceDetailPage.whatIsIncluded')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2 text-sm">
                 <div className="flex items-center">
                   <div className="w-2 h-2 bg-green-500 rounded-full mr-3" />
-                  <span>Професійне виконання роботи</span>
+                  <span>{t('serviceDetailPage.professionalExecution')}</span>
                 </div>
                 <div className="flex items-center">
                   <div className="w-2 h-2 bg-green-500 rounded-full mr-3" />
-                  <span>Підтримка під час виконання</span>
+                  <span>{t('serviceDetailPage.supportDuringExecution')}</span>
                 </div>
                 <div className="flex items-center">
                   <div className="w-2 h-2 bg-green-500 rounded-full mr-3" />
-                  <span>Можливість доопрацювання</span>
+                  <span>{t('serviceDetailPage.possibilityOfRevision')}</span>
                 </div>
                 <div className="flex items-center">
                   <div className="w-2 h-2 bg-green-500 rounded-full mr-3" />
-                  <span>Гарантія якості</span>
+                  <span>{t('serviceDetailPage.qualityGuarantee')}</span>
                 </div>
               </CardContent>
             </Card>

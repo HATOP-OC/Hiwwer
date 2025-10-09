@@ -77,16 +77,24 @@ router.get('/', async (req: Request, res: Response) => {
 router.get('/categories', async (req: Request, res: Response) => {
   try {
     const result = await query(`
-      SELECT id, name, slug, description
-      FROM service_categories
-      ORDER BY name
+      SELECT 
+        sc.id, 
+        sc.name, 
+        sc.slug, 
+        sc.description,
+        COUNT(s.id) as service_count
+      FROM service_categories sc
+      LEFT JOIN services s ON s.category_id = sc.id
+      GROUP BY sc.id, sc.name, sc.slug, sc.description
+      ORDER BY sc.name
     `);
 
     const categories = result.rows.map(r => ({
       id: r.id,
       name: r.name,
       slug: r.slug,
-      description: r.description
+      description: r.description,
+      service_count: parseInt(r.service_count)
     }));
 
     res.json({ categories });
@@ -146,6 +154,46 @@ router.get('/my', authenticate, async (req: Request, res: Response) => {
 router.get('/:id', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    
+    // Перевірка чи це UUID чи slug категорії
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    
+    if (!uuidRegex.test(id)) {
+      // Якщо це не UUID, то це slug категорії - повертаємо послуги з цієї категорії
+      const { page = '1', limit = '10' } = req.query;
+      const offset = (parseInt(page as string) - 1) * parseInt(limit as string);
+      
+      const result = await query(
+        `SELECT s.id, s.title, s.description, s.price, s.currency, s.delivery_time, s.rating, s.review_count,
+        u.id as performer_id, u.name as performer_name, u.avatar_url as performer_avatar,
+        c.id as category_id, c.name as category_name, c.slug as category_slug
+        FROM services s
+        JOIN users u ON s.performer_id = u.id
+        JOIN service_categories c ON s.category_id = c.id
+        WHERE c.slug = $1
+        ORDER BY s.created_at DESC LIMIT $2 OFFSET $3`,
+        [id, limit, offset]
+      );
+      
+      const services = result.rows.map(r => ({
+        id: r.id,
+        title: r.title,
+        description: r.description,
+        price: r.price,
+        currency: r.currency,
+        delivery_time: r.delivery_time,
+        rating: r.rating,
+        review_count: r.review_count,
+        performer: { id: r.performer_id, name: r.performer_name, avatar_url: r.performer_avatar },
+        category: { id: r.category_id, name: r.category_name, slug: r.category_slug },
+        images: [] as string[],
+        tags: [] as Array<{ id: string; name: string }>
+      }));
+      
+      return res.json({ services });
+    }
+    
+    // Якщо це UUID - шукаємо конкретну послугу
     const result = await query(
       `SELECT s.*, u.id as performer_id, u.name as performer_name, u.avatar_url as performer_avatar, u.bio as performer_bio, u.rating as performer_rating,
       c.id as category_id, c.name as category_name, c.slug as category_slug

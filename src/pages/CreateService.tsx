@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { X, Plus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from 'react-i18next';
 
 interface ServiceCategory {
   id: string;
@@ -30,6 +31,7 @@ interface CreateServiceData {
 }
 
 export default function CreateService() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -53,7 +55,7 @@ export default function CreateService() {
     queryKey: ['service-categories'],
     queryFn: async () => {
       const res = await fetch('/v1/services/categories');
-      if (!res.ok) throw new Error('Failed to fetch categories');
+      if (!res.ok) throw new Error(t('createService.errors.fetchCategories'));
       const data = await res.json();
       return data.categories || [];
     }
@@ -67,7 +69,7 @@ export default function CreateService() {
       const res = await fetch(`/v1/services/${serviceId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      if (!res.ok) throw new Error('Failed to fetch service');
+      if (!res.ok) throw new Error(t('createService.errors.fetchService'));
       return res.json();
     },
     enabled: isEditing && !!serviceId
@@ -105,21 +107,21 @@ export default function CreateService() {
       });
       if (!res.ok) {
         const error = await res.json();
-        throw new Error(error.message || `Failed to ${isEditing ? 'update' : 'create'} service`);
+        throw new Error(error.message || t(isEditing ? 'createService.errors.update' : 'createService.errors.create'));
       }
       return res.json();
     },
     onSuccess: (data) => {
       toast({
-        title: "Успіх!",
-        description: isEditing ? "Послугу успішно оновлено" : "Послугу успішно створено",
+        title: t('createService.success.title'),
+        description: t(isEditing ? 'createService.success.update' : 'createService.success.create'),
       });
       const serviceId = data.service?.id || data.id;
       navigate(`/services/${serviceId}`);
     },
     onError: (error: Error) => {
       toast({
-        title: "Помилка",
+        title: t('createService.errors.title'),
         description: error.message,
         variant: "destructive",
       });
@@ -131,10 +133,10 @@ export default function CreateService() {
     return (
       <Layout>
         <div className="py-12 text-center">
-          <h1 className="text-2xl font-bold text-red-600">Доступ заборонено</h1>
-          <p className="mt-2">Тільки виконавці можуть створювати послуги.</p>
+          <h1 className="text-2xl font-bold text-red-600">{t('createService.accessDenied.title')}</h1>
+          <p className="mt-2">{t('createService.accessDenied.description')}</p>
           <Button className="mt-4" onClick={() => navigate('/become-performer')}>
-            Стати виконавцем
+            {t('createService.accessDenied.button')}
           </Button>
         </div>
       </Layout>
@@ -146,8 +148,8 @@ export default function CreateService() {
     
     if (!formData.title.trim()) {
       toast({
-        title: "Помилка",
-        description: "Назва послуги обов'язкова",
+        title: t('createService.errors.title'),
+        description: t('createService.errors.titleRequired'),
         variant: "destructive",
       });
       return;
@@ -155,8 +157,8 @@ export default function CreateService() {
     
     if (!formData.description.trim()) {
       toast({
-        title: "Помилка",
-        description: "Опис послуги обов'язковий",
+        title: t('createService.errors.title'),
+        description: t('createService.errors.descriptionRequired'),
         variant: "destructive",
       });
       return;
@@ -164,8 +166,8 @@ export default function CreateService() {
     
     if (formData.price <= 0) {
       toast({
-        title: "Помилка",
-        description: "Ціна повинна бути більше 0",
+        title: t('createService.errors.title'),
+        description: t('createService.errors.pricePositive'),
         variant: "destructive",
       });
       return;
@@ -173,8 +175,8 @@ export default function CreateService() {
     
     if (!formData.category_id) {
       toast({
-        title: "Помилка",
-        description: "Оберіть категорію послуги",
+        title: t('createService.errors.title'),
+        description: t('createService.errors.categoryRequired'),
         variant: "destructive",
       });
       return;
@@ -182,8 +184,8 @@ export default function CreateService() {
 
     if (formData.delivery_time <= 0) {
       toast({
-        title: "Помилка",
-        description: "Терміни виконання повинні бути більше 0",
+        title: t('createService.errors.title'),
+        description: t('createService.errors.deliveryTimePositive'),
         variant: "destructive",
       });
       return;
@@ -221,39 +223,39 @@ export default function CreateService() {
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold">
-            {isEditing ? 'Редагувати послугу' : 'Створити нову послугу'}
+            {isEditing ? t('createService.title.edit') : t('createService.title.create')}
           </h1>
           <p className="text-muted-foreground mt-2">
-            {isEditing ? 'Внесіть зміни до вашої послуги' : 'Заповніть інформацію про вашу послугу'}
+            {isEditing ? t('createService.subtitle.edit') : t('createService.subtitle.create')}
           </p>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>Деталі послуги</CardTitle>
+            <CardTitle>{t('createService.cardTitle')}</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Назва */}
               <div>
-                <Label htmlFor="title">Назва послуги *</Label>
+                <Label htmlFor="title">{t('createService.form.title.label')} *</Label>
                 <Input
                   id="title"
                   value={formData.title}
                   onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                  placeholder="Наприклад: Дизайн логотипу для вашого бренду"
+                  placeholder={t('createService.form.title.placeholder')}
                   required
                 />
               </div>
 
               {/* Опис */}
               <div>
-                <Label htmlFor="description">Опис послуги *</Label>
+                <Label htmlFor="description">{t('createService.form.description.label')} *</Label>
                 <Textarea
                   id="description"
                   value={formData.description}
                   onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                  placeholder="Детально опишіть що включає ваша послуга..."
+                  placeholder={t('createService.form.description.placeholder')}
                   rows={5}
                   required
                 />
@@ -261,13 +263,13 @@ export default function CreateService() {
 
               {/* Категорія */}
               <div>
-                <Label htmlFor="category">Категорія *</Label>
+                <Label htmlFor="category">{t('createService.form.category.label')} *</Label>
                 <Select
                   value={formData.category_id}
                   onValueChange={(value) => setFormData(prev => ({ ...prev, category_id: value }))}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Оберіть категорію" />
+                    <SelectValue placeholder={t('createService.form.category.placeholder')} />
                   </SelectTrigger>
                   <SelectContent>
                     {categories.map((category) => (
@@ -282,7 +284,7 @@ export default function CreateService() {
               {/* Ціна і валюта */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="price">Ціна *</Label>
+                  <Label htmlFor="price">{t('createService.form.price.label')} *</Label>
                   <Input
                     id="price"
                     type="number"
@@ -300,7 +302,7 @@ export default function CreateService() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="currency">Валюта</Label>
+                  <Label htmlFor="currency">{t('createService.form.currency.label')}</Label>
                   <Select
                     value={formData.currency}
                     onValueChange={(value) => setFormData(prev => ({ ...prev, currency: value }))}
@@ -319,7 +321,7 @@ export default function CreateService() {
 
               {/* Терміни виконання */}
               <div>
-                <Label htmlFor="delivery_time">Терміни виконання (днів) *</Label>
+                <Label htmlFor="delivery_time">{t('createService.form.deliveryTime.label')} *</Label>
                 <Input
                   id="delivery_time"
                   type="number"
@@ -338,14 +340,14 @@ export default function CreateService() {
 
               {/* Теги */}
               <div>
-                <Label htmlFor="tags">Теги</Label>
+                <Label htmlFor="tags">{t('createService.form.tags.label')}</Label>
                 <div className="flex gap-2 mb-2">
                   <Input
                     id="tags"
                     value={tagInput}
                     onChange={(e) => setTagInput(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    placeholder="Додайте тег і натисніть Enter"
+                    placeholder={t('createService.form.tags.placeholder')}
                   />
                   <Button type="button" onClick={addTag} variant="outline">
                     <Plus className="h-4 w-4" />
@@ -372,8 +374,8 @@ export default function CreateService() {
                   className="flex-1"
                 >
                   {createMutation.isPending 
-                    ? (isEditing ? 'Збереження...' : 'Створення...') 
-                    : (isEditing ? 'Зберегти зміни' : 'Створити послугу')
+                    ? (isEditing ? t('createService.buttons.saving') : t('createService.buttons.creating'))
+                    : (isEditing ? t('createService.buttons.save') : t('createService.buttons.create'))
                   }
                 </Button>
                 <Button
@@ -381,7 +383,7 @@ export default function CreateService() {
                   variant="outline"
                   onClick={() => navigate('/my-services')}
                 >
-                  Скасувати
+                  {t('createService.buttons.cancel')}
                 </Button>
               </div>
             </form>

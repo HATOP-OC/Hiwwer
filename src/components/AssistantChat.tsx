@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { MessageSquare, X, Send, Trash2, Loader2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface Message {
   sender: 'user' | 'assistant';
@@ -12,6 +13,7 @@ interface Message {
 }
 
 const AssistantChat: React.FC = () => {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
@@ -89,7 +91,7 @@ const AssistantChat: React.FC = () => {
       setMessages(prevMessages => [...prevMessages, assistantMessage]);
     } catch (error) {
       console.error('Error sending message:', error);
-      const errorMessage: Message = { sender: 'assistant', text: 'Вибачте, виникли проблеми з підключенням. Спробуйте пізніше.' };
+      const errorMessage: Message = { sender: 'assistant', text: t('assistantChat.connectionError') };
       setMessages(prevMessages => [...prevMessages, errorMessage]);
     } finally {
       setIsLoading(false);
@@ -97,7 +99,7 @@ const AssistantChat: React.FC = () => {
   };
 
   const handleClearHistory = async () => {
-    if (!confirm('Ви впевнені, що хочете очистити історію чату?')) return;
+    if (!confirm(t('assistantChat.clearHistoryConfirmation'))) return;
 
     try {
       const response = await fetch(`/v1/assistant/history/${sessionId}`, {
@@ -127,13 +129,13 @@ const AssistantChat: React.FC = () => {
         <div className="fixed bottom-20 right-4 left-4 md:left-auto md:right-4 z-50">
           <Card className="w-full md:w-96 max-w-md mx-auto md:mx-0">
             <CardHeader className="flex flex-row items-center justify-between py-3">
-              <CardTitle>Hiwwer Assistant</CardTitle>
+              <CardTitle>{t('assistantChat.title')}</CardTitle>
               {messages.length > 0 && (
                 <Button 
                   variant="ghost" 
                   size="sm" 
                   onClick={handleClearHistory}
-                  title="Очистити історію"
+                  title={t('assistantChat.clearHistory')}
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
@@ -149,7 +151,7 @@ const AssistantChat: React.FC = () => {
                   ) : messages.length === 0 ? (
                     <div className="text-center text-muted-foreground py-8">
                       <MessageSquare className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                      <p>Привіт! Як я можу вам допомогти?</p>
+                      <p>{t('assistantChat.greeting')}</p>
                     </div>
                   ) : (
                     messages.map((msg, index) => (
@@ -175,7 +177,7 @@ const AssistantChat: React.FC = () => {
                 <Input
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
-                  placeholder="Задайте питання..."
+                  placeholder={t('assistantChat.placeholder')}
                   disabled={isLoading}
                 />
                 <Button type="submit" size="icon" disabled={isLoading}>

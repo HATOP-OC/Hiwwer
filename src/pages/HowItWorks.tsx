@@ -20,199 +20,149 @@ import {
   CreditCard,
   Smartphone
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const HowItWorks = () => {
+  const { t } = useTranslation();
   const [activeStep, setActiveStep] = useState(1);
 
   const clientSteps = [
     {
       id: 1,
-      title: 'Знайдіть послугу',
-      description: 'Переглядайте тисячі професійних послуг або використовуйте пошук для знаходження потрібного.',
+      title: t('howItWorksPage.clientSteps.step1_title'),
+      description: t('howItWorksPage.clientSteps.step1_desc'),
       icon: <Search className="h-8 w-8" />,
-      details: [
-        'Переглядайте категорії послуг',
-        'Використовуйте фільтри для пошуку',
-        'Порівнюйте різних виконавців',
-        'Читайте відгуки та рейтинги'
-      ]
+      details: t('howItWorksPage.clientSteps.step1_details', { returnObjects: true }) as string[]
     },
     {
       id: 2,
-      title: 'Оберіть виконавця',
-      description: 'Вивчіть профілі виконавців, їхні роботи та відгуки клієнтів.',
+      title: t('howItWorksPage.clientSteps.step2_title'),
+      description: t('howItWorksPage.clientSteps.step2_desc'),
       icon: <Users className="h-8 w-8" />,
-      details: [
-        'Перевірте портфоліо виконавця',
-        'Прочитайте відгуки попередніх клієнтів',
-        'Перегляньте рейтинг та статистику',
-        'Зв\'яжіться для уточнення деталей'
-      ]
+      details: t('howItWorksPage.clientSteps.step2_details', { returnObjects: true }) as string[]
     },
     {
       id: 3,
-      title: 'Оформіть замовлення',
-      description: 'Опишіть ваші вимоги та здійсніть безпечну оплату через платформу.',
+      title: t('howItWorksPage.clientSteps.step3_title'),
+      description: t('howItWorksPage.clientSteps.step3_desc'),
       icon: <ShoppingCart className="h-8 w-8" />,
-      details: [
-        'Детально опишіть ваше завдання',
-        'Узгодьте терміни виконання',
-        'Безпечна оплата через платформу',
-        'Отримайте підтвердження замовлення'
-      ]
+      details: t('howItWorksPage.clientSteps.step3_details', { returnObjects: true }) as string[]
     },
     {
       id: 4,
-      title: 'Отримуйте оновлення',
-      description: 'Слідкуйте за прогресом через Telegram-бот та спілкуйтесь з виконавцем.',
+      title: t('howItWorksPage.clientSteps.step4_title'),
+      description: t('howItWorksPage.clientSteps.step4_desc'),
       icon: <MessageSquare className="h-8 w-8" />,
-      details: [
-        'Автоматичні сповіщення в Telegram',
-        'Прямий зв\'язок з виконавцем',
-        'Відстеження етапів виконання',
-        'Можливість коригувати завдання'
-      ]
+      details: t('howItWorksPage.clientSteps.step4_details', { returnObjects: true }) as string[]
     },
     {
       id: 5,
-      title: 'Отримайте результат',
-      description: 'Перевірте готову роботу, запросіть правки та залиште відгук.',
+      title: t('howItWorksPage.clientSteps.step5_title'),
+      description: t('howItWorksPage.clientSteps.step5_desc'),
       icon: <CheckCircle className="h-8 w-8" />,
-      details: [
-        'Перевірка якості виконаної роботи',
-        'Можливість запросити правки',
-        'Завершення угоди після схвалення',
-        'Залишення відгуку про роботу'
-      ]
+      details: t('howItWorksPage.clientSteps.step5_details', { returnObjects: true }) as string[]
     }
   ];
 
   const performerSteps = [
     {
       id: 1,
-      title: 'Створіть профіль',
-      description: 'Зареєструйтесь та створіть привабливий профіль з описом ваших навичок.',
+      title: t('howItWorksPage.performerSteps.step1_title'),
+      description: t('howItWorksPage.performerSteps.step1_desc'),
       icon: <FileText className="h-8 w-8" />,
-      details: [
-        'Заповніть детальну інформацію про себе',
-        'Додайте портфоліо ваших робіт',
-        'Опишіть ваші навички та досвід',
-        'Пройдіть верифікацію профілю'
-      ]
+      details: t('howItWorksPage.performerSteps.step1_details', { returnObjects: true }) as string[]
     },
     {
       id: 2,
-      title: 'Створіть послуги',
-      description: 'Опишіть ваші послуги, встановіть ціни та терміни виконання.',
+      title: t('howItWorksPage.performerSteps.step2_title'),
+      description: t('howItWorksPage.performerSteps.step2_desc'),
       icon: <Star className="h-8 w-8" />,
-      details: [
-        'Створіть детальний опис послуги',
-        'Встановіть конкурентну ціну',
-        'Вкажіть терміни виконання',
-        'Додайте приклади попередніх робіт'
-      ]
+      details: t('howItWorksPage.performerSteps.step2_details', { returnObjects: true }) as string[]
     },
     {
       id: 3,
-      title: 'Отримуйте замовлення',
-      description: 'Реагуйте на замовлення клієнтів та спілкуйтесь через платформу.',
+      title: t('howItWorksPage.performerSteps.step3_title'),
+      description: t('howItWorksPage.performerSteps.step3_desc'),
       icon: <Smartphone className="h-8 w-8" />,
-      details: [
-        'Отримуйте сповіщення про нові замовлення',
-        'Спілкуйтесь з клієнтами в реальному часі',
-        'Уточнюйте деталі завдання',
-        'Підтверджуйте або відхиляйте замовлення'
-      ]
+      details: t('howItWorksPage.performerSteps.step3_details', { returnObjects: true }) as string[]
     },
     {
       id: 4,
-      title: 'Виконуйте роботу',
-      description: 'Працюйте над проектом та надавайте регулярні оновлення клієнту.',
+      title: t('howItWorksPage.performerSteps.step4_title'),
+      description: t('howItWorksPage.performerSteps.step4_desc'),
       icon: <Clock className="h-8 w-8" />,
-      details: [
-        'Розпочніть роботу після підтвердження',
-        'Надавайте регулярні звіти про прогрес',
-        'Дотримуйтесь обумовлених термінів',
-        'Залучайте клієнта до процесу'
-      ]
+      details: t('howItWorksPage.performerSteps.step4_details', { returnObjects: true }) as string[]
     },
     {
       id: 5,
-      title: 'Отримайте оплату',
-      description: 'Здавайте готову роботу та отримуйте гарантовану оплату.',
+      title: t('howItWorksPage.performerSteps.step5_title'),
+      description: t('howItWorksPage.performerSteps.step5_desc'),
       icon: <CreditCard className="h-8 w-8" />,
-      details: [
-        'Здавайте якісну готову роботу',
-        'Отримуйте схвалення від клієнта',
-        'Автоматичне зарахування коштів',
-        'Будуйте репутацію для майбутніх замовлень'
-      ]
+      details: t('howItWorksPage.performerSteps.step5_details', { returnObjects: true }) as string[]
     }
   ];
 
   const features = [
     {
       icon: <Shield className="h-8 w-8 text-blue-500" />,
-      title: 'Безпечні платежі',
-      description: 'Всі платежі проходять через захищену систему. Кошти утримуються до завершення роботи.'
+      title: t('howItWorksPage.features.securePayments_title'),
+      description: t('howItWorksPage.features.securePayments_desc')
     },
     {
       icon: <MessageSquare className="h-8 w-8 text-green-500" />,
-      title: 'Telegram інтеграція',
-      description: 'Отримуйте сповіщення та спілкуйтесь через зручний Telegram-бот.'
+      title: t('howItWorksPage.features.telegramIntegration_title'),
+      description: t('howItWorksPage.features.telegramIntegration_desc')
     },
     {
       icon: <Clock className="h-8 w-8 text-orange-500" />,
-      title: 'Швидке виконання',
-      description: 'Більшість послуг виконуються протягом 1-7 днів завдяки професійним виконавцям.'
+      title: t('howItWorksPage.features.fastExecution_title'),
+      description: t('howItWorksPage.features.fastExecution_desc')
     },
     {
       icon: <Star className="h-8 w-8 text-yellow-500" />,
-      title: 'Гарантія якості',
-      description: 'Система рейтингів та відгуків забезпечує високу якість виконання.'
+      title: t('howItWorksPage.features.qualityGuarantee_title'),
+      description: t('howItWorksPage.features.qualityGuarantee_desc')
     }
   ];
 
   return (
     <Layout>
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-        {/* Hero Section */}
         <section className="py-16 bg-gradient-to-r from-brand-blue to-purple-600 text-white">
           <div className="container mx-auto px-4 text-center">
             <h1 className="text-4xl md:text-6xl font-bold mb-6">
-              Як працює Hiwwer?
+              {t('howItWorksPage.heroTitle')}
             </h1>
             <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto opacity-90">
-              Простий і безпечний спосіб знайти професійні цифрові послуги або почати заробляти на своїх навичках
+              {t('howItWorksPage.heroSubtitle')}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" variant="secondary" asChild>
                 <Link to="/services">
                   <Play className="mr-2 h-5 w-5" />
-                  Почати як клієнт
+                  {t('howItWorksPage.startAsClient')}
                 </Link>
               </Button>
               <Button size="lg" variant="outline" className="text-white border-white hover:bg-white hover:text-blue-600" asChild>
                 <Link to="/become-performer">
-                  Стати виконавцем
+                  {t('howItWorksPage.becomePerformer')}
                 </Link>
               </Button>
             </div>
           </div>
         </section>
 
-        {/* Process Steps */}
         <section className="py-16">
           <div className="container mx-auto px-4">
             <Tabs defaultValue="client" className="w-full">
               <div className="text-center mb-8">
-                <h2 className="text-3xl md:text-4xl font-bold mb-4">Простий процес</h2>
+                <h2 className="text-3xl md:text-4xl font-bold mb-4">{t('howItWorksPage.processTitle')}</h2>
                 <p className="text-muted-foreground text-lg mb-8">
-                  Виберіть вашу роль, щоб дізнатися, як користуватися платформою
+                  {t('howItWorksPage.processSubtitle')}
                 </p>
                 <TabsList className="grid w-full max-w-md mx-auto grid-cols-2">
-                  <TabsTrigger value="client">Для клієнтів</TabsTrigger>
-                  <TabsTrigger value="performer">Для виконавців</TabsTrigger>
+                  <TabsTrigger value="client">{t('howItWorksPage.forClients')}</TabsTrigger>
+                  <TabsTrigger value="performer">{t('howItWorksPage.forPerformers')}</TabsTrigger>
                 </TabsList>
               </div>
 
@@ -231,7 +181,7 @@ const HowItWorks = () => {
                           {step.icon}
                         </div>
                         <Badge variant="secondary" className="mx-auto mb-2">
-                          Крок {step.id}
+                          {t('howItWorksPage.step')} {step.id}
                         </Badge>
                         <CardTitle className="text-lg">{step.title}</CardTitle>
                       </CardHeader>
@@ -275,7 +225,7 @@ const HowItWorks = () => {
                           {step.icon}
                         </div>
                         <Badge variant="secondary" className="mx-auto mb-2">
-                          Крок {step.id}
+                          {t('howItWorksPage.step')} {step.id}
                         </Badge>
                         <CardTitle className="text-lg">{step.title}</CardTitle>
                       </CardHeader>
@@ -307,11 +257,10 @@ const HowItWorks = () => {
           </div>
         </section>
 
-        {/* Features Section */}
         <section className="py-16 bg-white dark:bg-gray-800">
           <div className="container mx-auto px-4">
             <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
-              Чому обирають Hiwwer?
+              {t('howItWorksPage.featuresTitle')}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
               {features.map((feature, index) => (
@@ -329,24 +278,23 @@ const HowItWorks = () => {
           </div>
         </section>
 
-        {/* CTA Section */}
         <section className="py-16 bg-gradient-to-r from-brand-blue to-purple-600 text-white">
           <div className="container mx-auto px-4 text-center">
             <h2 className="text-3xl md:text-4xl font-bold mb-6">
-              Готові почати?
+              {t('howItWorksPage.ctaTitle')}
             </h2>
             <p className="text-xl mb-8 max-w-2xl mx-auto opacity-90">
-              Приєднуйтесь до тисяч задоволених клієнтів та професійних виконавців на Hiwwer
+              {t('howItWorksPage.ctaSubtitle')}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" variant="secondary" asChild>
                 <Link to="/services">
-                  Знайти послугу
+                  {t('howItWorksPage.findService')}
                 </Link>
               </Button>
               <Button size="lg" variant="outline" className="text-white border-white hover:bg-white hover:text-blue-600" asChild>
                 <Link to="/become-performer">
-                  Стати виконавцем
+                  {t('howItWorksPage.becomePerformer')}
                 </Link>
               </Button>
             </div>

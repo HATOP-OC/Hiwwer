@@ -12,15 +12,16 @@ import DisputeChat from '@/components/DisputeChat';
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import type { Order, Message, AdditionalOption, Review } from '@/lib/api';
+import { useTranslation } from 'react-i18next';
 
 export default function OrderDetail() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
   const queryClient = useQueryClient();
   const { user } = useAuth();
   
-  // All state hooks first - never conditionally call hooks
   const [messageContent, setMessageContent] = useState('');
   const [msgFileUrl, setMsgFileUrl] = useState('');
   const [msgFileName, setMsgFileName] = useState('');
@@ -35,7 +36,6 @@ export default function OrderDetail() {
   const [showDisputeForm, setShowDisputeForm] = useState(false);
   const [deletingDispute, setDeletingDispute] = useState(false);
 
-  // All query hooks - never conditionally call
   const { data: order, isLoading, error } = useQuery<Order>({
     queryKey: ['order', id],
     queryFn: () => fetchOrderById(id!),
@@ -63,12 +63,9 @@ export default function OrderDetail() {
   const { data: review, refetch: refetchReview } = useQuery<Review>({
     queryKey: ['review', id],
     queryFn: async () => {
-      console.log('🔍 Fetching review for order:', id, 'Order status:', order?.status);
       try {
         return await fetchReview(id!);
       } catch (error: any) {
-        console.log('❌ Review fetch failed:', error.message);
-        // If review doesn't exist (404), return null instead of throwing
         if (error.message?.includes('404') || error.message?.includes('Failed to fetch review')) {
           return null;
         }
@@ -76,19 +73,17 @@ export default function OrderDetail() {
       }
     },
     enabled: !!id && !!order && order.status === 'completed',
-    retry: false, // Don't retry if review doesn't exist
+    retry: false,
     refetchOnWindowFocus: false,
-    staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
+    staleTime: 5 * 60 * 1000,
   });
 
-  // Dispute queries
   const { data: dispute, refetch: refetchDispute } = useQuery({
     queryKey: ['dispute', id],
     queryFn: async () => {
       try {
         return await fetchDispute(id!);
       } catch (error: any) {
-        // If dispute doesn't exist (404), return null instead of throwing
         if (error.message?.includes('404') || error.message?.includes('Failed to fetch dispute')) {
           return null;
         }
@@ -96,21 +91,20 @@ export default function OrderDetail() {
       }
     },
     enabled: !!id && !!order,
-    retry: false, // Don't retry if dispute doesn't exist
+    retry: false,
     refetchOnWindowFocus: false,
-    staleTime: 2 * 60 * 1000, // Consider data fresh for 2 minutes
+    staleTime: 2 * 60 * 1000,
   });
 
-  // All mutation hooks
   const updateMutation = useMutation({
     mutationFn: (data: Partial<Order>) => updateOrder(id!, data),
     onSuccess: () => {
-        toast({ title: 'Оновлено', description: 'Замовлення успішно оновлено' });
+        toast({ title: t('orderDetailPage.updateSuccess') });
         queryClient.invalidateQueries({ queryKey: ['orders'] });
         queryClient.invalidateQueries({ queryKey: ['order', id] });
       },
       onError: () => {
-        toast({ title: 'Помилка', description: 'Не вдалося оновити замовлення', variant: 'destructive' });
+        toast({ title: t('toast.errorTitle'), description: t('orderDetailPage.updateError'), variant: 'destructive' });
       }
     }
   );
@@ -118,32 +112,31 @@ export default function OrderDetail() {
   const deleteMutation = useMutation({
     mutationFn: () => deleteOrder(id!),
     onSuccess: () => {
-      toast({ title: 'Видалено', description: 'Замовлення видалено' });
+      toast({ title: t('orderDetailPage.deleteSuccess') });
       queryClient.invalidateQueries({ queryKey: ['orders'] });
       navigate('/my-orders');
     },
     onError: () => {
-      toast({ title: 'Помилка', description: 'Не вдалося видалити замовлення', variant: 'destructive' });
+      toast({ title: t('toast.errorTitle'), description: t('orderDetailPage.deleteError'), variant: 'destructive' });
     }
   });
 
   const sendMsgMutation = useMutation({
     mutationFn: () => sendMessage(id!, { content: messageContent, attachments: msgFileUrl && msgFileName ? [{ fileUrl: msgFileUrl, fileName: msgFileName }] : undefined }),
     onSuccess: () => {
-      toast({ title: 'Повідомлення відправлено' });
+      toast({ title: t('orderDetailPage.messageSent') });
       setMessageContent(''); setMsgFileUrl(''); setMsgFileName('');
       queryClient.invalidateQueries({ queryKey: ['messages', id] });
     },
     onError: () => {
-      toast({ title: 'Помилка', description: 'Не вдалося відправити повідомлення', variant: 'destructive' });
+      toast({ title: t('toast.errorTitle'), description: t('orderDetailPage.messageError'), variant: 'destructive' });
     }
   });
 
-  // Mutations for additional options
   const proposeOptionMutation = useMutation({
     mutationFn: () => proposeAdditionalOption(id!, { title: optionTitle, description: optionDesc, price: Number(optionPrice) }),
     onSuccess: () => {
-      toast({ title: 'Опція запропонована' });
+      toast({ title: t('orderDetailPage.optionProposed') });
       setOptionTitle(''); setOptionDesc(''); setOptionPrice('');
       queryClient.invalidateQueries({ queryKey: ['options', id] });
     }
@@ -152,7 +145,7 @@ export default function OrderDetail() {
   const updateOptionStatusMutation = useMutation({
     mutationFn: ({ optId, status }: { optId: string; status: 'accepted' | 'rejected' }) => updateAdditionalOptionStatus(id!, optId, status),
     onSuccess: () => {
-      toast({ title: 'Статус опції оновлено' });
+      toast({ title: t('orderDetailPage.optionStatusUpdated') });
       queryClient.invalidateQueries({ queryKey: ['options', id] });
     }
   });
@@ -160,7 +153,7 @@ export default function OrderDetail() {
   const authorizeMutation = useMutation({
     mutationFn: () => authorizePaymentApi(id!, payAmount, payProvider),
     onSuccess: () => {
-      toast({ title: 'Платіж авторизовано' });
+      toast({ title: t('orderDetailPage.paymentAuthorized') });
       queryClient.invalidateQueries({ queryKey: ['payments', id] });
     }
   });
@@ -168,7 +161,7 @@ export default function OrderDetail() {
   const captureMutation = useMutation({
     mutationFn: (paymentId: string) => capturePaymentApi(id!, paymentId),
     onSuccess: () => {
-      toast({ title: 'Платіж списано' });
+      toast({ title: t('orderDetailPage.paymentCaptured') });
       queryClient.invalidateQueries({ queryKey: ['payments', id] });
     }
   });
@@ -176,7 +169,7 @@ export default function OrderDetail() {
   const refundMutation = useMutation({
     mutationFn: (paymentId: string) => refundPaymentApi(id!, paymentId),
     onSuccess: () => {
-      toast({ title: 'Платіж повернуто' });
+      toast({ title: t('orderDetailPage.paymentRefunded') });
       queryClient.invalidateQueries({ queryKey: ['payments', id] });
     }
   });
@@ -184,12 +177,11 @@ export default function OrderDetail() {
   const createReviewMutation = useMutation({
     mutationFn: () => createReview(id!, { rating, comment }),
     onSuccess: () => {
-      toast({ title: 'Відгук додано' });
+      toast({ title: t('orderDetailPage.reviewAdded') });
       queryClient.invalidateQueries({ queryKey: ['review', id] });
     }
   });
 
-  // Dispute mutations
   const createDisputeMutation = useMutation({
     mutationFn: async (reason: string) => {
       const response = await fetch(`/v1/orders/${id}/disputes`, {
@@ -203,26 +195,25 @@ export default function OrderDetail() {
       if (!response.ok) {
         const errorData = await response.json();
         if (response.status === 409) {
-          throw new Error('Спір для цього замовлення вже існує');
+          throw new Error(t('orderDetailPage.disputeExistsError'));
         }
-        throw new Error(errorData.message || 'Failed to create dispute');
+        throw new Error(errorData.message || t('orderDetailPage.disputeCreateError'));
       }
       return response.json();
     },
     onSuccess: () => {
-      toast({ title: 'Спір відкрито' });
+      toast({ title: t('orderDetailPage.disputeCreated') });
       setDisputeReason('');
       setShowDisputeForm(false);
       queryClient.invalidateQueries({ queryKey: ['order', id] });
       queryClient.invalidateQueries({ queryKey: ['dispute', id] });
-      refetchDispute(); // Refresh dispute data
+      refetchDispute();
     },
     onError: (error: any) => {
-      toast({ title: 'Помилка', description: error.message || 'Не вдалося відкрити спір', variant: 'destructive' });
+      toast({ title: t('toast.errorTitle'), description: error.message || t('orderDetailPage.disputeCreateError'), variant: 'destructive' });
     }
   });
 
-  // useEffect hooks
   useEffect(() => {
     if (location.hash === '#chat' && order) {
       const timer = setTimeout(() => {
@@ -235,29 +226,22 @@ export default function OrderDetail() {
     }
   }, [location.hash, order]);
 
-  // Early returns after all hooks
-  if (isLoading) return <Layout><div className="py-12 text-center">Завантаження...</div></Layout>;
-  if (error || !order) return <Layout><div className="py-12 text-center text-red-500">Не знайдено замовлення</div></Layout>;
+  if (isLoading) return <Layout><div className="py-12 text-center">{t('orderDetailPage.loading')}</div></Layout>;
+  if (error || !order) return <Layout><div className="py-12 text-center text-red-500">{t('orderDetailPage.notFound')}</div></Layout>;
 
-  // Computed values after early returns
   const statusOptions = ['pending', 'in_progress', 'revision', 'completed', 'canceled', 'disputed'];
   const isClient = user?.id === order.client.id;
   const isPerformer = order.performer && user?.id === order.performer.id;
 
-  // Event handlers
-  const handleStatusChange = (value: string) => {
-    updateMutation.mutate({ status: value });
-  };
-
   const handleDelete = () => {
-    if (window.confirm('Ви впевнені, що хочете видалити замовлення?')) {
+    if (window.confirm(t('orderDetailPage.deleteConfirmation'))) {
       deleteMutation.mutate();
     }
   };
 
   const handleCreateDispute = () => {
     if (!disputeReason.trim()) {
-      toast({ title: 'Помилка', description: 'Вкажіть причину спору', variant: 'destructive' });
+      toast({ title: t('toast.errorTitle'), description: t('orderDetailPage.disputeReasonRequired'), variant: 'destructive' });
       return;
     }
     createDisputeMutation.mutate(disputeReason);
@@ -266,7 +250,7 @@ export default function OrderDetail() {
   const handleDeleteDispute = async () => {
     if (!dispute) return;
     
-    if (!window.confirm('Ви впевнені, що хочете видалити спір? Всі повідомлення та файли будуть видалені назавжди.')) {
+    if (!window.confirm(t('orderDetailPage.disputeDeleteConfirmation'))) {
       return;
     }
 
@@ -274,22 +258,19 @@ export default function OrderDetail() {
     try {
       await deleteDispute(order.id, dispute.id);
       
-      // Оновлюємо кеш, щоб відобразити, що спору більше немає
       queryClient.setQueryData(['dispute', id], null);
-      
-      // Також оновлюємо дані замовлення, якщо потрібно
       queryClient.invalidateQueries({ queryKey: ['order', id] });
       
       toast({ 
-        title: 'Успіх', 
-        description: 'Спір та всі пов\'язані дані видалені', 
+        title: t('toast.successTitle'),
+        description: t('orderDetailPage.disputeDeleteSuccess'),
         variant: 'default' 
       });
     } catch (error) {
       console.error('Error deleting dispute:', error);
       toast({ 
-        title: 'Помилка', 
-        description: 'Не вдалося видалити спір', 
+        title: t('toast.errorTitle'),
+        description: t('orderDetailPage.disputeDeleteError'),
         variant: 'destructive' 
       });
     } finally {
@@ -300,12 +281,12 @@ export default function OrderDetail() {
   return (
     <Layout>
       <div className="container mx-auto py-8 px-4 space-y-6">
-        <h1 className="text-2xl font-bold">Замовлення: {order.title}</h1>
+        <h1 className="text-2xl font-bold">{t('orderDetailPage.orderTitle', { title: order.title })}</h1>
         <p>{order.description}</p>
 
         <div className="flex items-center space-x-4">
-          <label className="font-medium">Статус:</label>
-          <Select onValueChange={handleStatusChange} defaultValue={order.status} disabled={updateMutation.status === 'pending'}>
+          <label className="font-medium">{t('orderDetailPage.statusLabel')}</label>
+          <Select onValueChange={(value) => updateMutation.mutate({ status: value })} defaultValue={order.status} disabled={updateMutation.status === 'pending'}>
             <SelectTrigger className="w-48">
               <SelectValue />
             </SelectTrigger>
@@ -316,10 +297,9 @@ export default function OrderDetail() {
         </div>
 
         <div className="space-x-2">
-          <Button variant="destructive" onClick={handleDelete} disabled={deleteMutation.status === 'pending'}>Видалити замовлення</Button>
+          <Button variant="destructive" onClick={handleDelete} disabled={deleteMutation.status === 'pending'}>{t('orderDetailPage.deleteButton')}</Button>
         </div>
 
-        {/* Chat section */}
         <div id="order-chat">
           <OrderChat 
             orderId={order.id}
@@ -338,12 +318,11 @@ export default function OrderDetail() {
           />
         </div>
 
-        {/* Dispute Section */}
         {order.status !== 'disputed' && (isClient || isPerformer) && (
           <div className="border border-orange-200 rounded-lg p-4 bg-orange-50">
-            <h3 className="text-lg font-semibold mb-2 text-orange-800">Відкрити спір</h3>
+            <h3 className="text-lg font-semibold mb-2 text-orange-800">{t('orderDetailPage.openDispute')}</h3>
             <p className="text-sm text-orange-700 mb-3">
-              Якщо у вас є проблема з цим замовленням, ви можете відкрити спір для вирішення конфлікту.
+              {t('orderDetailPage.openDisputePrompt')}
             </p>
             {!showDisputeForm ? (
               <Button 
@@ -351,14 +330,14 @@ export default function OrderDetail() {
                 onClick={() => setShowDisputeForm(true)}
                 className="border-orange-300 text-orange-700 hover:bg-orange-100"
               >
-                Відкрити спір
+                {t('orderDetailPage.openDisputeButton')}
               </Button>
             ) : (
               <div className="space-y-3">
                 <textarea
                   className="w-full border rounded p-2 resize-none"
                   rows={3}
-                  placeholder="Опишіть причину спору..."
+                  placeholder={t('orderDetailPage.disputeReasonPlaceholder')}
                   value={disputeReason}
                   onChange={(e) => setDisputeReason(e.target.value)}
                 />
@@ -368,7 +347,7 @@ export default function OrderDetail() {
                     disabled={createDisputeMutation.status === 'pending' || !disputeReason.trim()}
                     className="bg-orange-600 hover:bg-orange-700"
                   >
-                    {createDisputeMutation.status === 'pending' ? 'Відкриваю...' : 'Відкрити спір'}
+                    {createDisputeMutation.status === 'pending' ? t('orderDetailPage.submittingDisputeButton') : t('orderDetailPage.submitDisputeButton')}
                   </Button>
                   <Button
                     variant="outline"
@@ -377,7 +356,7 @@ export default function OrderDetail() {
                       setDisputeReason('');
                     }}
                   >
-                    Скасувати
+                    {t('orderDetailPage.cancelButton')}
                   </Button>
                 </div>
               </div>
@@ -385,24 +364,22 @@ export default function OrderDetail() {
           </div>
         )}
 
-        {/* Active Dispute Chat */}
         {dispute && (
           <div className="space-y-4">
             <div className={`border rounded-lg p-4 ${dispute.status === 'resolved' ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
               <div className="flex justify-between items-start">
                 <div>
                   <h3 className={`text-lg font-semibold mb-2 ${dispute.status === 'resolved' ? 'text-green-800' : 'text-red-800'}`}>
-                    {dispute.status === 'resolved' ? 'Вирішений спір' : 'Активний спір'}
+                    {dispute.status === 'resolved' ? t('orderDetailPage.resolvedDispute') : t('orderDetailPage.activeDispute')}
                   </h3>
                   <p className={`text-sm mb-2 ${dispute.status === 'resolved' ? 'text-green-700' : 'text-red-700'}`}>
-                    <strong>Причина:</strong> {dispute.reason}
+                    <strong>{t('orderDetailPage.reason')}:</strong> {dispute.reason}
                   </p>
                   <p className={`text-sm ${dispute.status === 'resolved' ? 'text-green-700' : 'text-red-700'}`}>
-                    <strong>Статус:</strong> {dispute.status === 'open' ? 'Відкритий' : dispute.status === 'in_review' ? 'На розгляді' : 'Вирішений'}
+                    <strong>{t('orderDetailPage.statusLabel')}</strong> {t(`orderDetailPage.status.${dispute.status}`)}
                   </p>
                 </div>
                 
-                {/* Delete dispute button for resolved disputes */}
                 {dispute.status === 'resolved' && (user?.role === 'admin' || user?.id === dispute.clientId) && (
                   <Button
                     variant="destructive"
@@ -411,7 +388,7 @@ export default function OrderDetail() {
                     disabled={deletingDispute}
                     className="ml-4"
                   >
-                    {deletingDispute ? 'Видалення...' : 'Видалити спір'}
+                    {deletingDispute ? t('orderDetailPage.deletingDisputeButton') : t('orderDetailPage.deleteDisputeButton')}
                   </Button>
                 )}
               </div>
@@ -433,7 +410,7 @@ export default function OrderDetail() {
                 },
                 moderator: dispute.moderatorId ? {
                   id: dispute.moderatorId,
-                  name: 'Модератор',
+                  name: 'Moderator',
                   avatar: undefined
                 } : undefined
               }}
@@ -441,7 +418,6 @@ export default function OrderDetail() {
               disputeStatus={dispute.status}
               userRole={user?.role}
               onDisputeResolve={() => {
-                // Refresh dispute and order data without page reload
                 refetchDispute();
                 queryClient.invalidateQueries({ queryKey: ['order', id] });
               }}
@@ -450,9 +426,8 @@ export default function OrderDetail() {
           </div>
         )}
 
-        {/* Additional Options Section */}
         <div>
-          <h2 className="text-xl font-semibold mb-2">Додаткові опції</h2>
+          <h2 className="text-xl font-semibold mb-2">{t('orderDetailPage.additionalOptions')}</h2>
           <ul className="space-y-2 mb-4">
             {options.map(opt => (
               <li key={opt.id} className="border p-2 rounded">
@@ -467,8 +442,8 @@ export default function OrderDetail() {
                 </div>
                 {isClient && opt.status === 'proposed' && (
                   <div className="mt-2 space-x-2">
-                    <Button size="sm" onClick={() => updateOptionStatusMutation.mutate({ optId: opt.id, status: 'accepted' })}>Прийняти</Button>
-                    <Button size="sm" variant="destructive" onClick={() => updateOptionStatusMutation.mutate({ optId: opt.id, status: 'rejected' })}>Відхилити</Button>
+                    <Button size="sm" onClick={() => updateOptionStatusMutation.mutate({ optId: opt.id, status: 'accepted' })}>{t('orderDetailPage.acceptButton')}</Button>
+                    <Button size="sm" variant="destructive" onClick={() => updateOptionStatusMutation.mutate({ optId: opt.id, status: 'rejected' })}>{t('orderDetailPage.rejectButton')}</Button>
                   </div>
                 )}
               </li>
@@ -476,18 +451,17 @@ export default function OrderDetail() {
           </ul>
           {isPerformer && (
             <div className="border-t pt-4">
-              <h3 className="font-medium mb-2">Запропонувати нову опцію</h3>
-              <Input placeholder="Заголовок опції" value={optionTitle} onChange={e => setOptionTitle(e.target.value)} className="mb-2" />
-              <Input placeholder="Опис" value={optionDesc} onChange={e => setOptionDesc(e.target.value)} className="mb-2" />
-              <Input type="number" placeholder="Ціна" value={optionPrice} onChange={e => setOptionPrice(Number(e.target.value))} className="mb-2" />
-              <Button onClick={() => proposeOptionMutation.mutate()} disabled={proposeOptionMutation.status === 'pending' || !optionTitle || !optionPrice}>Запропонувати</Button>
+              <h3 className="font-medium mb-2">{t('orderDetailPage.proposeOption')}</h3>
+              <Input placeholder={t('orderDetailPage.optionTitlePlaceholder')} value={optionTitle} onChange={e => setOptionTitle(e.target.value)} className="mb-2" />
+              <Input placeholder={t('orderDetailPage.optionDescPlaceholder')} value={optionDesc} onChange={e => setOptionDesc(e.target.value)} className="mb-2" />
+              <Input type="number" placeholder={t('orderDetailPage.optionPricePlaceholder')} value={optionPrice} onChange={e => setOptionPrice(Number(e.target.value))} className="mb-2" />
+              <Button onClick={() => proposeOptionMutation.mutate()} disabled={proposeOptionMutation.status === 'pending' || !optionTitle || !optionPrice}>{t('orderDetailPage.proposeButton')}</Button>
             </div>
           )}
         </div>
 
-        {/* Payments Section */}
         <div>
-          <h2 className="text-xl font-semibold mb-2">Платежі</h2>
+          <h2 className="text-xl font-semibold mb-2">{t('orderDetailPage.payments')}</h2>
           <ul className="space-y-2 mb-4">
             {payments.map(p => (
               <li key={p.id} className="border p-2 rounded flex justify-between items-center">
@@ -497,10 +471,10 @@ export default function OrderDetail() {
                 </div>
                 <div className="space-x-2">
                   {p.status === 'authorized' && (
-                    <Button size="sm" onClick={() => captureMutation.mutate(p.id)} disabled={captureMutation.status === 'pending'}>Capture</Button>
+                    <Button size="sm" onClick={() => captureMutation.mutate(p.id)} disabled={captureMutation.status === 'pending'}>{t('orderDetailPage.captureButton')}</Button>
                   )}
                   {p.status === 'completed' && (
-                    <Button size="sm" variant="destructive" onClick={() => refundMutation.mutate(p.id)} disabled={refundMutation.status === 'pending'}>Refund</Button>
+                    <Button size="sm" variant="destructive" onClick={() => refundMutation.mutate(p.id)} disabled={refundMutation.status === 'pending'}>{t('orderDetailPage.refundButton')}</Button>
                   )}
                 </div>
               </li>
@@ -517,17 +491,16 @@ export default function OrderDetail() {
                     <SelectItem value="liqpay">LiqPay</SelectItem>
                   </SelectContent>
                 </Select>
-                <Button onClick={() => authorizeMutation.mutate()} disabled={authorizeMutation.status === 'pending'}>Authorize</Button>
+                <Button onClick={() => authorizeMutation.mutate()} disabled={authorizeMutation.status === 'pending'}>{t('orderDetailPage.authorizeButton')}</Button>
               </div>
             </div>
           )}
         </div>
 
-        {/* Review Section */}
         <div>
-          <h2 className="text-xl font-semibold mb-2">Відгук</h2>
+          <h2 className="text-xl font-semibold mb-2">{t('orderDetailPage.review')}</h2>
           {order.status !== 'completed' && (
-            <p className="text-muted-foreground">Відгук доступний після завершення замовлення</p>
+            <p className="text-muted-foreground">{t('orderDetailPage.reviewAvailable')}</p>
           )}
           {order.status === 'completed' && review && (
             <div className="border p-4 rounded">
@@ -541,10 +514,10 @@ export default function OrderDetail() {
           )}
           {order.status === 'completed' && !review && (
             <div className="space-y-2">
-              <label className="font-medium">Оцініть (1-5):</label>
+              <label className="font-medium">{t('orderDetailPage.ratingLabel')}</label>
               <Input type="number" min={1} max={5} value={rating} onChange={e => setRating(Number(e.target.value))} />
-              <textarea className="w-full border p-2 rounded" rows={3} placeholder="Коментар (опційно)" value={comment} onChange={e => setComment(e.target.value)} />
-              <Button onClick={() => createReviewMutation.mutate()} disabled={createReviewMutation.status === 'pending'}>Надіслати відгук</Button>
+              <textarea className="w-full border p-2 rounded" rows={3} placeholder={t('orderDetailPage.commentPlaceholder')} value={comment} onChange={e => setComment(e.target.value)} />
+              <Button onClick={() => createReviewMutation.mutate()} disabled={createReviewMutation.status === 'pending'}>{t('orderDetailPage.submitReviewButton')}</Button>
             </div>
           )}
         </div>

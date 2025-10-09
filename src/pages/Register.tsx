@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import Layout from '@/components/Layout/Layout';
@@ -18,8 +17,10 @@ import {
 } from '@/components/ui/card';
 import { AlertCircle } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
+import { useTranslation } from 'react-i18next';
 
 export default function Register() {
+  const { t } = useTranslation();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -42,7 +43,7 @@ export default function Register() {
     e.preventDefault();
     
     if (password !== confirmPassword) {
-      setError("Passwords don't match");
+      setError(t('register.errorMatch'));
       return;
     }
     
@@ -51,20 +52,18 @@ export default function Register() {
 
     try {
       await register(name, email, password, role);
-      toast.success('Registration successful');
+      toast.success(t('register.successToast'));
       navigate('/');
     } catch (error: any) {
-      setError(error.message || 'Failed to register');
-      toast.error('Registration failed');
+      setError(error.message || t('register.errorToast'));
+      toast.error(t('register.errorToast'));
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleTelegramLogin = () => {
-    // In a real implementation, we would use Telegram's Widget API
-    // For now, we'll just show a toast message
-    toast.info('Telegram login will be implemented with the Telegram OAuth API');
+    toast.info(t('login.telegramToast'));
   };
 
   return (
@@ -72,9 +71,9 @@ export default function Register() {
       <div className="container max-w-md py-16">
         <Card>
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl">Create an account</CardTitle>
+            <CardTitle className="text-2xl">{t('register.title')}</CardTitle>
             <CardDescription>
-              Enter your information to create a Hiwwer account
+              {t('register.description')}
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4">
@@ -98,7 +97,7 @@ export default function Register() {
                     fill="#0088cc"
                   />
                 </svg>
-                Telegram
+                {t('login.withTelegram')}
               </Button>
               <Button variant="outline" disabled>
                 <svg
@@ -110,7 +109,7 @@ export default function Register() {
                     d="M20.283 10.356h-8.327v3.451h4.792c-.446 2.193-2.313 3.453-4.792 3.453a5.27 5.27 0 0 1-5.279-5.28 5.27 5.27 0 0 1 5.279-5.279c1.259 0 2.397.447 3.29 1.178l2.6-2.599c-1.584-1.381-3.615-2.233-5.89-2.233a8.908 8.908 0 0 0-8.934 8.934 8.907 8.907 0 0 0 8.934 8.934c4.467 0 8.529-3.249 8.529-8.934 0-.528-.081-1.097-.202-1.625z"
                   />
                 </svg>
-                Google
+                {t('login.withGoogle')}
               </Button>
             </div>
             
@@ -120,18 +119,18 @@ export default function Register() {
               </div>
               <div className="relative flex justify-center text-xs uppercase">
                 <span className="bg-card px-2 text-muted-foreground">
-                  Or continue with
+                  {t('login.orContinueWith')}
                 </span>
               </div>
             </div>
             
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid gap-2">
-                <Label htmlFor="name">Full Name</Label>
+                <Label htmlFor="name">{t('register.nameLabel')}</Label>
                 <Input
                   id="name"
                   type="text"
-                  placeholder="John Doe"
+                  placeholder={t('register.namePlaceholder')}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
@@ -139,11 +138,11 @@ export default function Register() {
               </div>
               
               <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t('login.emailLabel')}</Label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="name@example.com"
+                  placeholder={t('login.emailPlaceholder')}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -151,7 +150,7 @@ export default function Register() {
               </div>
               
               <div className="grid gap-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">{t('login.passwordLabel')}</Label>
                 <Input
                   id="password"
                   type="password"
@@ -162,7 +161,7 @@ export default function Register() {
               </div>
               
               <div className="grid gap-2">
-                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <Label htmlFor="confirmPassword">{t('register.confirmPasswordLabel')}</Label>
                 <Input
                   id="confirmPassword"
                   type="password"
@@ -173,7 +172,7 @@ export default function Register() {
               </div>
               
               <div className="grid gap-2">
-                <Label>I want to</Label>
+                <Label>{t('register.roleLabel')}</Label>
                 <RadioGroup 
                   value={role} 
                   onValueChange={(value) => setRole(value as UserRole)}
@@ -181,37 +180,32 @@ export default function Register() {
                 >
                   <div className="flex items-center space-x-2 mr-4">
                     <RadioGroupItem value="client" id="client" />
-                    <Label htmlFor="client">Find Services</Label>
+                    <Label htmlFor="client">{t('register.roleClient')}</Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="performer" id="performer" />
-                    <Label htmlFor="performer">Offer Services</Label>
+                    <Label htmlFor="performer">{t('register.rolePerformer')}</Label>
                   </div>
                 </RadioGroup>
               </div>
               
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Creating account..." : "Create account"}
+                {isLoading ? t('register.submitButtonLoading') : t('register.submitButton')}
               </Button>
               
               <p className="text-xs text-muted-foreground text-center">
-                By creating an account, you agree to our{" "}
-                <Link to="/terms-of-service" className="underline underline-offset-2">
-                  Terms of Service
-                </Link>{" "}
-                and{" "}
-                <Link to="/privacy-policy" className="underline underline-offset-2">
-                  Privacy Policy
-                </Link>
-                .
+                {t('register.termsAgreement', {
+                  terms: <Link to="/terms-of-service" className="underline underline-offset-2">{t('footer.termsOfService')}</Link>,
+                  privacy: <Link to="/privacy-policy" className="underline underline-offset-2">{t('footer.privacyPolicy')}</Link>
+                })}
               </p>
             </form>
           </CardContent>
           <CardFooter className="flex justify-center">
             <div className="text-sm text-muted-foreground">
-              Already have an account?{" "}
+              {t('register.alreadyHaveAccount')}{" "}
               <Link to="/login" className="text-primary underline-offset-4 hover:underline">
-                Log in
+                {t('register.login')}
               </Link>
             </div>
           </CardFooter>

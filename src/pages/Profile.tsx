@@ -33,8 +33,10 @@ import {
 } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
 import TelegramIntegration from '@/components/Profile/TelegramIntegration';
+import { useTranslation } from 'react-i18next';
 
 export default function Profile() {
+  const { t } = useTranslation();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
@@ -48,13 +50,12 @@ export default function Profile() {
     avatar: user?.avatar || '/placeholder.svg'
   });
 
-  // Early return AFTER all hooks
   if (!user) {
     return (
       <Layout>
         <div className="container max-w-4xl py-16">
           <div className="text-center">
-            <h1 className="text-2xl font-bold">Будь ласка, увійдіть для перегляду профілю</h1>
+            <h1 className="text-2xl font-bold">{t('profilePage.pleaseLogin')}</h1>
           </div>
         </div>
       </Layout>
@@ -63,11 +64,10 @@ export default function Profile() {
 
   const handleSave = async () => {
     try {
-      // В реальному додатку тут буде API запит
-      toast.success('Профіль успішно оновлено');
+      toast.success(t('profilePage.updateSuccess'));
       setIsEditing(false);
     } catch (error) {
-      toast.error('Помилка оновлення профілю');
+      toast.error(t('profilePage.updateError'));
     }
   };
 
@@ -96,16 +96,14 @@ export default function Profile() {
   return (
     <Layout>
       <div className="container max-w-4xl py-8">
-        {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground">Мій профіль</h1>
+          <h1 className="text-3xl font-bold text-foreground">{t('profilePage.title')}</h1>
           <p className="text-muted-foreground mt-2">
-            Керуйте налаштуваннями акаунту та публічним профілем
+            {t('profilePage.subtitle')}
           </p>
         </div>
 
         <div className="grid gap-6 md:grid-cols-3">
-          {/* Profile Card */}
           <div className="md:col-span-1">
             <Card>
               <CardContent className="pt-6">
@@ -131,7 +129,7 @@ export default function Profile() {
                   <div className="text-center space-y-2">
                     <h2 className="text-xl font-semibold">{user.name}</h2>
                     <Badge variant="outline" className={getRoleColor(user.role)}>
-                      {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                      {t(`profilePage.roles.${user.role}`)}
                     </Badge>
                     
                     {user.rating && (
@@ -152,7 +150,7 @@ export default function Profile() {
                     
                     <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                       <Calendar className="h-4 w-4" />
-                      <span>Member since 2024</span>
+                      <span>{t('profilePage.memberSince', { year: '2024' })}</span>
                     </div>
                     
                     {formData.location && (
@@ -178,18 +176,17 @@ export default function Profile() {
                     onClick={() => setIsEditing(!isEditing)}
                   >
                     <Edit3 className="h-4 w-4 mr-2" />
-                    {isEditing ? 'Cancel Edit' : 'Edit Profile'}
+                    {isEditing ? t('profilePage.cancelEdit') : t('profilePage.editProfile')}
                   </Button>
                 </div>
               </CardContent>
             </Card>
             
-            {/* Quick Actions */}
             <Card className="mt-6">
               <CardHeader>
-                <CardTitle>Швидкі дії</CardTitle>
+                <CardTitle>{t('profilePage.quickActions')}</CardTitle>
                 <CardDescription>
-                  Основні дії для роботи з платформою
+                  {t('profilePage.quickActionsDesc')}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
@@ -198,14 +195,14 @@ export default function Profile() {
                   className="w-full justify-start"
                   onClick={() => navigate('/services')}
                 >
-                  🛍️ Переглянути послуги
+                  🛍️ {t('profilePage.browseServices')}
                 </Button>
                 <Button 
                   variant="outline" 
                   className="w-full justify-start"
                   onClick={() => navigate('/my-orders')}
                 >
-                  📋 Мої замовлення
+                  📋 {t('profilePage.myOrders')}
                 </Button>
                 {user.role === 'performer' && (
                   <Button 
@@ -213,30 +210,28 @@ export default function Profile() {
                     className="w-full justify-start"
                     onClick={() => navigate('/performer-dashboard')}
                   >
-                    💼 Панель виконавця
+                    💼 {t('profilePage.performerDashboard')}
                   </Button>
                 )}
               </CardContent>
             </Card>
           </div>
 
-          {/* Profile Details */}
           <div className="md:col-span-2 space-y-6">
-            {/* Personal Information */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <User className="h-5 w-5" />
-                  <span>Personal Information</span>
+                  <span>{t('profilePage.personalInfo')}</span>
                 </CardTitle>
                 <CardDescription>
-                  Update your personal details and public profile information
+                  {t('profilePage.personalInfoDesc')}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="name">Full Name</Label>
+                    <Label htmlFor="name">{t('profilePage.fullNameLabel')}</Label>
                     <Input
                       id="name"
                       value={formData.name}
@@ -246,7 +241,7 @@ export default function Profile() {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
+                    <Label htmlFor="email">{t('profilePage.emailLabel')}</Label>
                     <Input
                       id="email"
                       type="email"
@@ -257,47 +252,47 @@ export default function Profile() {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="phone">Phone Number</Label>
+                    <Label htmlFor="phone">{t('profilePage.phoneLabel')}</Label>
                     <Input
                       id="phone"
                       value={formData.phone}
                       onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
                       disabled={!isEditing}
-                      placeholder="+1 (555) 123-4567"
+                      placeholder={t('profilePage.phonePlaceholder')}
                     />
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="location">Location</Label>
+                    <Label htmlFor="location">{t('profilePage.locationLabel')}</Label>
                     <Input
                       id="location"
                       value={formData.location}
                       onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
                       disabled={!isEditing}
-                      placeholder="City, Country"
+                      placeholder={t('profilePage.locationPlaceholder')}
                     />
                   </div>
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="website">Website</Label>
+                  <Label htmlFor="website">{t('profilePage.websiteLabel')}</Label>
                   <Input
                     id="website"
                     value={formData.website}
                     onChange={(e) => setFormData(prev => ({ ...prev, website: e.target.value }))}
                     disabled={!isEditing}
-                    placeholder="https://yourwebsite.com"
+                    placeholder={t('profilePage.websitePlaceholder')}
                   />
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="bio">Bio</Label>
+                  <Label htmlFor="bio">{t('profilePage.bioLabel')}</Label>
                   <Textarea
                     id="bio"
                     value={formData.bio}
                     onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
                     disabled={!isEditing}
-                    placeholder="Tell us about yourself..."
+                    placeholder={t('profilePage.bioPlaceholder')}
                     className="min-h-[100px]"
                   />
                 </div>
@@ -306,42 +301,40 @@ export default function Profile() {
                   <div className="flex space-x-2 pt-4">
                     <Button onClick={handleSave} className="flex-1">
                       <Save className="h-4 w-4 mr-2" />
-                      Save Changes
+                      {t('profilePage.saveChanges')}
                     </Button>
                     <Button variant="outline" onClick={handleCancel} className="flex-1">
                       <X className="h-4 w-4 mr-2" />
-                      Cancel
+                      {t('profilePage.cancel')}
                     </Button>
                   </div>
                 )}
               </CardContent>
             </Card>
 
-            {/* Telegram Integration */}
             <TelegramIntegration />
 
-            {/* Account Settings */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <Shield className="h-5 w-5" />
-                  <span>Account Settings</span>
+                  <span>{t('profilePage.accountSettings')}</span>
                 </CardTitle>
                 <CardDescription>
-                  Manage your account security and preferences
+                  {t('profilePage.accountSettingsDesc')}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label>Account Type</Label>
+                  <Label>{t('profilePage.accountTypeLabel')}</Label>
                   <RadioGroup value={user.role} disabled>
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="client" id="client" />
-                      <Label htmlFor="client">Client - I want to find services</Label>
+                      <Label htmlFor="client">{t('profilePage.accountTypeClient')}</Label>
                     </div>
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="performer" id="performer" />
-                      <Label htmlFor="performer">Performer - I want to offer services</Label>
+                      <Label htmlFor="performer">{t('profilePage.accountTypePerformer')}</Label>
                     </div>
                   </RadioGroup>
                 </div>
@@ -350,13 +343,13 @@ export default function Profile() {
                 
                 <div className="space-y-2">
                   <Button variant="outline" className="w-full justify-start">
-                    Change Password
+                    {t('profilePage.changePassword')}
                   </Button>
                   <Button variant="outline" className="w-full justify-start">
-                    Two-Factor Authentication
+                    {t('profilePage.twoFactorAuth')}
                   </Button>
                   <Button variant="outline" className="w-full justify-start">
-                    Privacy Settings
+                    {t('profilePage.privacySettings')}
                   </Button>
                 </div>
                 
@@ -367,7 +360,7 @@ export default function Profile() {
                   className="w-full"
                   onClick={logout}
                 >
-                  Sign Out
+                  {t('profilePage.signOut')}
                 </Button>
               </CardContent>
             </Card>

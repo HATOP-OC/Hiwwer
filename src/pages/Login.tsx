@@ -16,8 +16,10 @@ import {
 } from '@/components/ui/card';
 import { AlertCircle } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
+import { useTranslation } from 'react-i18next';
 
 export default function Login() {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -32,10 +34,10 @@ export default function Login() {
 
     try {
       await login(email, password);
-      toast.success('Login successful');
+      toast.success(t('login.successToast'));
       navigate('/');
     } catch (error: any) {
-      const msg = error.message || 'Failed to login';
+      const msg = error.message || t('login.errorToast');
       setError(msg);
       toast.error(msg);
     } finally {
@@ -44,9 +46,7 @@ export default function Login() {
   };
 
   const handleTelegramLogin = () => {
-    // In a real implementation, we would use Telegram's Widget API
-    // For now, we'll just show a toast message
-    toast.info('Telegram login will be implemented with the Telegram OAuth API');
+    toast.info(t('login.telegramToast'));
   };
 
   return (
@@ -54,9 +54,9 @@ export default function Login() {
       <div className="container max-w-md py-16">
         <Card>
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl">Login to Hiwwer</CardTitle>
+            <CardTitle className="text-2xl">{t('login.title')}</CardTitle>
             <CardDescription>
-              Enter your email and password to login to your account
+              {t('login.description')}
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4">
@@ -80,7 +80,7 @@ export default function Login() {
                     fill="#0088cc"
                   />
                 </svg>
-                Telegram
+                {t('login.withTelegram')}
               </Button>
               <Button variant="outline" disabled>
                 <svg
@@ -92,7 +92,7 @@ export default function Login() {
                     d="M20.283 10.356h-8.327v3.451h4.792c-.446 2.193-2.313 3.453-4.792 3.453a5.27 5.27 0 0 1-5.279-5.28 5.27 5.27 0 0 1 5.279-5.279c1.259 0 2.397.447 3.29 1.178l2.6-2.599c-1.584-1.381-3.615-2.233-5.89-2.233a8.908 8.908 0 0 0-8.934 8.934 8.907 8.907 0 0 0 8.934 8.934c4.467 0 8.529-3.249 8.529-8.934 0-.528-.081-1.097-.202-1.625z"
                   />
                 </svg>
-                Google
+                {t('login.withGoogle')}
               </Button>
             </div>
             
@@ -102,7 +102,7 @@ export default function Login() {
               </div>
               <div className="relative flex justify-center text-xs uppercase">
                 <span className="bg-card px-2 text-muted-foreground">
-                  Or continue with
+                  {t('login.orContinueWith')}
                 </span>
               </div>
             </div>
@@ -112,11 +112,11 @@ export default function Login() {
                 <div className="text-sm text-destructive">{error}</div>
               )}
               <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t('login.emailLabel')}</Label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="name@example.com"
+                  placeholder={t('login.emailPlaceholder')}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -125,12 +125,12 @@ export default function Login() {
               
               <div className="grid gap-2">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="password">{t('login.passwordLabel')}</Label>
                   <Link
                     to="/forgot-password"
                     className="text-sm text-primary underline-offset-4 hover:underline"
                   >
-                    Forgot password?
+                    {t('login.forgotPassword')}
                   </Link>
                 </div>
                 <Input
@@ -143,15 +143,15 @@ export default function Login() {
               </div>
               
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Logging in..." : "Log in"}
+                {isLoading ? t('login.submitButtonLoading') : t('login.submitButton')}
               </Button>
             </form>
           </CardContent>
           <CardFooter className="flex justify-center">
             <div className="text-sm text-muted-foreground">
-              Don't have an account?{" "}
+              {t('login.noAccount')}{" "}
               <Link to="/register" className="text-primary underline-offset-4 hover:underline">
-                Sign up
+                {t('login.signUp')}
               </Link>
             </div>
           </CardFooter>

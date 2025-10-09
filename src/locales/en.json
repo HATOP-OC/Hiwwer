@@ -1,0 +1,1464 @@
+{
+  "navbar": {
+    "services": "Services",
+    "dashboard": "Dashboard",
+    "howItWorks": "How It Works",
+    "createOrder": "Create Order",
+    "profile": "Profile",
+    "myOrders": "My Orders",
+    "myServices": "My Services",
+    "adminPanel": "Admin Panel",
+    "logout": "Log out",
+    "login": "Log In",
+    "signUp": "Sign Up",
+    "lightMode": "Light Mode",
+    "darkMode": "Dark Mode"
+  },
+  "hero": {
+    "title": "Find the perfect digital service",
+    "subtitle": "Connect with experts and bring your projects to life with Telegram integration",
+    "searchPlaceholder": "Search for services...",
+    "browseServices": "Browse services",
+    "createOrder": "Create order",
+    "qualityWork": "Quality work",
+    "securePayments": "Secure payments",
+    "telegramUpdates": "Telegram updates",
+    "support247": "24/7 support"
+  },
+  "categories": {
+    "title": "Popular categories",
+    "design": "Design",
+    "design_desc": "Creative solutions",
+    "development": "Development",
+    "development_desc": "Web and mobile apps",
+    "writing": "Writing",
+    "writing_desc": "Quality content",
+    "marketing": "Marketing",
+    "marketing_desc": "Business promotion",
+    "video": "Video",
+    "video_desc": "Video production",
+    "audio": "Audio",
+    "audio_desc": "Sound solutions",
+    "business": "Business",
+    "business_desc": "Consulting",
+    "learning": "Learning",
+    "learning_desc": "Educational services"
+  },
+  "featured": {
+    "title": "Featured services",
+    "viewAll": "View all",
+    "showcase": {
+      "design": {
+        "title": "Creative Design",
+        "description": "Professional design for your brand from experienced creative specialists.",
+        "tags": ["Logos", "Branding", "UI/UX"],
+        "price": "from 50",
+        "deliveryTime": "1-3 days",
+        "reviewCount": "Many positive reviews"
+      },
+      "development": {
+        "title": "Web Development",
+        "description": "Modern web applications and websites using the latest technologies.",
+        "tags": ["React", "Next.js", "TypeScript"],
+        "price": "from 200",
+        "deliveryTime": "5-14 days",
+        "reviewCount": "High customer ratings"
+      },
+      "marketing": {
+        "title": "Digital Marketing",
+        "description": "Effective marketing strategies for your business growth.",
+        "tags": ["SEO", "SMM", "Advertising"],
+        "price": "from 100",
+        "deliveryTime": "3-7 days",
+        "reviewCount": "Proven effectiveness"
+      },
+      "writing": {
+        "title": "Content Creation",
+        "description": "Quality content for your projects and social media.",
+        "tags": ["Texts", "Blogs", "Copywriting"],
+        "price": "from 30",
+        "deliveryTime": "1-2 days",
+        "reviewCount": "Fast and high quality"
+      }
+    }
+  },
+  "howItWorks": {
+    "title": "How it works",
+    "step1_title": "Find a service",
+    "step1_desc": "Choose the service you need from a wide range of talented performers.",
+    "step2_title": "Place an order",
+    "step2_desc": "Describe your requirements and make a secure payment.",
+    "step3_title": "Get updates",
+    "step3_desc": "Track the progress through a convenient Telegram bot.",
+    "step4_title": "Get the result",
+    "step4_desc": "Check the work and request revisions if necessary.",
+    "getStarted": "Get started"
+  },
+  "telegram": {
+    "title": "Seamless integration with Telegram",
+    "subtitle": "Track orders and communicate with performers directly through our Telegram bot. Receive notifications, manage orders, and communicate - all without leaving Telegram.",
+    "feature1": "Instant order notifications",
+    "feature2": "Direct chat with clients/performers",
+    "feature3": "Order status updates",
+    "feature4": "Deadline reminders",
+    "connect": "Connect Telegram",
+    "botWelcome": "Welcome to the Hiwwer Bot! I will help you manage orders and communicate with performers.",
+    "userMessage": "Hello! I want to check the status of my order.",
+    "botResponse": "Your order is being executed according to the plan. The expected completion date is tomorrow.",
+    "messagePlaceholder": "Write a message...",
+    "send": "Send"
+  },
+  "cta": {
+    "title": "Ready to get started?",
+    "subtitle": "Join Hiwwer today and find talented performers or offer your skills to clients around the world.",
+    "findService": "Find a service",
+    "becomePerformer": "Become a performer"
+  },
+  "servicesPage": {
+    "loading": "Loading services...",
+    "title": "Find the perfect service",
+    "subtitle": "Choose a service and create an order right now",
+    "myOrders": "My Orders",
+    "searchPlaceholder": "Search by keywords, skills, description...",
+    "filters": "Filters",
+    "categories": "Categories",
+    "price": "Price (USD)",
+    "minRating": "Minimum rating",
+    "resetFilters": "Reset filters",
+    "servicesFound": "Services found: {{count}}",
+    "createCustomOrder": "Create custom order",
+    "deliveryTime": "{{count}} days",
+    "details": "Details",
+    "order": "Order",
+    "loginAndOrder": "Log in and order",
+    "noResults": {
+      "title": "Nothing found",
+      "subtitle": "Try changing your search parameters or filters",
+      "createCustomOrder": "Create custom order",
+      "customOrderDesc": "Didn't find what you were looking for? Create your own order with your requirements"
+    }
+  },
+  "serviceDetailPage": {
+    "loading": "Loading...",
+    "serviceNotFound": "Service not found",
+    "backToServices": "Back to services",
+    "back": "Back",
+    "reviews": "({{count}} reviews)",
+    "tags": "Tags:",
+    "aboutPerformer": "About the performer",
+    "experiencedPerformer": "Experienced performer",
+    "professionalOnPlatform": "Professional performer on the platform",
+    "orderService": "Order service",
+    "orderServiceDescription": "Click the button below to create an order",
+    "executionTime": "Execution time:",
+    "days": "{{count}} days",
+    "currency": "Currency:",
+    "category": "Category:",
+    "serviceCost": "Service cost:",
+    "platformFee": "Platform fee:",
+    "totalAmount": "Total amount:",
+    "orderNow": "Order now",
+    "loginToOrder": "Log in to order",
+    "loginRequired": "You must be logged in to create an order",
+    "whatIsIncluded": "What is included in the service:",
+    "professionalExecution": "Professional execution of work",
+    "supportDuringExecution": "Support during execution",
+    "possibilityOfRevision": "Possibility of revision",
+    "qualityGuarantee": "Quality guarantee"
+  },
+  "createOrderPage": {
+    "pleaseLoginTitle": "Please log in to create an order",
+    "pleaseLoginSubtitle": "You need to have an account on the platform to create an order",
+    "login": "Log In",
+    "register": "Sign Up",
+    "loading": "Loading...",
+    "serviceNotFound": "Service not found",
+    "backToServices": "Back to services",
+    "back": "Back",
+    "createCustomOrderTitle": "Create a custom order",
+    "createOrderTitle": "Create an order",
+    "customOrderSubtitle": "Describe your order and find the perfect performer",
+    "orderSubtitle": "Fill out the form below to create an order",
+    "orderDetailsTitle": "Order details",
+    "selectedServiceTitle": "Selected service",
+    "customOrderNameLabel": "Order name*",
+    "customOrderNamePlaceholder": "E.g.: Logo design for a startup",
+    "customOrderDescLabel": "Order description*",
+    "customOrderDescPlaceholder": "Describe in detail what you need...",
+    "budgetLabel": "Budget (USD)*",
+    "budgetPlaceholder": "100",
+    "categoryLabel": "Category",
+    "selectCategory": "Select a category",
+    "categories": {
+      "web-development": "Web Development",
+      "design": "Design",
+      "marketing": "Marketing",
+      "copywriting": "Copywriting",
+      "translation": "Translation",
+      "video": "Video",
+      "audio": "Audio",
+      "other": "Other"
+    },
+    "price": "Price:",
+    "requirementsLabel": "Your requirements*",
+    "requirementsPlaceholder": "Describe in detail what exactly you need...",
+    "deadlineLabel": "Desired delivery date*",
+    "summaryTitle": "Summary",
+    "cost": "Cost:",
+    "total": "Total:",
+    "createOrderButton": "Create order",
+    "creating": "Creating...",
+    "toast": {
+      "orderCreated": "Order created",
+      "orderCreatedDesc": "Your order has been successfully created. You can track its status in the 'My Orders' section.",
+      "error": "Error",
+      "createFailed": "Failed to create order",
+      "titleRequired": "Please enter an order title",
+      "descriptionRequired": "Please describe your order",
+      "budgetRequired": "Please enter your budget",
+      "requirementsRequired": "Please describe your requirements for the order",
+      "deadlineRequired": "Please specify the desired delivery date"
+    }
+  },
+  "myOrdersPage": {
+    "pleaseLogin": "Please log in to view your orders",
+    "loading": "Loading orders...",
+    "title": "My Orders",
+    "subtitle": "Manage your orders and track their progress",
+    "createOrder": "Create Order",
+    "browseServices": "Browse Services",
+    "stats": {
+      "totalOrders": "Total Orders",
+      "inProgress": "In Progress",
+      "completed": "Completed",
+      "totalValue": "Total Value"
+    },
+    "searchPlaceholder": "Search orders...",
+    "filterPlaceholder": "Filter by status",
+    "statuses": {
+      "all": "All Statuses",
+      "pending": "Pending",
+      "in_progress": "In Progress",
+      "revision": "Revision",
+      "completed": "Completed",
+      "canceled": "Canceled"
+    },
+    "tabs": {
+      "all": "All Orders",
+      "pending": "Pending",
+      "in_progress": "In Progress",
+      "completed": "Completed",
+      "canceled": "Canceled"
+    },
+    "orderCard": {
+      "newMessages": "{{count}} new",
+      "customOrder": "Custom Order",
+      "awaitingPerformer": "Awaiting performer",
+      "noPerformer": "No performer",
+      "awaitingAssignment": "Awaiting assignment",
+      "daysLeft": "{{count}} days left",
+      "today": "Today",
+      "overdueBy": "Overdue by {{count}} days",
+      "details": "Details",
+      "chat": "Chat"
+    },
+    "emptyStates": {
+      "all_title": "Your orders will appear here",
+      "all_subtitle_filtered": "Try changing your search filters or create a new order",
+      "all_subtitle_initial": "Get started with the Hiwwer platform and create your first order",
+      "all_button": "Create New Order",
+      "pending_title": "No pending orders",
+      "pending_subtitle": "You have no orders awaiting confirmation.",
+      "in_progress_title": "No orders in progress",
+      "in_progress_subtitle": "You have no active orders in progress.",
+      "completed_title": "No completed orders",
+      "completed_subtitle": "Your completed orders will appear here.",
+      "canceled_title": "No canceled orders",
+      "canceled_subtitle": "Great! You have no canceled orders."
+    }
+  },
+  "myServicesPage": {
+    "accessDenied": "Access Denied",
+    "onlyForPerformers": "This page is only available to performers.",
+    "loading": "Loading...",
+    "title": "My Services",
+    "subtitle": "Manage your services and view statistics",
+    "createService": "Create Service",
+    "noServicesTitle": "No services yet",
+    "noServicesSubtitle": "Create your first service to start receiving orders",
+    "deliveryTime": "{{count}} days",
+    "deleteConfirmation": "Are you sure you want to delete the service \"{{title}}\"?",
+    "deleteSuccessToast": "Service deleted successfully",
+    "deleteErrorToast": "Failed to delete service",
+    "fetchError": "Failed to fetch services"
+  },
+  "login": {
+    "title": "Login to Hiwwer",
+    "description": "Enter your email and password to login to your account",
+    "withTelegram": "Telegram",
+    "withGoogle": "Google",
+    "orContinueWith": "Or continue with",
+    "emailLabel": "Email",
+    "emailPlaceholder": "name@example.com",
+    "passwordLabel": "Password",
+    "forgotPassword": "Forgot password?",
+    "submitButton": "Log in",
+    "submitButtonLoading": "Logging in...",
+    "noAccount": "Don't have an account?",
+    "signUp": "Sign up",
+    "successToast": "Login successful",
+    "errorToast": "Failed to login",
+    "telegramToast": "Telegram login will be implemented with the Telegram OAuth API"
+  },
+  "register": {
+    "title": "Create an account",
+    "description": "Enter your information to create a Hiwwer account",
+    "nameLabel": "Full Name",
+    "namePlaceholder": "John Doe",
+    "confirmPasswordLabel": "Confirm Password",
+    "roleLabel": "I want to",
+    "roleClient": "Find Services",
+    "rolePerformer": "Offer Services",
+    "submitButton": "Create account",
+    "submitButtonLoading": "Creating account...",
+    "termsAgreement": "By creating an account, you agree to our {{terms}} and {{privacy}}.",
+    "alreadyHaveAccount": "Already have an account?",
+    "login": "Log in",
+    "errorMatch": "Passwords don't match",
+    "successToast": "Registration successful",
+    "errorToast": "Failed to register"
+  },
+  "profilePage": {
+    "pleaseLogin": "Please log in to view your profile",
+    "updateSuccess": "Profile updated successfully",
+    "updateError": "Error updating profile",
+    "title": "My Profile",
+    "subtitle": "Manage your account settings and public profile",
+    "roles": {
+      "admin": "Admin",
+      "performer": "Performer",
+      "client": "Client"
+    },
+    "memberSince": "Member since {{year}}",
+    "editProfile": "Edit Profile",
+    "cancelEdit": "Cancel Edit",
+    "quickActions": "Quick Actions",
+    "quickActionsDesc": "Main actions for working with the platform",
+    "browseServices": "Browse Services",
+    "myOrders": "My Orders",
+    "performerDashboard": "Performer Dashboard",
+    "personalInfo": "Personal Information",
+    "personalInfoDesc": "Update your personal details and public profile information",
+    "fullNameLabel": "Full Name",
+    "emailLabel": "Email",
+    "phoneLabel": "Phone Number",
+    "phonePlaceholder": "+1 (555) 123-4567",
+    "locationLabel": "Location",
+    "locationPlaceholder": "City, Country",
+    "websiteLabel": "Website",
+    "websitePlaceholder": "https://yourwebsite.com",
+    "bioLabel": "Bio",
+    "bioPlaceholder": "Tell us about yourself...",
+    "saveChanges": "Save Changes",
+    "cancel": "Cancel",
+    "accountSettings": "Account Settings",
+    "accountSettingsDesc": "Manage your account security and preferences",
+    "accountTypeLabel": "Account Type",
+    "accountTypeClient": "Client - I want to find services",
+    "accountTypePerformer": "Performer - I want to offer services",
+    "changePassword": "Change Password",
+    "twoFactorAuth": "Two-Factor Authentication",
+    "privacySettings": "Privacy Settings",
+    "signOut": "Sign Out"
+  },
+  "telegramAuth": {
+    "missingIdError": "Missing Telegram ID",
+    "redirecting": "Redirecting...",
+    "connecting": "Connecting to Telegram...",
+    "pleaseWait": "Please wait"
+  },
+  "howToOrderPage": {
+    "title": "How to Order a Service on Hiwwer",
+    "subtitle": "A simple process for ordering digital services for your business and projects",
+    "steps": {
+      "step1_title": "Find a Service",
+      "step1_desc": "Choose from a wide range of digital services from professionals in their field.",
+      "step2_title": "Discuss the Details",
+      "step2_desc": "Communicate with the performer to clarify all requirements and expectations.",
+      "step3_title": "Pay for the Order",
+      "step3_desc": "Pay for the service securely. The money is held in escrow until you accept the work.",
+      "step4_title": "Receive the Result",
+      "step4_desc": "Review the completed work, request revisions if necessary, and confirm completion."
+    },
+    "detailedInstruction": "Detailed Instruction",
+    "tabs": {
+      "find": "Find",
+      "discuss": "Discuss",
+      "payment": "Payment",
+      "delivery": "Delivery"
+    },
+    "findTab": {
+      "title": "How to Find a Suitable Service",
+      "step1_title": "Use Search and Filters",
+      "step1_desc": "Use keyword search and filter by category, price, and rating to find services that meet your needs.",
+      "step1_button": "Go to Service Search",
+      "step2_title": "Review Performer Profiles",
+      "step2_desc": "Check the performer's profile to see their rating, reviews, and portfolio. This will help you choose the best specialist for your project.",
+      "step3_title": "Compare Service Packages",
+      "step3_desc": "Most performers offer different service packages with different terms and prices. Choose the one that best suits your requirements and budget."
+    },
+    "discussTab": {
+      "title": "How to Discuss Details with the Performer",
+      "step1_title": "Send a Detailed Request",
+      "step1_desc": "Describe your project in as much detail as possible. Specify the goals, requirements, limitations, and expected results. The more information you provide, the more accurately the performer will understand your needs.",
+      "step2_title": "Discuss Terms and Conditions",
+      "step2_desc": "Agree with the performer on the exact deadlines, number of revisions, format of the results, and other important terms of cooperation.",
+      "step3_title": "Prepare Necessary Materials",
+      "step3_desc": "Provide the performer with all the materials and access needed for the work. This may include texts, images, logins to services, etc."
+    },
+    "paymentTab": {
+      "title": "How to Securely Pay for an Order",
+      "step1_title": "Placing an Order",
+      "step1_desc": "After discussing the details, place an official order through the platform. Make sure all conditions are correctly reflected in the order.",
+      "step2_title": "Escrow System",
+      "step2_desc": "The Hiwwer platform uses a secure escrow system. Your payment is held in escrow until you confirm satisfactory completion of the work. This protects both the client and the performer.",
+      "step3_title": "Secure Payment Methods",
+      "step3_desc": "You can use credit cards, PayPal, and other secure payment methods. All transactions are encrypted and protected."
+    },
+    "deliveryTab": {
+      "title": "How to Receive and Accept the Result",
+      "step1_title": "Review the Result",
+      "step1_desc": "Carefully review the received work. Make sure it meets all the requirements and expectations you discussed with the performer.",
+      "step2_title": "Request Revisions",
+      "step2_desc": "If you need changes, use the 'Request Revisions' feature in the system. Clearly state what needs to be changed, and the performer will make the necessary adjustments.",
+      "step3_title": "Accept the Work and Leave a Review",
+      "step3_desc": "When you are completely satisfied with the result, confirm acceptance of the work in the system. After that, the funds will be transferred to the performer. Don't forget to leave a review about the performer and their work."
+    },
+    "benefitsTitle": "Benefits of Ordering on Hiwwer",
+    "benefits": {
+      "securePayments_title": "Secure Payments",
+      "securePayments_desc": "The secure escrow system ensures that you only pay for satisfactorily completed work.",
+      "verifiedPerformers_title": "Verified Performers",
+      "verifiedPerformers_desc": "All performers on the platform are verified, and the rating system helps you choose the best ones.",
+      "telegramIntegration_title": "Telegram Integration",
+      "telegramIntegration_desc": "Receive order status updates and communicate with performers directly in Telegram."
+    },
+    "faqTitle": "Frequently Asked Questions",
+    "faq": {
+      "q1": "What if I'm not satisfied with the result?",
+      "a1": "If you are not satisfied with the received work, you can request revisions. Most performers offer several free revisions as part of the order. If the work still does not meet your requirements after revisions, you can open a dispute in the support system.",
+      "q2": "Can I cancel an order?",
+      "a2": "Yes, you can cancel an order before the performer starts working. If the performer has already started working, the cancellation and refund terms depend on the specific performer and the order conditions. Always read the cancellation policy before placing an order.",
+      "q3": "How long are the order files stored?",
+      "a3": "Order files and materials are stored on the platform for 3 months after the order is completed. We recommend downloading all materials immediately after accepting the work.",
+      "q4": "Will I receive a license to use the ordered work?",
+      "a4": "By default, all rights for commercial use are transferred to the customer upon acceptance of the work and full payment. However, the specific licensing terms may vary depending on the type of service and the performer's conditions. Be sure to discuss this with the performer before ordering.",
+      "q5": "How does payment for additional services work?",
+      "a5": "If additional services or an expansion of the scope of work are needed during the order, the performer can offer additional services through the system. You can accept or decline these offers. If accepted, the additional amount will be added to your order."
+    },
+    "ctaTitle": "Ready to get started?",
+    "ctaSubtitle": "Find professional performers for your projects today",
+    "ctaButton": "Find Services",
+    "ctaButtonSecondary": "Other Questions"
+  },
+  "howItWorksPage": {
+    "heroTitle": "How does Hiwwer work?",
+    "heroSubtitle": "A simple and secure way to find professional digital services or start earning from your skills",
+    "startAsClient": "Start as a Client",
+    "becomePerformer": "Become a Performer",
+    "processTitle": "Simple Process",
+    "processSubtitle": "Choose your role to learn how to use the platform",
+    "forClients": "For Clients",
+    "forPerformers": "For Performers",
+    "step": "Step",
+    "clientSteps": {
+      "step1_title": "Find a service",
+      "step1_desc": "Browse thousands of professional services or use search to find what you need.",
+      "step1_details": [
+        "Browse service categories",
+        "Use filters for searching",
+        "Compare different performers",
+        "Read reviews and ratings"
+      ],
+      "step2_title": "Choose a performer",
+      "step2_desc": "Study performer profiles, their work, and client reviews.",
+      "step2_details": [
+        "Check the performer's portfolio",
+        "Read reviews from previous clients",
+        "View ratings and statistics",
+        "Contact for clarification"
+      ],
+      "step3_title": "Place an order",
+      "step3_desc": "Describe your requirements and make a secure payment through the platform.",
+      "step3_details": [
+        "Describe your task in detail",
+        "Agree on deadlines",
+        "Secure payment through the platform",
+        "Receive order confirmation"
+      ],
+      "step4_title": "Get updates",
+      "step4_desc": "Track progress via the Telegram bot and communicate with the performer.",
+      "step4_details": [
+        "Automatic notifications in Telegram",
+        "Direct communication with the performer",
+        "Tracking of execution stages",
+        "Ability to adjust the task"
+      ],
+      "step5_title": "Get the result",
+      "step5_desc": "Review the finished work, request revisions, and leave a review.",
+      "step5_details": [
+        "Checking the quality of the completed work",
+        "Ability to request revisions",
+        "Completion of the deal after approval",
+        "Leaving a review of the work"
+      ]
+    },
+    "performerSteps": {
+      "step1_title": "Create a profile",
+      "step1_desc": "Register and create an attractive profile describing your skills.",
+      "step1_details": [
+        "Fill in detailed information about yourself",
+        "Add a portfolio of your work",
+        "Describe your skills and experience",
+        "Verify your profile"
+      ],
+      "step2_title": "Create services",
+      "step2_desc": "Describe your services, set prices, and deadlines.",
+      "step2_details": [
+        "Create a detailed service description",
+        "Set a competitive price",
+        "Specify deadlines",
+        "Add examples of previous work"
+      ],
+      "step3_title": "Receive orders",
+      "step3_desc": "Respond to client orders and communicate through the platform.",
+      "step3_details": [
+        "Receive notifications of new orders",
+        "Communicate with clients in real-time",
+        "Clarify task details",
+        "Confirm or decline orders"
+      ],
+      "step4_title": "Do the work",
+      "step4_desc": "Work on the project and provide regular updates to the client.",
+      "step4_details": [
+        "Start work after confirmation",
+        "Provide regular progress reports",
+        "Adhere to agreed deadlines",
+        "Involve the client in the process"
+      ],
+      "step5_title": "Get paid",
+      "step5_desc": "Deliver the finished work and receive guaranteed payment.",
+      "step5_details": [
+        "Deliver high-quality finished work",
+        "Receive approval from the client",
+        "Automatic crediting of funds",
+        "Build a reputation for future orders"
+      ]
+    },
+    "featuresTitle": "Why choose Hiwwer?",
+    "features": {
+      "securePayments_title": "Secure Payments",
+      "securePayments_desc": "All payments are processed through a secure system. Funds are held until the work is completed.",
+      "telegramIntegration_title": "Telegram Integration",
+      "telegramIntegration_desc": "Receive notifications and communicate via a convenient Telegram bot.",
+      "fastExecution_title": "Fast Execution",
+      "fastExecution_desc": "Most services are completed within 1-7 days thanks to professional performers.",
+      "qualityGuarantee_title": "Quality Guarantee",
+      "qualityGuarantee_desc": "The rating and review system ensures high quality of execution."
+    },
+    "ctaTitle": "Ready to get started?",
+    "ctaSubtitle": "Join thousands of satisfied clients and professional performers on Hiwwer",
+    "findService": "Find a Service"
+  },
+  "clientFaqPage": {
+    "loading": "Loading FAQ...",
+    "title": "Client Frequently Asked Questions",
+    "subtitle": "Find answers to common questions about ordering, working with performers, and using the platform",
+    "searchPlaceholder": "Search in FAQ...",
+    "noResultsTitle": "Nothing found",
+    "noResultsSubtitle": "Try another query or contact support",
+    "resetSearch": "Reset search",
+    "resourcesTitle": "Useful Resources",
+    "howToOrderTitle": "How to Order a Service",
+    "howToOrderDesc": "A detailed guide on the process of ordering services on the Hiwwer platform",
+    "termsTitle": "Terms of Use",
+    "termsDesc": "Rules and conditions for using the Hiwwer platform for clients",
+    "contactTitle": "Contact Support",
+    "contactDesc": "Didn't find an answer? Contact our support team",
+    "ctaTitle": "Ready to get started?",
+    "ctaSubtitle": "Find professional performers for your projects today",
+    "ctaButton": "Browse Services"
+  },
+  "becomePerformerPage": {
+    "title": "Become a Performer on Hiwwer",
+    "subtitle": "Offer your services to thousands of clients and grow your business with our platform",
+    "formTitle": "Performer Registration Application",
+    "step": "Step",
+    "of": "of",
+    "form": {
+      "nameLabel": "Full Name",
+      "namePlaceholder": "Enter your full name",
+      "emailLabel": "Email",
+      "emailPlaceholder": "Your contact email",
+      "skillsLabel": "Your skills (comma-separated)",
+      "skillsPlaceholder": "E.g.: logo design, branding, UI/UX design",
+      "continue": "Continue",
+      "experienceLabel": "Your Experience",
+      "experiencePlaceholder": "Tell us about your professional experience, projects, and clients",
+      "portfolioLabel": "Link to portfolio or work examples",
+      "portfolioPlaceholder": "Website, Behance, GitHub, etc.",
+      "back": "Back",
+      "descriptionLabel": "Describe the services you want to offer",
+      "descriptionPlaceholder": "Describe in detail what services you can provide, your unique advantages, and price range",
+      "note": "Note:",
+      "noteText": "After submitting the application, our team will review it within 1-3 business days. We may contact you for more details or request additional materials.",
+      "submit": "Submit Application",
+      "submitting": "Submitting..."
+    },
+    "benefits": {
+      "title": "Benefits for Performers",
+      "increaseIncome_title": "Increase Your Income",
+      "increaseIncome_desc": "Receive orders from clients worldwide without limitations.",
+      "expandClientBase_title": "Expand Your Client Base",
+      "expandClientBase_desc": "Find new clients without marketing and advertising costs.",
+      "analyticsAndGrowth_title": "Analytics and Growth",
+      "analyticsAndGrowth_desc": "Track your performance metrics and continuously improve your services.",
+      "flexibleSchedule_title": "Flexible Schedule",
+      "flexibleSchedule_desc": "Work at your convenience and manage your workload."
+    },
+    "performersGet": {
+      "title": "Performers Get:",
+      "item1": "Free performer profile",
+      "item2": "Access to thousands of clients",
+      "item3": "Secure payment system",
+      "item4": "Telegram integration for convenient work",
+      "item5": "Professional growth tools"
+    },
+    "submissionSuccess": {
+      "title": "Application Submitted Successfully!",
+      "desc": "Thank you for your interest in collaborating with Hiwwer! We have received your application and will review it within 1-3 business days. Expect an email to the provided address with further instructions.",
+      "backToHome": "Back to Home",
+      "readGuidelines": "Read the Performer Guidelines"
+    },
+    "howItWorks": {
+      "title": "How It Works",
+      "step1_title": "1. Submit an Application",
+      "step1_desc": "Fill out the form with your skills, experience, and offered services.",
+      "step2_title": "2. Get Verified",
+      "step2_desc": "We will review your application and profile to ensure quality for our clients.",
+      "step3_title": "3. Start Earning",
+      "step3_desc": "Create services, receive orders, and grow your business on Hiwwer."
+    },
+    "testimonials": {
+      "title": "Performer Testimonials",
+      "andriy": {
+        "name": "Andriy K.",
+        "role": "Web Developer",
+        "text": "\"Hiwwer allowed me to find clients from different countries without significant marketing costs. The user-friendly interface and transparent payment system let me focus on my work.\""
+      },
+      "maria": {
+        "name": "Maria L.",
+        "role": "Copywriter",
+        "text": "\"After registering on Hiwwer, my freelance income doubled. I especially like the Telegram integration, which allows for instant communication with clients.\""
+      },
+      "oleh": {
+        "name": "Oleh S.",
+        "role": "Graphic Designer",
+        "text": "\"The best freelance platform I've used. Secure payments, fair commissions, and quality support make working here comfortable.\""
+      }
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "q1": "How much does it cost to register as a performer?",
+      "a1": "Registering as a performer on Hiwwer is absolutely free. A commission is only charged for successfully completed orders.",
+      "q2": "What is the platform's commission?",
+      "a2": "Hiwwer charges a 15% commission on the amount of each successfully completed order. This commission covers payment processing, marketing support, and platform development.",
+      "q3": "When do I get paid for completed orders?",
+      "a3": "Payment is credited to your account within 24 hours after the client confirms the work's acceptance. You can withdraw funds at any convenient time.",
+      "q4": "What are the requirements for performers?",
+      "a4": "The main requirements are confirmed professional skills, a portfolio or work examples, a clear understanding of the platform's rules, and a commitment to providing quality services to clients.",
+      "viewAll": "View all questions"
+    },
+    "cta": {
+      "title": "Ready to get started?",
+      "subtitle": "Join thousands of successful performers on Hiwwer and grow your business",
+      "button": "Apply Now"
+    }
+  },
+  "performerGuidelinesPage": {
+    "title": "Performer Guidelines",
+    "subtitle": "Follow these rules and recommendations for successful work on the Hiwwer platform",
+    "tabs": {
+      "general": "General Rules",
+      "quality": "Service Quality",
+      "communication": "Communication",
+      "payments": "Payments & Fees"
+    },
+    "general": {
+      "title": "General Platform Rules",
+      "followRules_title": "Follow the Platform Rules",
+      "followRules_desc": "As a performer on Hiwwer, you are required to follow all platform rules and terms of use. Violating these rules may lead to a temporary or permanent block of your account.",
+      "mainRules_title": "Main rules to follow:",
+      "mainRules_items": [
+        "Only provide services that you can truly deliver with high quality",
+        "Do not post content that infringes on copyright or contains plagiarism",
+        "Do not encourage clients to communicate outside the platform to avoid commission",
+        "Adhere to order deadlines",
+        "Provide truthful information about your experience and skills"
+      ],
+      "forbidden_title": "Forbidden Services and Actions",
+      "forbidden_desc": "There are certain types of services and actions that are prohibited on the Hiwwer platform. Providing such services or performing such actions will lead to the immediate blocking of your account.",
+      "forbidden_items_title": "It is forbidden to offer services related to:",
+      "forbidden_items": [
+        "Illegal activities or violation of laws",
+        "Adult content or sexually explicit materials",
+        "Fraudulent or fictitious services",
+        "Hate speech, discrimination, or violence",
+        "Spam, phishing, or malware"
+      ],
+      "violations_title": "Violation Policy",
+      "violations_desc": "Hiwwer uses a system of warnings and sanctions for performers who violate the platform's rules. The severity of the consequences depends on the type and number of violations.",
+      "violations": {
+        "first": "First Violation",
+        "first_desc": "Warning and information about the violated rule",
+        "second": "Second Violation",
+        "second_desc": "Temporary restriction of service visibility in search (7-14 days)",
+        "third": "Third Violation",
+        "third_desc": "Temporary suspension of the ability to accept new orders (30 days)",
+        "serious": "Serious or Repeated Violations",
+        "serious_desc": "Permanent account suspension"
+      }
+    },
+    "quality": {
+      "title": "Service Quality Requirements",
+      "standards_title": "Quality Standards",
+      "standards_desc": "Hiwwer strives to ensure high quality of services for all clients. As a performer, you must adhere to the following quality standards:",
+      "standards": {
+        "professionalism": "Professionalism",
+        "professionalism_desc": "Provide services at a professional level, in accordance with industry standards and best practices.",
+        "accuracy": "Accuracy",
+        "accuracy_desc": "The result must accurately match the described requirements and client expectations.",
+        "uniqueness": "Uniqueness",
+        "uniqueness_desc": "All work results must be original and not infringe on the copyrights of third parties.",
+        "completeness": "Completeness",
+        "completeness_desc": "Ensure the full completion of all aspects of the order, without omissions or shortcomings."
+      },
+      "description_title": "Service Descriptions",
+      "description_desc": "A clear and truthful description of services is critically important for successful work on the platform:",
+      "recommended_title": "Recommended",
+      "recommended_items": [
+        "- Detailed description of what is included in the service",
+        "- Clear indication of deadlines",
+        "- Specification of the number of revisions included in the base price",
+        "- Samples of previous work to demonstrate quality",
+        "- Description of the work process and stages of completion"
+      ],
+      "forbidden_title": "Forbidden",
+      "forbidden_items": [
+        "- Exaggerating your skills or experience",
+        "- Promising results that you cannot guarantee",
+        "- Hiding important limitations or additional costs",
+        "- Using someone else's work as examples of your services",
+        "- Copying service descriptions from other performers"
+      ],
+      "rating_title": "Rating and Review System",
+      "rating_desc": "Your rating and reviews are important factors that affect your visibility and success on the platform:",
+      "howRatingWorks_title": "How the Rating is Formed",
+      "howRatingWorks_items": [
+        "- Average rating from clients (1-5 stars)",
+        "- Percentage of completed orders",
+        "- Adherence to deadlines",
+        "- Message response speed",
+        "- Number of canceled orders"
+      ],
+      "howToImproveRating_title": "How to Improve Your Rating",
+      "howToImproveRating_items": [
+        "- Exceed client expectations",
+        "- Always meet deadlines",
+        "- Maintain polite and professional communication",
+        "- Respond quickly to client inquiries",
+        "- Ask for reviews after successful completion"
+      ]
+    },
+    "communication": {
+      "title": "Communication Rules with Clients",
+      "principles_title": "Basic Communication Principles",
+      "principles_desc": "Effective and professional communication is the foundation of successful collaboration with clients:",
+      "required_title": "Mandatory Rules",
+      "required_items": [
+        "Respond to messages within 24 hours",
+        "Be polite and professional",
+        "Clearly explain all details and expectations",
+        "Inform the client about the progress of the work",
+        "Notify about potential delays in advance"
+      ],
+      "forbidden_title": "Forbidden Practices",
+      "forbidden_items": [
+        "Exchanging contact information for communication outside the platform",
+        "Rudeness, disrespect, or use of offensive language",
+        "Spam or sending irrelevant messages",
+        "Threats or pressure on the client",
+        "Advertising services not related to the specific order"
+      ],
+      "expectations_title": "Managing Client Expectations",
+      "expectations_desc": "Proper management of client expectations is key to successfully completing orders:",
+      "recommendations_title": "Recommendations for effective expectation management:",
+      "recommendations_items": [
+        "At the beginning of the order, clearly discuss all details and requirements",
+        "Define specific criteria for successful order completion",
+        "Discuss the number of revisions and the procedure for requesting them",
+        "Set realistic deadlines with a small buffer for unforeseen situations",
+        "Report on work progress and potential difficulties"
+      ],
+      "conflict_title": "Conflict Resolution",
+      "conflict_desc": "Sometimes misunderstandings or conflicts with clients may arise. Here's how to resolve them correctly:",
+      "conflict_steps_title": "In case of a conflict:",
+      "conflict_steps": [
+        "Stay calm and professional - regardless of the situation, remain polite and professional.",
+        "Listen carefully to the client's complaint - understand the essence of the problem before responding.",
+        "Offer a specific solution - focus on how you can solve the problem.",
+        "Keep your promises - if you agreed to certain revisions or compensation, do it in a timely manner.",
+        "If necessary, contact support - if the conflict cannot be resolved, contact the platform moderators."
+      ]
+    },
+    "payments": {
+      "title": "Payments, Fees, and Withdrawals",
+      "system_title": "Payment System",
+      "system_desc": "Understanding the payment system and fees is important for successful work on the platform:",
+      "howItWorks_title": "How the payment system works:",
+      "howItWorks_steps": [
+        "The client makes a payment - the funds are held in the platform's escrow.",
+        "You complete the order - the funds remain in escrow until the client reviews it.",
+        "The client accepts the work - the funds (minus the platform's commission) are transferred to your balance.",
+        "You can withdraw the funds - using the available withdrawal methods."
+      ],
+      "fees_title": "Platform Fees",
+      "fees_desc": "Hiwwer charges a commission for each successfully completed order. This commission covers payment processing, marketing, client acquisition, and platform support.",
+      "feeStructure_title": "Fee Structure:",
+      "fees": {
+        "standard": "Standard Fee",
+        "pro": "Pro Level Performers (after 20 completed orders)",
+        "top": "Top Level Performers (after 50 completed orders)"
+      },
+      "fee_note": "* The commission is calculated from the total order amount",
+      "calculation_example_title": "Calculation Example:",
+      "calculation_example_desc": "For an order of $100:",
+      "calculation": {
+        "orderAmount": "Order Amount",
+        "platformFee": "Platform Fee (15%)",
+        "youReceive": "You Receive"
+      },
+      "withdrawal_title": "Withdrawal of Funds",
+      "withdrawal_desc": "After successfully completing orders, you can withdraw your earned funds to your bank account or other payment systems:",
+      "withdrawalMethods_title": "Withdrawal Methods:",
+      "withdrawalMethods_items": [
+        "- Bank transfer",
+        "- PayPal",
+        "- Wise (formerly TransferWise)",
+        "- Cryptocurrencies (Bitcoin, Ethereum)",
+        "- Electronic wallets (depending on the country)"
+      ],
+      "withdrawalTerms_title": "Withdrawal Terms:",
+      "withdrawalTerms_items": [
+        "- Minimum withdrawal amount: $50",
+        "- Processing period: 1-5 business days",
+        "- Number of free withdrawals per month: 1",
+        "- Fee for additional withdrawals: $2",
+        "- Tax documentation: provided upon request"
+      ]
+    },
+    "faqTitle": "Frequently Asked Questions",
+    "faq": {
+      "q1": "What happens if a client cancels an order?",
+      "a1": "If a client cancels an order before you start working, you will not be paid. If you have already started working, payment is calculated based on progress: 50% payment if more than half of the work is done, or full payment if the work is almost complete (at the moderator's discretion in disputed cases).",
+      "q2": "How can I offer additional services to a client?",
+      "a2": "You can offer additional services through the 'Additional Options' system on the order page. The client will receive a notification with your offer and can accept or decline it. If the client accepts, the cost of the additional services will be added to the total order amount.",
+      "q3": "What if I need more time to complete an order?",
+      "a3": "If you need to extend the deadline, you should inform the client as soon as possible through the messaging system. Propose a new completion date and explain the reasons for the delay. The client can accept or decline your request. Important: regular delays can negatively affect your rating and visibility in search results.",
+      "q4": "Can I offer discounts to regular clients?",
+      "a4": "Yes, you can offer discounts to regular clients through the coupon system. In your performer dashboard, there is a 'Discounts and Promo Codes' section where you can create personal coupons for individual clients or general promo codes for certain categories of clients. Discounts are applied to the order value, but the platform commission is calculated from the original service price.",
+      "q5": "How can I dispute an unfair review?",
+      "a5": "If you believe you have received an unfair review, you can dispute it through the support system. To do this, go to the review page and click 'Dispute Review'. You will need to provide a detailed explanation and evidence to support your position. Moderators will review your complaint and make a decision within 5 business days. Please note that only reviews that violate the platform's rules or contain inaccurate information can be disputed."
+    },
+    "resourcesTitle": "Useful Resources",
+    "resources": {
+      "faq": "FAQ for Performers",
+      "faq_desc": "Answers to common questions about working on the Hiwwer platform",
+      "terms": "Terms of Use",
+      "terms_desc": "Full legal terms of use for the Hiwwer platform",
+      "contact": "Contact Support",
+      "contact_desc": "Have questions or need help? Contact our support team"
+    },
+    "ctaTitle": "Ready to get started?",
+    "ctaSubtitle": "Join thousands of successful performers on Hiwwer and grow your business",
+    "ctaButton": "Become a Performer",
+    "ctaButtonSecondary": "More Information"
+  },
+  "performerFaqPage": {
+    "loading": "Loading...",
+    "title": "Questions and answers for performers",
+    "subtitle": "Find answers to common questions about working on the platform and fulfilling orders.",
+    "searchPlaceholder": "Search in questions and answers...",
+    "noResultsTitle": "Nothing found",
+    "noResultsSubtitle": "Try another query or contact support.",
+    "resetSearch": "Reset search",
+    "needHelpTitle": "Need more help?",
+    "needHelpDesc": "If you haven't found the answer to your question, our support team is always ready to help.",
+    "contactSupport": "Contact support",
+    "guidelinesTitle": "Recommendations for performers",
+    "guidelinesDesc": "Check out our detailed recommendations and rules for successful work on the platform.",
+    "viewGuidelines": "View recommendations"
+  },
+  "contactUsPage": {
+    "title": "Contact Us",
+    "subtitle": "Have questions or need help? Contact us in one of the convenient ways, and we will help you as soon as possible.",
+    "methodsTitle": "Contact Methods",
+    "emailTitle": "Email",
+    "emailDesc": "Get a response within 24 hours",
+    "telegramTitle": "Telegram Bot",
+    "telegramDesc": "The fastest way to get support",
+    "phoneTitle": "Support Phone",
+    "phoneDesc": "Mon-Fri, 9:00 - 18:00 (EET)",
+    "officeTitle": "Office Address",
+    "officeAddress": "22 Khreshchatyk St.<br/>Kyiv, 01001<br/>Ukraine",
+    "popularQuestionsTitle": "Popular Questions",
+    "faqCategories": {
+      "orders": "Orders & Payment",
+      "account": "Account",
+      "performers": "Questions for Performers"
+    },
+    "faqLinks": {
+      "paymentMethods": "What payment methods are available?",
+      "refund": "How can I get a refund?",
+      "cancelOrder": "How to cancel an order?",
+      "howToOrder": "How to place an order correctly?",
+      "changePassword": "How to change account password?",
+      "deleteAccount": "How to delete an account?",
+      "secureAccount": "How to secure your account?",
+      "privacyPolicy": "Privacy Policy",
+      "payout": "How to get paid for a completed order?",
+      "commission": "What is the platform's commission?",
+      "performerRules": "Rules for performers",
+      "becomePerformer": "How to become a performer?"
+    },
+    "formTitle": "Send a message",
+    "form": {
+      "nameLabel": "Your name",
+      "namePlaceholder": "Enter your name",
+      "emailLabel": "Email",
+      "emailPlaceholder": "your.email@example.com",
+      "subjectLabel": "Subject",
+      "subjects": {
+        "general": "General question",
+        "technical": "Technical problem",
+        "billing": "Payment and billing",
+        "partnership": "Partnership"
+      },
+      "messageLabel": "Message",
+      "messagePlaceholder": "Describe your question or problem in detail...",
+      "submitButton": "Send message",
+      "submitButtonLoading": "Sending message..."
+    },
+    "toast": {
+      "successTitle": "Message sent",
+      "successDesc": "We have received your message and will contact you shortly.",
+      "errorTitle": "Error",
+      "errorDesc": "Failed to send message. Please try again later."
+    },
+    "submitted": {
+      "title": "Thank you for your message!",
+      "desc": "We have received your message and will contact you as soon as possible. We usually respond within 24 hours.",
+      "sendAnother": "Send another message"
+    },
+    "officeMapTitle": "Our Office",
+    "officeMapPlaceholder": "Map with office location (Google Maps iframe)",
+    "workingHoursTitle": "Working Hours",
+    "workingHours": {
+      "weekdays": "Monday - Friday",
+      "saturday": "Saturday",
+      "sunday": "Sunday",
+      "closed": "Closed"
+    },
+    "onlineSupport": "Online support via Telegram is available 24/7 for urgent questions.",
+    "partnersTitle": "For Partners and Media",
+    "partnersDesc": "If you are interested in cooperation or have media inquiries, please write to us at a separate address:",
+    "partnersEmail": "partnerships@hiwwer.com"
+  },
+  "termsOfServicePage": {
+    "loading": "Loading terms...",
+    "error": "Failed to load terms."
+  },
+  "privacyPolicyPage": {
+    "loading": "Loading policy...",
+    "error": "Failed to load the privacy policy.",
+    "title": "Privacy Policy",
+    "subtitle": "We value your privacy and adhere to the highest standards for protecting your personal data.",
+    "lastUpdated": "Last updated",
+    "alertDescription": "Loading policy...",
+    "downloadTitle": "Download PDF version",
+    "downloadDesc": "Get the full version of the privacy policy in PDF format for easy storage and printing.",
+    "downloadButton": "Download document",
+    "questionsTitle": "Questions about privacy?",
+    "questionsDesc": "If you have any questions or concerns about the processing of your personal data, please contact our privacy department.",
+    "contactButton": "Contact Privacy Department",
+    "finalText": "We reserve the right to update this Privacy Policy at any time. We will notify you of any significant changes through a notice on our platform or by email."
+  },
+  "footer": {
+    "description": "Your one-stop platform for digital services with seamless Telegram integration.",
+    "forClients": "For Clients",
+    "browseServices": "Browse Services",
+    "howToOrder": "How to Order",
+    "clientFAQ": "Client FAQ",
+    "forPerformers": "For Performers",
+    "becomeAPerformer": "Become a Performer",
+    "performerGuidelines": "Performer Guidelines",
+    "performerFAQ": "Performer FAQ",
+    "legal": "Legal",
+    "termsOfService": "Terms of Service",
+    "privacyPolicy": "Privacy Policy",
+    "contactUs": "Contact Us",
+    "copyright": "© {{year}} Hiwwer. All rights reserved.",
+    "twitter": "Twitter",
+    "facebook": "Facebook",
+    "instagram": "Instagram",
+    "telegram": "Telegram"
+  },
+  "assistantChat": {
+    "title": "Hiwwer Assistant",
+    "clearHistory": "Clear history",
+    "greeting": "Hello! How can I help you?",
+    "placeholder": "Ask a question...",
+    "connectionError": "Sorry, there was a connection problem. Please try again later.",
+    "clearHistoryConfirmation": "Are you sure you want to clear the chat history?"
+  },
+  "disputeChat": {
+    "title": "Dispute Chat",
+    "resolving": "Resolving...",
+    "closing": "Closing...",
+    "resolveDispute": "Resolve Dispute",
+    "closeDisputeByAgreement": "Close Dispute by Agreement",
+    "online": "Online",
+    "offline": "Offline",
+    "unknownUser": "Unknown User",
+    "roles": {
+      "client": "Client",
+      "performer": "Performer",
+      "moderator": "Moderator",
+      "unknown": "Unknown"
+    },
+    "videoNotSupported": "Your browser does not support video playback.",
+    "audioNotSupported": "Your browser does not support audio playback.",
+    "downloadFile": "Download file",
+    "typing": "is typing",
+    "moderatorWarning": "This is a dispute chat. All messages may be reviewed by a moderator.",
+    "adminActions": "Administrative Actions",
+    "closeDispute": "Close Dispute",
+    "adminCanClose": "You can close this dispute after reviewing it",
+    "canCloseByAgreement": "You can close the dispute by mutual agreement",
+    "closeByAgreement": "Close by Agreement",
+    "loadingMessages": "Loading messages...",
+    "attachedFiles": "Attached files",
+    "placeholder": "Write a message..."
+  },
+  "createService": {
+    "errors": {
+      "fetchCategories": "Failed to fetch categories",
+      "fetchService": "Failed to fetch service",
+      "create": "Failed to create service",
+      "update": "Failed to update service",
+      "title": "Error",
+      "titleRequired": "Service title is required",
+      "descriptionRequired": "Service description is required",
+      "pricePositive": "Price must be greater than 0",
+      "categoryRequired": "Select a service category",
+      "deliveryTimePositive": "Delivery time must be greater than 0"
+    },
+    "success": {
+      "title": "Success!",
+      "create": "Service created successfully",
+      "update": "Service updated successfully"
+    },
+    "accessDenied": {
+      "title": "Access Denied",
+      "description": "Only performers can create services.",
+      "button": "Become a Performer"
+    },
+    "title": {
+      "create": "Create a new service",
+      "edit": "Edit service"
+    },
+    "subtitle": {
+      "create": "Fill in the information about your service",
+      "edit": "Make changes to your service"
+    },
+    "cardTitle": "Service Details",
+    "form": {
+      "title": {
+        "label": "Service Title",
+        "placeholder": "e.g. Logo design for your brand"
+      },
+      "description": {
+        "label": "Service Description",
+        "placeholder": "Describe in detail what your service includes..."
+      },
+      "category": {
+        "label": "Category",
+        "placeholder": "Select a category"
+      },
+      "price": {
+        "label": "Price"
+      },
+      "currency": {
+        "label": "Currency"
+      },
+      "deliveryTime": {
+        "label": "Delivery Time (days)"
+      },
+      "tags": {
+        "label": "Tags",
+        "placeholder": "Add a tag and press Enter"
+      }
+    },
+    "buttons": {
+      "saving": "Saving...",
+      "creating": "Creating...",
+      "save": "Save Changes",
+      "create": "Create Service",
+      "cancel": "Cancel"
+    }
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "Unfortunately, the page <1>{{pathname}}</1> does not exist. The link may be outdated or you may have entered the wrong address.",
+    "searchPlaceholder": "Search for services...",
+    "searchButton": "Find",
+    "homeButton": "To the main page",
+    "backButton": "Back",
+    "browseServicesButton": "Browse services",
+    "popularPages": {
+      "title": "Popular pages",
+      "services": {
+        "title": "Services",
+        "description": "View all available services"
+      },
+      "becomePerformer": {
+        "title": "Become a Performer",
+        "description": "Join the community of professionals"
+      },
+      "howToOrder": {
+        "title": "How to Order",
+        "description": "Learn how the platform works"
+      },
+      "contactUs": {
+        "title": "Contacts",
+        "description": "Contact our team"
+      },
+      "goButton": "Go"
+    },
+    "help": {
+      "title": "Need help?",
+      "description": "If you can't find what you're looking for, our support team is always ready to help.",
+      "button": "Contact us"
+    }
+  },
+  "privacyPolicy": {
+    "loading": "Loading policy...",
+    "error": "Failed to load privacy policy.",
+    "title": "Privacy Policy",
+    "subtitle": "We value your privacy and adhere to the highest standards for protecting your personal data.",
+    "lastUpdated": "Last updated",
+    "download": {
+      "title": "Download PDF version",
+      "description": "Get the full version of the privacy policy in PDF format for convenient storage and printing.",
+      "button": "Download document"
+    },
+    "questions": {
+      "title": "Questions about privacy?",
+      "description": "If you have any questions or concerns about the processing of your personal data, please contact our privacy department.",
+      "button": "Contact the privacy department"
+    },
+    "finalParagraph": "We reserve the right to update this Privacy Policy at any time. We will notify you of any material changes through a notice on our platform or by email."
+  },
+  "becomePerformerPage": {
+    "title": "Become a Performer on Hiwwer",
+    "subtitle": "Offer your services to thousands of clients and grow your business with our platform",
+    "formTitle": "Performer Registration Application",
+    "step": "Step",
+    "of": "of",
+    "form": {
+      "nameLabel": "Full Name",
+      "namePlaceholder": "Enter your full name",
+      "emailLabel": "Email",
+      "emailPlaceholder": "Your contact email",
+      "skillsLabel": "Your skills (comma-separated)",
+      "skillsPlaceholder": "E.g.: logo design, branding, UI/UX design",
+      "continue": "Continue",
+      "experienceLabel": "Your Experience",
+      "experiencePlaceholder": "Tell us about your professional experience, projects, and clients",
+      "portfolioLabel": "Link to portfolio or work examples",
+      "portfolioPlaceholder": "Website, Behance, GitHub, etc.",
+      "back": "Back",
+      "descriptionLabel": "Describe the services you want to offer",
+      "descriptionPlaceholder": "Describe in detail what services you can provide, your unique advantages, and price range",
+      "note": "Note:",
+      "noteText": "After submitting the application, our team will review it within 1-3 business days. We may contact you for more details or request additional materials.",
+      "submit": "Submit Application",
+      "submitting": "Submitting..."
+    },
+    "benefits": {
+      "title": "Benefits for Performers",
+      "increaseIncome_title": "Increase Your Income",
+      "increaseIncome_desc": "Receive orders from clients worldwide without limitations.",
+      "expandClientBase_title": "Expand Your Client Base",
+      "expandClientBase_desc": "Find new clients without marketing and advertising costs.",
+      "analyticsAndGrowth_title": "Analytics and Growth",
+      "analyticsAndGrowth_desc": "Track your performance metrics and continuously improve your services.",
+      "flexibleSchedule_title": "Flexible Schedule",
+      "flexibleSchedule_desc": "Work at your convenience and manage your workload."
+    },
+    "performersGet": {
+      "title": "Performers Get:",
+      "item1": "Free performer profile",
+      "item2": "Access to thousands of clients",
+      "item3": "Secure payment system",
+      "item4": "Telegram integration for convenient work",
+      "item5": "Professional growth tools"
+    },
+    "submissionSuccess": {
+      "title": "Application Submitted Successfully!",
+      "desc": "Thank you for your interest in collaborating with Hiwwer! We have received your application and will review it within 1-3 business days. Expect an email to the provided address with further instructions.",
+      "backToHome": "Back to Home",
+      "readGuidelines": "Read the Performer Guidelines"
+    },
+    "howItWorks": {
+      "title": "How It Works",
+      "step1_title": "1. Submit an Application",
+      "step1_desc": "Fill out the form with your skills, experience, and offered services.",
+      "step2_title": "2. Get Verified",
+      "step2_desc": "We will review your application and profile to ensure quality for our clients.",
+      "step3_title": "3. Start Earning",
+      "step3_desc": "Create services, receive orders, and grow your business on Hiwwer."
+    },
+    "testimonials": {
+      "title": "Performer Testimonials",
+      "andriy": {
+        "name": "Andriy K.",
+        "role": "Web Developer",
+        "text": "\"Hiwwer allowed me to find clients from different countries without significant marketing costs. The user-friendly interface and transparent payment system let me focus on my work.\""
+      },
+      "maria": {
+        "name": "Maria L.",
+        "role": "Copywriter",
+        "text": "\"After registering on Hiwwer, my freelance income doubled. I especially like the Telegram integration, which allows for instant communication with clients.\""
+      },
+      "oleh": {
+        "name": "Oleh S.",
+        "role": "Graphic Designer",
+        "text": "\"The best freelance platform I've used. Secure payments, fair commissions, and quality support make working here comfortable.\""
+      }
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "q1": "How much does it cost to register as a performer?",
+      "a1": "Registering as a performer on Hiwwer is absolutely free. A commission is only charged for successfully completed orders.",
+      "q2": "What is the platform's commission?",
+      "a2": "Hiwwer charges a 15% commission on the amount of each successfully completed order. This commission covers payment processing, marketing support, and platform development.",
+      "q3": "When do I get paid for completed orders?",
+      "a3": "Payment is credited to your account within 24 hours after the client confirms the work's acceptance. You can withdraw funds at any convenient time.",
+      "q4": "What are the requirements for performers?",
+      "a4": "The main requirements are confirmed professional skills, a portfolio or work examples, a clear understanding of the platform's rules, and a commitment to providing quality services to clients.",
+      "viewAll": "View all questions"
+    },
+    "cta": {
+      "title": "Ready to get started?",
+      "subtitle": "Join thousands of successful performers on Hiwwer and grow your business",
+      "button": "Apply Now"
+    }
+  },
+  "orderDetailPage": {
+    "loading": "Loading...",
+    "notFound": "Order not found",
+    "orderTitle": "Order: {{title}}",
+    "statusLabel": "Status:",
+    "deleteButton": "Delete Order",
+    "deleteConfirmation": "Are you sure you want to delete this order?",
+    "updateSuccess": "Order updated successfully",
+    "updateError": "Failed to update order",
+    "deleteSuccess": "Order deleted",
+    "deleteError": "Failed to delete order",
+    "messageSent": "Message sent",
+    "messageError": "Failed to send message",
+    "optionProposed": "Option proposed",
+    "optionStatusUpdated": "Option status updated",
+    "paymentAuthorized": "Payment authorized",
+    "paymentCaptured": "Payment captured",
+    "paymentRefunded": "Payment refunded",
+    "reviewAdded": "Review added",
+    "disputeCreated": "Dispute created",
+    "disputeCreateError": "Failed to create dispute",
+    "disputeReasonRequired": "Please provide a reason for the dispute",
+    "disputeDeleteConfirmation": "Are you sure you want to delete this dispute? All messages and files will be permanently deleted.",
+    "disputeDeleteSuccess": "Dispute and all related data deleted",
+    "disputeDeleteError": "Failed to delete dispute",
+    "openDispute": "Open Dispute",
+    "openDisputePrompt": "If you have a problem with this order, you can open a dispute to resolve the conflict.",
+    "openDisputeButton": "Open Dispute",
+    "disputeReasonPlaceholder": "Describe the reason for the dispute...",
+    "submitDisputeButton": "Submit Dispute",
+    "submittingDisputeButton": "Submitting...",
+    "cancelButton": "Cancel",
+    "activeDispute": "Active Dispute",
+    "resolvedDispute": "Resolved Dispute",
+    "reason": "Reason",
+    "status": {
+      "open": "Open",
+      "in_review": "In Review",
+      "resolved": "Resolved"
+    },
+    "deleteDisputeButton": "Delete Dispute",
+    "deletingDisputeButton": "Deleting...",
+    "additionalOptions": "Additional Options",
+    "proposeOption": "Propose New Option",
+    "optionTitlePlaceholder": "Option title",
+    "optionDescPlaceholder": "Description",
+    "optionPricePlaceholder": "Price",
+    "proposeButton": "Propose",
+    "acceptButton": "Accept",
+    "rejectButton": "Reject",
+    "payments": "Payments",
+    "authorizeButton": "Authorize",
+    "captureButton": "Capture",
+    "refundButton": "Refund",
+    "review": "Review",
+    "reviewAvailable": "Review is available after order completion",
+    "ratingLabel": "Rating (1-5):",
+    "commentPlaceholder": "Comment (optional)",
+    "submitReviewButton": "Submit Review"
+  },
+  "errorBoundary": {
+    "title": "Something went wrong",
+    "subtitle": "Sorry, an error occurred while loading the page.",
+    "reloadButton": "Reload page"
+  },
+  "filePreview": {
+    "title": "File Preview",
+    "mb": "MB",
+    "audioPlaceholder": "Audio file will be available for listening after sending",
+    "defaultPlaceholder": "File will be available for download after sending",
+    "cancel": "Cancel",
+    "sending": "Sending...",
+    "send": "Send"
+  },
+  "orderChat": {
+    "title": "Order Chat",
+    "online": "Online",
+    "offline": "Offline",
+    "unknownUser": "Unknown User",
+    "edited": "(edited)",
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleteConfirm": {
+      "title": "Delete message?",
+      "description": "This action cannot be undone. The message will be permanently deleted.",
+      "confirm": "Delete"
+    },
+    "cancel": "Cancel",
+    "save": "Save",
+    "editPlaceholder": "Edit message...",
+    "inputPlaceholder": "Write a message...",
+    "messageDeleted": "[Message deleted]",
+    "attachmentName": "Attachment {{index}}",
+    "uploadError": "File upload failed. Please try again.",
+    "videoNotSupported": "Your browser does not support video playback.",
+    "audioNotSupported": "Your browser does not support audio playback.",
+    "downloadFile": "Download file",
+    "typing_one": "{{users}} is typing",
+    "typing_other": "{{users}} are typing"
+  },
+  "requireAdmin": {
+    "loading": "Loading..."
+  },
+  "telegramIntegration": {
+    "title": "Telegram Integration",
+    "description": "Link your Telegram account to receive notifications and manage orders on the go.",
+    "linked": {
+      "title": "Your account is linked to Telegram.",
+      "subtitle": "You can now use the bot's features."
+    },
+    "unlinked": {
+      "instructions": "To link your account, generate a code and send it to the Hiwwer bot on Telegram.",
+      "generateButton": "Generate Linking Code",
+      "generatingButton": "Generating..."
+    },
+    "refreshButton": "Refresh Status",
+    "toasts": {
+      "codeGenerated": "Linking code generated. It will expire in 10 minutes.",
+      "codeCopied": "Code copied to clipboard!",
+      "refreshed": "Profile data refreshed."
+    },
+    "errors": {
+      "generateCode": "Failed to generate code"
+    }
+  },
+  "notificationMenu": {
+    "title": "Notifications",
+    "noNotifications": "No notifications"
+  },
+  "fileTypeSettings": {
+    "title": "File Type Settings",
+    "description": "Select the file types you want to allow for upload in the chat",
+    "maxSize": "up to {{size}} MB",
+    "addCustomType": "Add custom file type",
+    "form": {
+      "nameLabel": "Type Name",
+      "namePlaceholder": "e.g. CAD files",
+      "maxSizeLabel": "Max Size (MB)",
+      "extensionsLabel": "File extensions (comma-separated)",
+      "extensionsPlaceholder": "dwg, step, iges",
+      "descriptionLabel": "Description (optional)",
+      "descriptionPlaceholder": "CAD files (DWG, STEP, IGES)",
+      "addButton": "Add",
+      "cancelButton": "Cancel"
+    },
+    "currentSettings": {
+      "title": "Current Settings:",
+      "enabledTypes": "Enabled file types:",
+      "maxFileSize": "Maximum file size:",
+      "acceptString": "Accept string for input"
+    },
+    "defaultTypes": {
+      "images": {
+        "name": "Images",
+        "description": "Image files (JPG, PNG, GIF, WebP, SVG)"
+      },
+      "documents": {
+        "name": "Documents",
+        "description": "Text documents (PDF, DOC, DOCX, TXT, RTF, ODT)"
+      },
+      "spreadsheets": {
+        "name": "Spreadsheets",
+        "description": "Spreadsheets (XLS, XLSX, CSV, ODS)"
+      },
+      "presentations": {
+        "name": "Presentations",
+        "description": "Presentations (PPT, PPTX, ODP)"
+      },
+      "archives": {
+        "name": "Archives",
+        "description": "Archives (ZIP, RAR, 7Z, TAR, GZ)"
+      },
+      "videos": {
+        "name": "Videos",
+        "description": "Video files (MP4, AVI, MOV, WMV, FLV, WebM)"
+      },
+      "audio": {
+        "name": "Audio",
+        "description": "Audio files (MP3, WAV, FLAC, AAC, OGG)"
+      },
+      "code": {
+        "name": "Code",
+        "description": "Code files (JS, TS, Python, Java, C++, and others)"
+      }
+    }
+  }
+}
