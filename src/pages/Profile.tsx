@@ -29,7 +29,8 @@ import {
   Phone,
   Globe,
   Save,
-  X
+  X,
+  Briefcase
 } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
 import TelegramIntegration from '@/components/Profile/TelegramIntegration';
@@ -37,9 +38,10 @@ import { useTranslation } from 'react-i18next';
 
 export default function Profile() {
   const { t } = useTranslation();
-  const { user, logout } = useAuth();
+  const { user, logout, activatePerformerMode } = useAuth();
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
+  const [isActivatingPerformer, setIsActivatingPerformer] = useState(false);
   const [formData, setFormData] = useState({
     name: user?.name || '',
     email: user?.email || '',
@@ -204,17 +206,52 @@ export default function Profile() {
                 >
                   📋 {t('profilePage.myOrders')}
                 </Button>
-                {user.role === 'performer' && (
+                {user.isPerformer && (
                   <Button 
                     variant="outline" 
                     className="w-full justify-start"
-                    onClick={() => navigate('/performer-dashboard')}
+                    onClick={() => navigate('/my-services')}
                   >
                     💼 {t('profilePage.performerDashboard')}
                   </Button>
                 )}
               </CardContent>
             </Card>
+
+            {/* Activate Performer Mode Card */}
+            {!user.isPerformer && user.role !== 'admin' && (
+              <Card className="mt-6 border-primary">
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Briefcase className="h-5 w-5" />
+                    <span>{t('profilePage.becomePerformer')}</span>
+                  </CardTitle>
+                  <CardDescription>
+                    {t('profilePage.becomePerformerDesc')}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button 
+                    variant="default"
+                    className="w-full"
+                    disabled={isActivatingPerformer}
+                    onClick={async () => {
+                      setIsActivatingPerformer(true);
+                      try {
+                        await activatePerformerMode();
+                        toast.success(t('profilePage.performerActivated'));
+                      } catch (error) {
+                        toast.error(t('profilePage.performerActivationError'));
+                      } finally {
+                        setIsActivatingPerformer(false);
+                      }
+                    }}
+                  >
+                    {isActivatingPerformer ? t('profilePage.activating') : t('profilePage.activatePerformerMode')}
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           <div className="md:col-span-2 space-y-6">

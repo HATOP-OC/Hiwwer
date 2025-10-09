@@ -1,15 +1,17 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
-import { fetchServiceById } from '@/lib/api';
+import { fetchServiceById, getImageUrl } from '@/lib/api';
 import Layout from '@/components/Layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Star, ArrowLeft, ShoppingCart, Clock, DollarSign, User, Package } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useState } from 'react';
 
 export default function ServiceDetail() {
   const { t } = useTranslation();
@@ -82,17 +84,41 @@ export default function ServiceDetail() {
           {/* Основна інформація */}
           <div className="lg:col-span-2 space-y-6">
             {/* Зображення */}
-            <Card>
-              <CardContent className="p-0">
-                <div className="aspect-video relative overflow-hidden rounded-t-lg">
-                  <img
-                    src={service.images?.[0] || '/placeholder.svg'}
-                    alt={service.title}
-                    className="object-cover w-full h-full"
-                  />
-                </div>
-              </CardContent>
-            </Card>
+            {service.images && service.images.length > 0 ? (
+              <Card>
+                <CardContent className="p-0">
+                  <Carousel className="w-full">
+                    <CarouselContent>
+                      {service.images.map((image, index) => (
+                        <CarouselItem key={index}>
+                          <div className="aspect-video relative overflow-hidden rounded-t-lg">
+                            <img
+                              src={getImageUrl(image)}
+                              alt={`${service.title} - ${index + 1}`}
+                              className="object-cover w-full h-full"
+                            />
+                          </div>
+                        </CarouselItem>
+                      ))}
+                    </CarouselContent>
+                    {service.images.length > 1 && (
+                      <>
+                        <CarouselPrevious className="left-2" />
+                        <CarouselNext className="right-2" />
+                      </>
+                    )}
+                  </Carousel>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card>
+                <CardContent className="p-0">
+                  <div className="aspect-video relative overflow-hidden rounded-t-lg bg-muted flex items-center justify-center">
+                    <Package className="h-16 w-16 text-muted-foreground" />
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Опис */}
             <Card>

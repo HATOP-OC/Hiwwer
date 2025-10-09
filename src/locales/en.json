@@ -14,6 +14,23 @@
     "lightMode": "Light Mode",
     "darkMode": "Dark Mode"
   },
+  "roleSwitcher": {
+    "switchMode": "Switch Mode",
+    "client": "Client Mode",
+    "performer": "Performer Mode",
+    "becomePerformerHint": "Become a performer to switch"
+  },
+  "imageUpload": {
+    "dragDrop": "Drag and drop images here",
+    "orClick": "or click to select files",
+    "selectFiles": "Select Files",
+    "limits": "Maximum {max} images, up to {size}MB each",
+    "errors": {
+      "notImage": "File must be an image",
+      "tooLarge": "File is too large (max {size}MB)",
+      "tooMany": "Too many images (max {max})"
+    }
+  },
   "hero": {
     "title": "Find the perfect digital service",
     "subtitle": "Connect with experts and bring your projects to life with Telegram integration",
@@ -27,22 +44,22 @@
   },
   "categories": {
     "title": "Popular categories",
-    "design": "Design",
-    "design_desc": "Creative solutions",
-    "development": "Development",
-    "development_desc": "Web and mobile apps",
-    "writing": "Writing",
-    "writing_desc": "Quality content",
-    "marketing": "Marketing",
-    "marketing_desc": "Business promotion",
-    "video": "Video",
-    "video_desc": "Video production",
     "audio": "Audio",
     "audio_desc": "Sound solutions",
-    "business": "Business",
-    "business_desc": "Consulting",
-    "learning": "Learning",
-    "learning_desc": "Educational services"
+    "copywriting": "Copywriting",
+    "copywriting_desc": "Quality content",
+    "design": "Design",
+    "design_desc": "Creative solutions",
+    "marketing": "Marketing",
+    "marketing_desc": "Business promotion",
+    "other": "Other",
+    "other_desc": "Other services",
+    "translation": "Translation",
+    "translation_desc": "Professional translation",
+    "video": "Video",
+    "video_desc": "Video production",
+    "web-development": "Web Development",
+    "web-development_desc": "Web and mobile apps"
   },
   "featured": {
     "title": "Featured services",
@@ -321,7 +338,7 @@
     "rolePerformer": "Offer Services",
     "submitButton": "Create account",
     "submitButtonLoading": "Creating account...",
-    "termsAgreement": "By creating an account, you agree to our {{terms}} and {{privacy}}.",
+    "termsAgreement": "By creating an account, you agree to our <1>Terms of Service</1> and <3>Privacy Policy</3>.",
     "alreadyHaveAccount": "Already have an account?",
     "login": "Log in",
     "errorMatch": "Passwords don't match",
@@ -369,7 +386,13 @@
     "changePassword": "Change Password",
     "twoFactorAuth": "Two-Factor Authentication",
     "privacySettings": "Privacy Settings",
-    "signOut": "Sign Out"
+    "signOut": "Sign Out",
+    "becomePerformer": "Become a Performer",
+    "becomePerformerDesc": "Activate performer mode to start offering your services on the platform",
+    "activatePerformerMode": "Activate Performer Mode",
+    "activating": "Activating...",
+    "performerActivated": "Performer mode activated successfully! You can now switch between client and performer modes.",
+    "performerActivationError": "Failed to activate performer mode. Please try again."
   },
   "telegramAuth": {
     "missingIdError": "Missing Telegram ID",
@@ -1080,8 +1103,8 @@
     },
     "accessDenied": {
       "title": "Access Denied",
-      "description": "Only performers can create services.",
-      "button": "Become a Performer"
+      "description": "Only performers can create services. Activate performer mode in your profile settings.",
+      "button": "Go to Profile"
     },
     "title": {
       "create": "Create a new service",
@@ -1117,6 +1140,10 @@
       "tags": {
         "label": "Tags",
         "placeholder": "Add a tag and press Enter"
+      },
+      "images": {
+        "label": "Service Images",
+        "description": "Upload images to showcase your service (maximum 5 images, up to 5MB each)"
       }
     },
     "buttons": {

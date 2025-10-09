@@ -41,13 +41,13 @@ router.post('/login', async (req: Request, res: Response) => {
     return res.status(400).json({ message: 'Missing email or password' });
   }
   try {
-    const result = await query('SELECT id, name, email, password_hash, role FROM users WHERE email = $1', [email]);
+    const result = await query('SELECT id, name, email, password_hash, role, is_performer as "isPerformer" FROM users WHERE email = $1', [email]);
     const user = result.rows[0];
     if (!user) return res.status(401).json({ message: 'Invalid credentials' });
     const match = await bcrypt.compare(password, user.password_hash);
     if (!match) return res.status(401).json({ message: 'Invalid credentials' });
     const token = jwt.sign({ id: user.id, role: user.role }, config.jwtSecret, { expiresIn: '7d' });
-    res.json({ id: user.id, name: user.name, email: user.email, role: user.role, token });
+    res.json({ id: user.id, name: user.name, email: user.email, role: user.role, isPerformer: user.isPerformer, token });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Server error';
     console.error(error);
@@ -140,7 +140,7 @@ router.post('/login-with-telegram', async (req: Request, res: Response) => {
   }
 
   try {
-    const result = await query('SELECT id, name, email, role FROM users WHERE telegram_id = $1', [telegramId]);
+    const result = await query('SELECT id, name, email, role, is_performer as "isPerformer" FROM users WHERE telegram_id = $1', [telegramId]);
     const user = result.rows[0];
 
     if (!user) {
@@ -148,7 +148,7 @@ router.post('/login-with-telegram', async (req: Request, res: Response) => {
     }
 
     const token = jwt.sign({ id: user.id, role: user.role }, config.jwtSecret, { expiresIn: '7d' });
-    res.json({ id: user.id, name: user.name, email: user.email, role: user.role, token });
+    res.json({ id: user.id, name: user.name, email: user.email, role: user.role, isPerformer: user.isPerformer, token });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Server error';
     console.error('Error during Telegram login:', error);

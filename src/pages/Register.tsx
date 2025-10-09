@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/card';
 import { AlertCircle } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
-import { useTranslation } from 'react-i18next';
+import { useTranslation, Trans } from 'react-i18next';
 
 export default function Register() {
   const { t } = useTranslation();
@@ -194,10 +194,16 @@ export default function Register() {
               </Button>
               
               <p className="text-xs text-muted-foreground text-center">
-                {t('register.termsAgreement', {
-                  terms: <Link to="/terms-of-service" className="underline underline-offset-2">{t('footer.termsOfService')}</Link>,
-                  privacy: <Link to="/privacy-policy" className="underline underline-offset-2">{t('footer.privacyPolicy')}</Link>
-                })}
+                <Trans i18nKey="register.termsAgreement">
+                  Створюючи акаунт, ви погоджуєтесь з нашими{' '}
+                  <Link to="/terms-of-service" className="underline underline-offset-2">
+                    Умовами використання
+                  </Link>{' '}
+                  та{' '}
+                  <Link to="/privacy-policy" className="underline underline-offset-2">
+                    Політикою конфіденційності
+                  </Link>.
+                </Trans>
               </p>
             </form>
           </CardContent>

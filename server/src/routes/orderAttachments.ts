@@ -7,7 +7,7 @@ import { query } from '../db';
 import { createNotification } from '../services/notificationService';
 
 const router = Router({ mergeParams: true });
-const uploadDir = path.resolve(__dirname, '../uploads');
+const uploadDir = path.resolve(__dirname, '../../uploads');
 
 // Ensure upload directory exists
 if (!fs.existsSync(uploadDir)) {

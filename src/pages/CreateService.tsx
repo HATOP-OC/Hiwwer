@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { X, Plus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
+import ImageUpload from '@/components/ImageUpload';
 
 interface ServiceCategory {
   id: string;
@@ -49,15 +50,25 @@ export default function CreateService() {
   });
   
   const [tagInput, setTagInput] = useState('');
+  const [images, setImages] = useState<File[]>([]);
 
   // Отримання категорій
   const { data: categories = [] } = useQuery<ServiceCategory[]>({
     queryKey: ['service-categories'],
     queryFn: async () => {
-      const res = await fetch('/v1/services/categories');
-      if (!res.ok) throw new Error(t('createService.errors.fetchCategories'));
-      const data = await res.json();
-      return data.categories || [];
+      try {
+        const res = await fetch('/v1/services/categories');
+        if (!res.ok) {
+          const text = await res.text();
+          console.error('Categories fetch failed:', res.status, text);
+          throw new Error(t('createService.errors.fetchCategories'));
+        }
+        const data = await res.json();
+        return data.categories || [];
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+        throw error;
+      }
     }
   });
 
@@ -111,13 +122,39 @@ export default function CreateService() {
       }
       return res.json();
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
+      const createdServiceId = data.service?.id || data.id;
+      
+      // Завантаження зображень, якщо є
+      if (images.length > 0 && createdServiceId) {
+        try {
+          const formData = new FormData();
+          images.forEach((image) => {
+            formData.append('images', image);
+          });
+
+          const token = localStorage.getItem('token');
+          const uploadRes = await fetch(`/v1/services/${createdServiceId}/images`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`
+            },
+            body: formData
+          });
+
+          if (!uploadRes.ok) {
+            console.error('Failed to upload images');
+          }
+        } catch (error) {
+          console.error('Error uploading images:', error);
+        }
+      }
+
       toast({
         title: t('createService.success.title'),
         description: t(isEditing ? 'createService.success.update' : 'createService.success.create'),
       });
-      const serviceId = data.service?.id || data.id;
-      navigate(`/services/${serviceId}`);
+      navigate(`/services/${createdServiceId}`);
     },
     onError: (error: Error) => {
       toast({
@@ -129,13 +166,13 @@ export default function CreateService() {
   });
 
   // Перевірка доступу ПІСЛЯ всіх хуків
-  if (user?.role !== 'performer') {
+  if (!user?.isPerformer && user?.role !== 'admin') {
     return (
       <Layout>
         <div className="py-12 text-center">
           <h1 className="text-2xl font-bold text-red-600">{t('createService.accessDenied.title')}</h1>
           <p className="mt-2">{t('createService.accessDenied.description')}</p>
-          <Button className="mt-4" onClick={() => navigate('/become-performer')}>
+          <Button className="mt-4" onClick={() => navigate('/profile')}>
             {t('createService.accessDenied.button')}
           </Button>
         </div>
@@ -364,6 +401,20 @@ export default function CreateService() {
                     </Badge>
                   ))}
                 </div>
+              </div>
+
+              {/* Зображення */}
+              <div>
+                <Label>{t('createService.form.images.label')}</Label>
+                <p className="text-sm text-muted-foreground mb-4">
+                  {t('createService.form.images.description')}
+                </p>
+                <ImageUpload
+                  images={images}
+                  onChange={setImages}
+                  maxImages={5}
+                  maxSizeMB={5}
+                />
               </div>
 
               {/* Кнопки */}

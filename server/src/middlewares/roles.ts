@@ -1,10 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
 import { User } from '../@types';
 
-// Ensure user is client
+// Ensure user is authenticated (any authenticated user can be a client)
 export const authorizeClient = (req: Request, res: Response, next: NextFunction) => {
   if (!req.user) return res.status(401).json({ message: 'Unauthorized' });
-  if (req.user.role !== 'client') return res.status(403).json({ message: 'Forbidden: clients only' });
+  // Будь-який автентифікований користувач може бути клієнтом
+  // (навіть performer може замовляти послуги)
   next();
 };
 

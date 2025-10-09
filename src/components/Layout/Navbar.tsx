@@ -15,12 +15,13 @@ import {
 import { Bell, Menu, Moon, Search, Sun, X } from "lucide-react";
 import NotificationMenu from '../NotificationMenu';
 import LanguageSwitcher from '../LanguageSwitcher';
+import RoleSwitcher from '../RoleSwitcher';
 import { useTranslation } from 'react-i18next';
 
 export default function Navbar() {
   const { t } = useTranslation();
   const { theme, toggleTheme } = useTheme();
-  const { user, logout } = useAuth();
+  const { user, activeRole, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
@@ -35,7 +36,7 @@ export default function Navbar() {
             <Link to="/services" className="text-sm font-medium hover:text-primary transition-colors">
               {t('navbar.services')}
             </Link>
-            {user?.role === 'performer' && (
+            {activeRole === 'performer' && (
               <Link to="/dashboard" className="text-sm font-medium hover:text-primary transition-colors">
                 {t('navbar.dashboard')}
               </Link>
@@ -66,6 +67,10 @@ export default function Navbar() {
 
           {user ? (
             <>
+              <div className="hidden md:flex">
+                <RoleSwitcher />
+              </div>
+
               <Button asChild size="sm" className="hidden md:flex">
                 <Link to="/services">{t('navbar.createOrder')}</Link>
               </Button>
@@ -93,7 +98,7 @@ export default function Navbar() {
                   <DropdownMenuItem asChild>
                     <Link to="/my-orders">{t('navbar.myOrders')}</Link>
                   </DropdownMenuItem>
-                  {user.role === 'performer' && (
+                  {activeRole === 'performer' && (
                     <DropdownMenuItem asChild>
                       <Link to="/my-services">{t('navbar.myServices')}</Link>
                     </DropdownMenuItem>
@@ -143,7 +148,7 @@ export default function Navbar() {
             >
               {t('navbar.services')}
             </Link>
-            {user?.role === 'performer' && (
+            {activeRole === 'performer' && (
               <Link 
                 to="/dashboard" 
                 className="px-4 py-2 text-sm font-medium hover:bg-muted rounded-md"
@@ -173,6 +178,12 @@ export default function Navbar() {
             
             <LanguageSwitcher />
           </div>
+
+          {user && (
+            <div className="px-4">
+              <RoleSwitcher />
+            </div>
+          )}
 
           {!user && (
             <div className="flex flex-col space-y-2 pt-2 border-t">

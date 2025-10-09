@@ -4,6 +4,21 @@
 // Base API URL: завжди відносний шлях до проксі Vite
 const API_BASE = '/v1';
 
+// Helper function to get full image URL
+export function getImageUrl(imagePath: string | null | undefined): string {
+  if (!imagePath) return '/placeholder.png'; // Default placeholder
+  // If path already starts with http/https, return as is
+  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+    return imagePath;
+  }
+  // If path starts with /, it's already absolute - just use it (proxy will handle)
+  if (imagePath.startsWith('/')) {
+    return imagePath;
+  }
+  // Otherwise prepend /
+  return `/${imagePath}`;
+}
+
 export interface ContactForm {
   name: string;
   email: string;

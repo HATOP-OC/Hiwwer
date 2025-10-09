@@ -7,6 +7,7 @@ export interface User {
   name: string;
   email: string;
   role: UserRole;
+  isPerformer?: boolean;
   avatar?: string;
   bio?: string;
   rating?: number;
@@ -16,11 +17,14 @@ export interface User {
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
+  activeRole: UserRole;
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, email: string, password: string, role: UserRole) => Promise<void>;
   logout: () => void;
   telegramLogin: (telegramData: any) => Promise<void>;
   fetchUser: () => Promise<void>;
+  switchRole: (role: UserRole) => void;
+  activatePerformerMode: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -28,12 +32,35 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeRole, setActiveRole] = useState<UserRole>('client');
   const API_BASE = '/v1';
+
+  // Встановлюємо activeRole при зміні користувача
+  useEffect(() => {
+    if (user) {
+      // Якщо є збережений activeRole в localStorage, використовуємо його
+      const savedRole = localStorage.getItem('activeRole') as UserRole;
+      if (savedRole && (savedRole === 'client' || savedRole === 'performer' || savedRole === 'admin')) {
+        setActiveRole(savedRole);
+      } else {
+        setActiveRole(user.role);
+      }
+    }
+  }, [user]);
+
+  const switchRole = (role: UserRole) => {
+    console.log('AuthContext: Switching role to', role);
+    setActiveRole(role);
+    localStorage.setItem('activeRole', role);
+    console.log('AuthContext: Role switched, new activeRole:', role);
+  };
 
   const logout = () => {
     setUser(null);
     localStorage.removeItem('user');
     localStorage.removeItem('token');
+    localStorage.removeItem('activeRole');
+    setActiveRole('client');
   };
 
   const fetchUser = async () => {
@@ -79,7 +106,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const errorData = await res.json();
         throw new Error(errorData.message || 'Invalid credentials');
       }
-      const { token } = await res.json();
+      const data = await res.json();
+      const token = data.token;
       localStorage.setItem('token', token);
       await fetchUser();
     } catch (error: any) {
@@ -102,7 +130,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const errorData = await res.json();
         throw new Error(errorData.message || 'Registration failed');
       }
-      const { token } = await res.json();
+      const data = await res.json();
+      const token = data.token;
       localStorage.setItem('token', token);
       await fetchUser();
     } catch (error: any) {
@@ -125,7 +154,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const errorData = await res.json();
         throw new Error(errorData.message || 'Telegram login failed');
       }
-      const { token } = await res.json();
+      const data = await res.json();
+      const token = data.token;
       localStorage.setItem('token', token);
       await fetchUser();
     } catch (error) {
@@ -136,8 +166,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const activatePerformerMode = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      throw new Error('Not authenticated');
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/users/activate-performer`, {
+        method: 'POST',
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Failed to activate performer mode');
+      }
+
+      const { user: updatedUser } = await res.json();
+      setUser(updatedUser);
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      
+      // Automatically switch to performer mode
+      if (updatedUser.isPerformer) {
+        switchRole('performer');
+      }
+    } catch (error) {
+      console.error('Failed to activate performer mode:', error);
+      throw error;
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, register, logout, telegramLogin, fetchUser }}>
+    <AuthContext.Provider value={{ user, isLoading, activeRole, login, register, logout, telegramLogin, fetchUser, switchRole, activatePerformerMode }}>
       {children}
     </AuthContext.Provider>
   );

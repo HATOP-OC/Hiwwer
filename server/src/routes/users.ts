@@ -12,7 +12,7 @@ router.get('/by-telegram/:telegram_id', async (req: Request, res: Response) => {
     const { telegram_id } = req.params;
     try {
         const result = await query(
-            'SELECT id, name, email, role, avatar_url as avatar, bio, rating, telegram_id as "telegramId", telegram_chat_id as "telegramChatId", language_code as "languageCode" FROM users WHERE telegram_id = $1',
+            'SELECT id, name, email, role, avatar_url as avatar, bio, rating, telegram_id as "telegramId", telegram_chat_id as "telegramChatId", language_code as "languageCode", is_performer as "isPerformer" FROM users WHERE telegram_id = $1',
             [telegram_id]
         );
         if (result.rowCount === 0) {
@@ -34,7 +34,7 @@ router.get('/profile', authenticate, async (req: Request, res: Response) => {
   try {
     const userId = req.user!.id;
     const result = await query(
-      'SELECT id, name, email, role, avatar_url as avatar, bio, rating, telegram_id as "telegramId", telegram_chat_id as "telegramChatId", language_code as "languageCode" FROM users WHERE id = $1',
+      'SELECT id, name, email, role, avatar_url as avatar, bio, rating, telegram_id as "telegramId", telegram_chat_id as "telegramChatId", language_code as "languageCode", is_performer as "isPerformer" FROM users WHERE id = $1',
       [userId]
     );
     if (result.rowCount === 0) return res.status(404).json({ message: 'User not found' });
@@ -106,6 +106,35 @@ router.patch('/profile/language', authenticate, async (req: Request, res: Respon
         res.json({ success: true, message: 'Language updated successfully' });
     } catch (error) {
         const message = error instanceof Error ? error.message : 'Failed to update language';
+        console.error(error);
+        res.status(500).json({ message });
+    }
+});
+
+// Activate performer mode (simple activation without additional data)
+router.post('/activate-performer', authenticate, async (req: Request, res: Response) => {
+    const userId = req.user!.id;
+
+    try {
+        // Simply set is_performer to true
+        await query(
+            'UPDATE users SET is_performer = TRUE, updated_at = NOW() WHERE id = $1',
+            [userId]
+        );
+
+        // Return updated user data
+        const result = await query(
+            'SELECT id, name, email, role, avatar_url as avatar, bio, rating, telegram_id as "telegramId", telegram_chat_id as "telegramChatId", language_code as "languageCode", is_performer as "isPerformer" FROM users WHERE id = $1',
+            [userId]
+        );
+
+        res.json({ 
+            success: true, 
+            message: 'Performer mode activated successfully',
+            user: result.rows[0]
+        });
+    } catch (error) {
+        const message = error instanceof Error ? error.message : 'Failed to activate performer mode';
         console.error(error);
         res.status(500).json({ message });
     }

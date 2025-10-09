@@ -12,19 +12,8 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Link } from 'react-router-dom';
 import { Star, Search, Filter as FilterIcon, ChevronDown, ChevronUp, Palette, Code, PenSquare, TrendingUp, Film, Music, Briefcase, BookOpen } from 'lucide-react';
-import { fetchServices, fetchServiceCategories, Service, ServiceCategory } from '@/lib/api';
+import { fetchServices, fetchServiceCategories, Service, ServiceCategory, getImageUrl } from '@/lib/api';
 import { useTranslation } from 'react-i18next';
-
-const iconMap: { [key: string]: React.ElementType } = {
-  design: Palette,
-  development: Code,
-  writing: PenSquare,
-  marketing: TrendingUp,
-  video: Film,
-  audio: Music,
-  business: Briefcase,
-  learning: BookOpen,
-};
 
 export default function Services() {
   const { t } = useTranslation();
@@ -42,14 +31,14 @@ export default function Services() {
   const [showFilters, setShowFilters] = useState(false);
 
   const iconMap: { [key: string]: React.ElementType } = {
-    design: Palette,
-    development: Code,
-    writing: PenSquare,
-    marketing: TrendingUp,
-    video: Film,
-    audio: Music,
-    business: Briefcase,
-    learning: BookOpen,
+    'design': Palette,
+    'web-development': Code,
+    'copywriting': PenSquare,
+    'marketing': TrendingUp,
+    'video': Film,
+    'audio': Music,
+    'translation': BookOpen,
+    'other': Briefcase,
   };
 
   // Завантаження категорій при монтуванні компонента
@@ -84,12 +73,11 @@ export default function Services() {
   useEffect(() => {
     console.log('Services: Starting to fetch services...');
     const categoryParam = searchParams.get('category');
+    // Завантажуємо послуги з бекенду (з фільтром по категорії якщо є в URL)
     fetchServices(1, 100, categoryParam || undefined)
       .then(data => {
         console.log('Services: Received data:', data);
         setAllServices(data);
-        // Якщо є параметр категорії, не фільтруємо додатково - дані вже відфільтровані
-        setServices(data);
       })
       .catch(error => {
         console.error('Services: Error fetching services:', error);
@@ -100,16 +88,8 @@ export default function Services() {
       });
   }, [searchParams]);
 
-  // Фільтрація послуг на фронтенді (тільки якщо немає параметра category в URL)
+  // Фільтрація послуг на фронтенді
   useEffect(() => {
-    const categoryParam = searchParams.get('category');
-    
-    // Якщо є параметр category в URL, показуємо всі завантажені послуги без фільтрації
-    if (categoryParam) {
-      setServices(allServices);
-      return;
-    }
-    
     let filtered = [...allServices];
     
     if (searchTerm) {
@@ -132,9 +112,14 @@ export default function Services() {
     }
     
     setServices(filtered);
-  }, [searchTerm, selectedCategories, priceRange, selectedRating, allServices, searchParams]);
+  }, [searchTerm, selectedCategories, priceRange, selectedRating, allServices]);
 
   const handleCategoryChange = (categorySlug: string) => {
+    // Очищаємо параметр category з URL при ручній зміні фільтра
+    const newParams = new URLSearchParams(searchParams);
+    newParams.delete('category');
+    navigate({ search: newParams.toString() }, { replace: true });
+    
     setSelectedCategories(prev => {
       if (prev.includes(categorySlug)) {
         return prev.filter(slug => slug !== categorySlug);
@@ -233,7 +218,7 @@ export default function Services() {
                             />
                             <Label htmlFor={`mobile-category-${category.id}`} className="ml-2 flex items-center">
                               {Icon && <Icon className="mr-2 h-4 w-4" />}
-                              {category.name}
+                              {t(`categories.${category.slug}`)}
                               {category.service_count !== undefined && (
                                 <span className="ml-1 text-muted-foreground text-xs">({category.service_count})</span>
                               )}
@@ -314,7 +299,7 @@ export default function Services() {
                           />
                           <Label htmlFor={`category-${category.id}`} className="ml-2 flex items-center">
                             {Icon && <Icon className="mr-2 h-4 w-4" />}
-                            {category.name}
+                            {t(`categories.${category.slug}`)}
                             {category.service_count !== undefined && (
                               <span className="ml-1 text-muted-foreground text-xs">({category.service_count})</span>
                             )}
@@ -397,7 +382,7 @@ export default function Services() {
                     <Link to={`/services/${service.id}`}>
                       <div className="aspect-video relative overflow-hidden">
                         <img
-                          src={service.images[0]}
+                          src={getImageUrl(service.images[0])}
                           alt={service.title}
                           className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
                         />

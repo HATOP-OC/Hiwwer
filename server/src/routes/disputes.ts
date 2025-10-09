@@ -11,7 +11,7 @@ import { v4 as uuidv4 } from 'uuid';
 // Configure multer for dispute file uploads
 const disputeStorage = multer.diskStorage({
   destination: async (req, file, cb) => {
-    const uploadDir = path.join(__dirname, '../uploads/disputes');
+    const uploadDir = path.join(__dirname, '../../uploads/disputes');
     try {
       await fs.access(uploadDir);
     } catch {
@@ -63,7 +63,8 @@ router.use(authenticate);
 // Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, './uploads/disputes/');
+    const uploadDir = path.resolve(__dirname, '../../uploads/disputes');
+    cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname);

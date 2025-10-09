@@ -1,6 +1,8 @@
 import { Router, Request, Response } from 'express';
 import { query } from '../db';
 import { authenticate } from '../middlewares/auth';
+import { uploadServiceImages } from '../middlewares/upload';
+import path from 'path';
 
 // Extend Request interface locally
 declare module 'express-serve-static-core' {
@@ -50,6 +52,20 @@ router.get('/', async (req: Request, res: Response) => {
     baseSql += ` ORDER BY s.created_at DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
     params.push(limit, offset);
     const result = await query(baseSql, params);
+    
+    // Fetch images for each service
+    const serviceIds = result.rows.map(r => r.id);
+    const imagesResult = serviceIds.length > 0 
+      ? await query(`SELECT service_id, image_url FROM service_images WHERE service_id = ANY($1::uuid[]) ORDER BY created_at`, [serviceIds])
+      : { rows: [] };
+    
+    // Group images by service_id
+    const imagesByService = imagesResult.rows.reduce((acc, img) => {
+      if (!acc[img.service_id]) acc[img.service_id] = [];
+      acc[img.service_id].push(img.image_url);
+      return acc;
+    }, {} as Record<string, string[]>);
+    
     // Fetch images and tags separately or return minimal
     const services = result.rows.map(r => ({
       id: r.id,
@@ -62,7 +78,7 @@ router.get('/', async (req: Request, res: Response) => {
       review_count: r.review_count,
       performer: { id: r.performer_id, name: r.performer_name, avatar_url: r.performer_avatar },
       category: { id: r.category_id, name: r.category_name, slug: r.category_slug },
-      images: [] as string[],
+      images: imagesByService[r.id] || [],
       tags: [] as Array<{ id: string; name: string }>
     }));
     res.json({ services });
@@ -205,7 +221,14 @@ router.get('/:id', async (req: Request, res: Response) => {
     );
     if (result.rowCount === 0) return res.status(404).json({ message: 'Service not found' });
     const r = result.rows[0];
-    // For brevity, not fetching tags/images
+    
+    // Fetch images for the service
+    const imagesResult = await query(
+      `SELECT image_url FROM service_images WHERE service_id = $1 ORDER BY created_at`,
+      [id]
+    );
+    const images = imagesResult.rows.map(img => img.image_url);
+    
     res.json({
       id: r.id,
       title: r.title,
@@ -218,7 +241,7 @@ router.get('/:id', async (req: Request, res: Response) => {
       performer: { id: r.performer_id, name: r.performer_name, avatar_url: r.performer_avatar, bio: r.performer_bio, rating: r.performer_rating },
       category: { id: r.category_id, name: r.category_name, slug: r.category_slug },
       tags: [],
-      images: []
+      images: images
     });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Failed to fetch service';
@@ -458,6 +481,105 @@ router.delete('/:id', authenticate, async (req: Request, res: Response) => {
     res.json({ message: 'Service deleted successfully' });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Failed to delete service';
+    console.error(error);
+    res.status(500).json({ message });
+  }
+});
+
+// POST /v1/services/:id/images - завантажити зображення для послуги
+router.post('/:id/images', authenticate, uploadServiceImages.array('images', 5), async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const files = req.files as Express.Multer.File[];
+
+    if (!files || files.length === 0) {
+      return res.status(400).json({ message: 'No images provided' });
+    }
+
+    // Перевірка, що послуга належить поточному користувачу
+    const serviceResult = await query(
+      `SELECT performer_id FROM services WHERE id = $1`,
+      [id]
+    );
+
+    if (serviceResult.rows.length === 0) {
+      return res.status(404).json({ message: 'Service not found' });
+    }
+
+    if (serviceResult.rows[0].performer_id !== req.user?.id) {
+      return res.status(403).json({ message: 'Not authorized to upload images for this service' });
+    }
+
+    // Отримати поточну максимальну позицію
+    const positionResult = await query(
+      `SELECT COALESCE(MAX(position), -1) as max_position FROM service_images WHERE service_id = $1`,
+      [id]
+    );
+    let currentPosition = positionResult.rows[0].max_position + 1;
+
+    // Зберегти інформацію про зображення в базі даних
+    const imageUrls: string[] = [];
+    for (const file of files) {
+      const imageUrl = `/uploads/services/${file.filename}`;
+      
+      await query(
+        `INSERT INTO service_images (service_id, image_url, position) VALUES ($1, $2, $3)`,
+        [id, imageUrl, currentPosition]
+      );
+
+      imageUrls.push(imageUrl);
+      currentPosition++;
+    }
+
+    res.json({ 
+      message: 'Images uploaded successfully',
+      images: imageUrls
+    });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Failed to upload images';
+    console.error(error);
+    res.status(500).json({ message });
+  }
+});
+
+// DELETE /v1/services/:serviceId/images/:imageId - видалити зображення послуги
+router.delete('/:serviceId/images/:imageId', authenticate, async (req: Request, res: Response) => {
+  try {
+    const { serviceId, imageId } = req.params;
+
+    // Перевірка, що послуга належить поточному користувачу
+    const serviceResult = await query(
+      `SELECT performer_id FROM services WHERE id = $1`,
+      [serviceId]
+    );
+
+    if (serviceResult.rows.length === 0) {
+      return res.status(404).json({ message: 'Service not found' });
+    }
+
+    if (serviceResult.rows[0].performer_id !== req.user?.id) {
+      return res.status(403).json({ message: 'Not authorized to delete images for this service' });
+    }
+
+    // Отримати інформацію про зображення
+    const imageResult = await query(
+      `SELECT image_url FROM service_images WHERE id = $1 AND service_id = $2`,
+      [imageId, serviceId]
+    );
+
+    if (imageResult.rows.length === 0) {
+      return res.status(404).json({ message: 'Image not found' });
+    }
+
+    // Видалити зображення з бази даних
+    await query(
+      `DELETE FROM service_images WHERE id = $1`,
+      [imageId]
+    );
+
+    res.json({ message: 'Image deleted successfully' });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Failed to delete image';
     console.error(error);
     res.status(500).json({ message });
   }
