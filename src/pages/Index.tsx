@@ -10,13 +10,13 @@ import { useTranslation } from 'react-i18next';
 
 const iconMap: { [key: string]: React.ElementType } = {
   design: Palette,
-  development: Code,
-  writing: PenSquare,
+  'web-development': Code,
+  copywriting: PenSquare,
   marketing: TrendingUp,
   video: Film,
   audio: Music,
-  business: Briefcase,
-  learning: BookOpen,
+  other: Briefcase,
+  translation: BookOpen,
   search: Search,
   order: ClipboardList,
   updates: Smartphone,
@@ -63,14 +63,14 @@ export default function Index() {
   ];
 
   const serviceCategories = [
-    { id: '1', name: t('categories.design'), icon: 'design', description: t('categories.design_desc') },
-    { id: '2', name: t('categories.development'), icon: 'development', description: t('categories.development_desc') },
-    { id: '3', name: t('categories.writing'), icon: 'writing', description: t('categories.writing_desc') },
-    { id: '4', name: t('categories.marketing'), icon: 'marketing', description: t('categories.marketing_desc') },
-    { id: '5', name: t('categories.video'), icon: 'video', description: t('categories.video_desc') },
-    { id: '6', name: t('categories.audio'), icon: 'audio', description: t('categories.audio_desc') },
-    { id: '7', name: t('categories.business'), icon: 'business', description: t('categories.business_desc') },
-    { id: '8', name: t('categories.learning'), icon: 'learning', description: t('categories.learning_desc') }
+    { id: '1', slug: 'design', icon: 'design' },
+    { id: '2', slug: 'web-development', icon: 'web-development' },
+    { id: '3', slug: 'copywriting', icon: 'copywriting' },
+    { id: '4', slug: 'marketing', icon: 'marketing' },
+    { id: '5', slug: 'video', icon: 'video' },
+    { id: '6', slug: 'audio', icon: 'audio' },
+    { id: '7', slug: 'translation', icon: 'translation' },
+    { id: '8', slug: 'other', icon: 'other' }
   ];
 
   const workflowSteps = [
@@ -106,11 +106,11 @@ export default function Index() {
           </div>
           
           <div className="flex flex-col sm:flex-row justify-center gap-4 mb-8">
-            <Button size="lg" asChild className="rounded-full px-8 bg-brand-amber hover:bg-brand-amber/90 text-white">
-              <Link to="/services">{t('hero.browseServices')}</Link>
+            <Button size="lg" asChild className="rounded-full px-8 bg-brand-amber hover:bg-brand-amber/90 text-black dark:text-white">
+              <Link to="/services" className="text-black dark:text-white">{t('hero.browseServices')}</Link>
             </Button>
-            <Button size="lg" variant="outline" asChild className="rounded-full px-8 border-white/20 text-white hover:bg-white/10">
-              <Link to="/create-custom-order">{t('hero.createOrder')}</Link>
+            <Button size="lg" variant="outline" asChild className="rounded-full px-8 border border-gray-200 dark:border-white/20 text-black dark:text-white hover:bg-gray-100 dark:hover:bg-white/10">
+              <Link to="/create-custom-order" className="text-black dark:text-white">{t('hero.createOrder')}</Link>
             </Button>
           </div>
           
@@ -144,11 +144,11 @@ export default function Index() {
             {serviceCategories.map(category => {
               const Icon = iconMap[category.icon];
               return (
-                <Link to={`/services?category=${category.name.toLowerCase()}`} key={category.id}>
+                <Link to={`/services?category=${category.slug}`} key={category.id}>
                   <div className="bg-card hover-card rounded-lg p-4 flex flex-col items-center justify-center text-center h-32 group transition-all duration-300">
                     {Icon && <Icon className="text-3xl mb-2 group-hover:scale-110 transition-transform duration-300" />}
-                    <h3 className="font-medium mb-1">{category.name}</h3>
-                    <p className="text-xs text-muted-foreground">{category.description}</p>
+                    <h3 className="font-medium mb-1">{t(`categories.${category.slug}`)}</h3>
+                    <p className="text-xs text-muted-foreground">{t(`categories.${category.slug}_desc`)}</p>
                   </div>
                 </Link>
               );
