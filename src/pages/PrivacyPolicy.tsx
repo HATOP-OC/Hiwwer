@@ -2,23 +2,24 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Layout from '@/components/Layout/Layout';
 import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Calendar, Shield, Lock, Info, FileText } from 'lucide-react';
+import { Shield, FileText } from 'lucide-react';
 import { fetchPolicy, Policy } from '@/lib/api';
 import { useTranslation } from 'react-i18next';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 const PrivacyPolicy = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [policy, setPolicy] = useState<Policy | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchPolicy('privacy-policy')
+    fetchPolicy('privacy-policy', i18n.language)
       .then(data => setPolicy(data))
       .catch(err => setError(err.message))
       .finally(() => setLoading(false));
-  }, []);
+  }, [i18n.language]);
 
   if (loading) return (<Layout><p className="text-center py-12">{t('privacyPolicy.loading')}</p></Layout>);
   if (error || !policy) return (<Layout><p className="text-center py-12 text-red-500">{t('privacyPolicy.error')}</p></Layout>);
@@ -31,24 +32,25 @@ const PrivacyPolicy = () => {
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             {t('privacyPolicy.subtitle')}
           </p>
-          {policy && (
-            <div className="flex items-center justify-center mt-4 text-sm text-muted-foreground">
-              <Calendar className="h-4 w-4 mr-1" />
-              <span>{t('privacyPolicy.lastUpdated')}: {policy.title}</span>
-            </div>
-          )}
         </div>
 
-        <Alert className="mb-8 max-w-4xl mx-auto">
-          <Info className="h-4 w-4" />
-          <AlertDescription>
-            {policy?.content || t('privacyPolicy.loading')}
-          </AlertDescription>
-        </Alert>
-
-        <div className="prose max-w-full">
-          <h1 className="text-4xl font-bold mb-4 text-center">{policy.title}</h1>
-          <div dangerouslySetInnerHTML={{ __html: policy.content }} />
+        <div className="max-w-4xl mx-auto">
+          <ReactMarkdown 
+            remarkPlugins={[remarkGfm]}
+            components={{
+              h1: ({children}) => <h1 className="text-2xl font-bold mb-6 text-foreground">{children}</h1>,
+              h2: ({children}) => <h2 className="text-xl font-semibold mt-8 mb-4 text-foreground">{children}</h2>,
+              h3: ({children}) => <h3 className="text-lg font-medium mt-6 mb-3 text-foreground">{children}</h3>,
+              p: ({children}) => <p className="mb-4 text-muted-foreground leading-relaxed text-base">{children}</p>,
+              ul: ({children}) => <ul className="mb-4 ml-6 list-disc text-muted-foreground text-base">{children}</ul>,
+              ol: ({children}) => <ol className="mb-4 ml-6 list-decimal text-muted-foreground text-base">{children}</ol>,
+              li: ({children}) => <li className="mb-2">{children}</li>,
+              strong: ({children}) => <strong className="font-semibold text-foreground">{children}</strong>,
+              a: ({href, children}) => <a href={href} className="text-primary hover:text-primary/80 underline">{children}</a>,
+            }}
+          >
+            {policy.content}
+          </ReactMarkdown>
         </div>
 
         {/* Інформаційний блок внизу */}
@@ -70,7 +72,7 @@ const PrivacyPolicy = () => {
           
           <div className="bg-card border rounded-lg p-6">
             <div className="flex items-start mb-4">
-              <Lock className="h-10 w-10 text-primary mr-4" />
+              <Shield className="h-10 w-10 text-primary mr-4" />
               <div>
                 <h3 className="text-xl font-semibold">{t('privacyPolicy.questions.title')}</h3>
                 <p className="text-muted-foreground mt-1">

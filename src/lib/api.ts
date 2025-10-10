@@ -135,10 +135,12 @@ export async function fetchFAQ(category: 'client' | 'performer'): Promise<FAQIte
 export interface Policy {
   title: string;
   content: string;
+  // Markdown-formatted content if available on server
+  content_markdown?: string | null;
 }
 
-export async function fetchPolicy(slug: string): Promise<Policy> {
-  const res = await fetch(`${API_BASE}/policies/${slug}`);
+export async function fetchPolicy(slug: string, lang: string = 'en'): Promise<Policy> {
+  const res = await fetch(`${API_BASE}/policies/${slug}?lang=${lang}`);
   if (!res.ok) throw new Error(`Failed to fetch policy: ${res.status}`);
   return res.json();
 }

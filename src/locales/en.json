@@ -338,7 +338,7 @@
     "rolePerformer": "Offer Services",
     "submitButton": "Create account",
     "submitButtonLoading": "Creating account...",
-    "termsAgreement": "By creating an account, you agree to our <1>Terms of Service</1> and <3>Privacy Policy</3>.",
+    "termsAgreement": "By creating an account, you agree to our <0>Terms of Service</0> and <1>Privacy Policy</1>.",
     "alreadyHaveAccount": "Already have an account?",
     "login": "Log in",
     "errorMatch": "Passwords don't match",
@@ -1009,7 +1009,9 @@
   },
   "termsOfServicePage": {
     "loading": "Loading terms...",
-    "error": "Failed to load terms."
+    "error": "Failed to load terms.",
+    "title": "Terms of Service",
+    "subtitle": "Welcome to Hiwwer. These terms and conditions outline the rules and regulations for the use of Hiwwer's Website and Services."
   },
   "privacyPolicyPage": {
     "loading": "Loading policy...",
@@ -1205,102 +1207,6 @@
       "button": "Contact the privacy department"
     },
     "finalParagraph": "We reserve the right to update this Privacy Policy at any time. We will notify you of any material changes through a notice on our platform or by email."
-  },
-  "becomePerformerPage": {
-    "title": "Become a Performer on Hiwwer",
-    "subtitle": "Offer your services to thousands of clients and grow your business with our platform",
-    "formTitle": "Performer Registration Application",
-    "step": "Step",
-    "of": "of",
-    "form": {
-      "nameLabel": "Full Name",
-      "namePlaceholder": "Enter your full name",
-      "emailLabel": "Email",
-      "emailPlaceholder": "Your contact email",
-      "skillsLabel": "Your skills (comma-separated)",
-      "skillsPlaceholder": "E.g.: logo design, branding, UI/UX design",
-      "continue": "Continue",
-      "experienceLabel": "Your Experience",
-      "experiencePlaceholder": "Tell us about your professional experience, projects, and clients",
-      "portfolioLabel": "Link to portfolio or work examples",
-      "portfolioPlaceholder": "Website, Behance, GitHub, etc.",
-      "back": "Back",
-      "descriptionLabel": "Describe the services you want to offer",
-      "descriptionPlaceholder": "Describe in detail what services you can provide, your unique advantages, and price range",
-      "note": "Note:",
-      "noteText": "After submitting the application, our team will review it within 1-3 business days. We may contact you for more details or request additional materials.",
-      "submit": "Submit Application",
-      "submitting": "Submitting..."
-    },
-    "benefits": {
-      "title": "Benefits for Performers",
-      "increaseIncome_title": "Increase Your Income",
-      "increaseIncome_desc": "Receive orders from clients worldwide without limitations.",
-      "expandClientBase_title": "Expand Your Client Base",
-      "expandClientBase_desc": "Find new clients without marketing and advertising costs.",
-      "analyticsAndGrowth_title": "Analytics and Growth",
-      "analyticsAndGrowth_desc": "Track your performance metrics and continuously improve your services.",
-      "flexibleSchedule_title": "Flexible Schedule",
-      "flexibleSchedule_desc": "Work at your convenience and manage your workload."
-    },
-    "performersGet": {
-      "title": "Performers Get:",
-      "item1": "Free performer profile",
-      "item2": "Access to thousands of clients",
-      "item3": "Secure payment system",
-      "item4": "Telegram integration for convenient work",
-      "item5": "Professional growth tools"
-    },
-    "submissionSuccess": {
-      "title": "Application Submitted Successfully!",
-      "desc": "Thank you for your interest in collaborating with Hiwwer! We have received your application and will review it within 1-3 business days. Expect an email to the provided address with further instructions.",
-      "backToHome": "Back to Home",
-      "readGuidelines": "Read the Performer Guidelines"
-    },
-    "howItWorks": {
-      "title": "How It Works",
-      "step1_title": "1. Submit an Application",
-      "step1_desc": "Fill out the form with your skills, experience, and offered services.",
-      "step2_title": "2. Get Verified",
-      "step2_desc": "We will review your application and profile to ensure quality for our clients.",
-      "step3_title": "3. Start Earning",
-      "step3_desc": "Create services, receive orders, and grow your business on Hiwwer."
-    },
-    "testimonials": {
-      "title": "Performer Testimonials",
-      "andriy": {
-        "name": "Andriy K.",
-        "role": "Web Developer",
-        "text": "\"Hiwwer allowed me to find clients from different countries without significant marketing costs. The user-friendly interface and transparent payment system let me focus on my work.\""
-      },
-      "maria": {
-        "name": "Maria L.",
-        "role": "Copywriter",
-        "text": "\"After registering on Hiwwer, my freelance income doubled. I especially like the Telegram integration, which allows for instant communication with clients.\""
-      },
-      "oleh": {
-        "name": "Oleh S.",
-        "role": "Graphic Designer",
-        "text": "\"The best freelance platform I've used. Secure payments, fair commissions, and quality support make working here comfortable.\""
-      }
-    },
-    "faq": {
-      "title": "Frequently Asked Questions",
-      "q1": "How much does it cost to register as a performer?",
-      "a1": "Registering as a performer on Hiwwer is absolutely free. A commission is only charged for successfully completed orders.",
-      "q2": "What is the platform's commission?",
-      "a2": "Hiwwer charges a 15% commission on the amount of each successfully completed order. This commission covers payment processing, marketing support, and platform development.",
-      "q3": "When do I get paid for completed orders?",
-      "a3": "Payment is credited to your account within 24 hours after the client confirms the work's acceptance. You can withdraw funds at any convenient time.",
-      "q4": "What are the requirements for performers?",
-      "a4": "The main requirements are confirmed professional skills, a portfolio or work examples, a clear understanding of the platform's rules, and a commitment to providing quality services to clients.",
-      "viewAll": "View all questions"
-    },
-    "cta": {
-      "title": "Ready to get started?",
-      "subtitle": "Join thousands of successful performers on Hiwwer and grow your business",
-      "button": "Apply Now"
-    }
   },
   "orderDetailPage": {
     "loading": "Loading...",

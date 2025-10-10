@@ -32,7 +32,7 @@ import BecomePerformer from "./pages/BecomePerformer";
 import PerformerGuidelines from "./pages/PerformerGuidelines";
 import PerformerFAQ from "./pages/PerformerFAQ";
 
-// Юридичні сторінки
+// Адмін-панель
 import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import ContactUs from "./pages/ContactUs";
@@ -47,6 +47,7 @@ import Orders from "./pages/admin/Orders";
 import Security from "./pages/admin/Security";
 import AdminSettings from "./pages/admin/Settings";
 import Support from "./pages/admin/Support";
+import Policies from "./pages/admin/Policies";
 import RequireAdmin from '@/components/RequireAdmin';
 import Database from './pages/admin/Database';
 import Activity from './pages/admin/Activity';
@@ -116,6 +117,7 @@ const App = () => (
               <Route path="/admin/services" element={<RequireAdmin><ServicesAdmin /></RequireAdmin>} />
               <Route path="/admin/orders" element={<RequireAdmin><Orders /></RequireAdmin>} />
               <Route path="/admin/support" element={<RequireAdmin><Support /></RequireAdmin>} />
+              <Route path="/admin/policies" element={<RequireAdmin><Policies /></RequireAdmin>} />
               <Route path="/admin/security" element={<RequireAdmin><Security /></RequireAdmin>} />
               <Route path="/admin/settings" element={<RequireAdmin><AdminSettings /></RequireAdmin>} />
               <Route path="/admin/database" element={<RequireAdmin><Database /></RequireAdmin>} />

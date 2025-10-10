@@ -194,16 +194,13 @@ export default function Register() {
               </Button>
               
               <p className="text-xs text-muted-foreground text-center">
-                <Trans i18nKey="register.termsAgreement">
-                  Створюючи акаунт, ви погоджуєтесь з нашими{' '}
-                  <Link to="/terms-of-service" className="underline underline-offset-2">
-                    Умовами використання
-                  </Link>{' '}
-                  та{' '}
-                  <Link to="/privacy-policy" className="underline underline-offset-2">
-                    Політикою конфіденційності
-                  </Link>.
-                </Trans>
+                <Trans
+                  i18nKey="register.termsAgreement"
+                  components={[
+                    <Link to="/terms-of-service" className="underline underline-offset-2" />,
+                    <Link to="/privacy-policy" className="underline underline-offset-2" />
+                  ]}
+                />
               </p>
             </form>
           </CardContent>

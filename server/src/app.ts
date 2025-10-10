@@ -27,6 +27,7 @@ import orderAttachmentsRouter from './routes/orderAttachments';
 import paymentsRouter from './routes/payments';
 import reviewsRouter from './routes/reviews';
 import disputesRouter from './routes/disputes';
+import policiesRouter from './routes/policies';
 
 const app = express();
 const httpServer = createServer(app);
@@ -91,6 +92,7 @@ app.get('/v1/health', (req: Request, res: Response) => {
 app.use('/v1/auth', authRouter);
 app.use('/v1/services', servicesRouter);
 app.use('/v1/assistant', assistantRouter);
+app.use('/v1', policiesRouter);
 
 // File types endpoint (public)
 app.get('/v1/file-types', async (req: Request, res: Response) => {

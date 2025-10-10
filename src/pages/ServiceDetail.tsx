@@ -22,17 +22,17 @@ export default function ServiceDetail() {
   // Перевірка чи це UUID
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   
+  const { data: service, isLoading, error } = useQuery({
+    queryKey: ['service', serviceId],
+    queryFn: () => fetchServiceById(serviceId!),
+    enabled: !!serviceId && uuidRegex.test(serviceId)
+  });
+
   // Якщо serviceId не є UUID, перенаправляємо на сторінку послуг
   if (serviceId && !uuidRegex.test(serviceId)) {
     navigate('/services', { replace: true });
     return null;
   }
-
-  const { data: service, isLoading, error } = useQuery({
-    queryKey: ['service', serviceId],
-    queryFn: () => fetchServiceById(serviceId!),
-    enabled: !!serviceId
-  });
 
   const handleCreateOrder = () => {
     if (!user) {

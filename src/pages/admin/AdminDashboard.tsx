@@ -18,7 +18,8 @@ import {
   AlertCircle,
   ChevronUp,
   ChevronDown,
-  ArrowRight
+  ArrowRight,
+  ScrollText
 } from 'lucide-react';
 import { fetchAdminDashboardStats, fetchRecentActivities, fetchSupportTickets, fetchMonthlySales, fetchCategoryDistribution, DashboardStats, Activity, SupportTicket, MonthlySales, CategoryDistribution } from '@/lib/api';
 
@@ -418,6 +419,12 @@ const AdminDashboard = () => {
             <Link to="/admin/database">
               <Database className="h-6 w-6 mb-2" />
               <span>База даних</span>
+            </Link>
+          </Button>
+          <Button variant="outline" className="h-auto py-6 flex flex-col items-center justify-center" asChild>
+            <Link to="/admin/policies">
+              <ScrollText className="h-6 w-6 mb-2" />
+              <span>Політики</span>
             </Link>
           </Button>
         </div>
