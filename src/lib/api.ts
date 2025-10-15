@@ -71,6 +71,7 @@ export interface Service {
     id: string;
     name: string;
     avatar_url: string;
+    rating: number;
   };
   category: {
     id: string;
@@ -852,6 +853,8 @@ export interface Review {
   rating: number;
   comment: string;
   createdAt: string;
+  reviewerId: string;
+  reviewType: 'client_to_performer' | 'performer_to_client';
 }
 
 /** Fetch review for an order */

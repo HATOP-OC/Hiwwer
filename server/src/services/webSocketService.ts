@@ -485,12 +485,12 @@ export class WebSocketService {
 
   public sendNotificationToUser(userId: string, notification: any) {
     const roomName = ROOM_TYPES.USER_NOTIFICATIONS(userId);
-    this.io.to(roomName).emit('notification', notification);
+    this.io.to(roomName).emit('new_notification', notification);
   }
 
   public sendNotificationToAdmins(notification: any) {
     const roomName = ROOM_TYPES.ADMIN_NOTIFICATIONS();
-    this.io.to(roomName).emit('notification', notification);
+    this.io.to(roomName).emit('new_notification', notification);
   }
 
   public isUserOnline(userId: string): boolean {

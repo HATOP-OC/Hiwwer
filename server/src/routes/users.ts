@@ -111,6 +111,54 @@ router.patch('/profile/language', authenticate, async (req: Request, res: Respon
     }
 });
 
+// Get public user profile
+router.get('/:userId/public-profile', async (req: Request, res: Response) => {
+  const { userId } = req.params;
+  try {
+    const userResult = await query(
+      'SELECT id, name, avatar_url as avatar, bio, rating, is_performer FROM users WHERE id = $1',
+      [userId]
+    );
+    if (userResult.rowCount === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    const user = userResult.rows[0];
+
+    let skills = [];
+    if (user.is_performer) {
+      const skillsResult = await query(
+        `SELECT s.id, s.name, s.slug
+         FROM skills s
+         JOIN user_skills us ON s.id = us.skill_id
+         WHERE us.user_id = $1
+         ORDER BY s.name`,
+        [userId]
+      );
+      skills = skillsResult.rows;
+    }
+
+    // Get reviews where this user was reviewed
+    const reviewsResult = await query(
+      `SELECT r.id, r.rating, r.comment, r.created_at as "createdAt", r.review_type as "reviewType",
+              u.id as "reviewerId", u.name as "reviewerName", u.avatar_url as "reviewerAvatar"
+       FROM reviews r
+       JOIN users u ON r.reviewer_id = u.id
+       WHERE (r.review_type = 'client_to_performer' AND r.performer_id = $1)
+          OR (r.review_type = 'performer_to_client' AND r.client_id = $1)
+       ORDER BY r.created_at DESC
+       LIMIT 20`,
+      [userId]
+    );
+    const reviews = reviewsResult.rows;
+
+    res.json({ ...user, skills, reviews });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to fetch public profile';
+    console.error(error);
+    res.status(500).json({ message });
+  }
+});
+
 // Activate performer mode (simple activation without additional data)
 router.post('/activate-performer', authenticate, async (req: Request, res: Response) => {
     const userId = req.user!.id;
@@ -138,6 +186,26 @@ router.post('/activate-performer', authenticate, async (req: Request, res: Respo
         console.error(error);
         res.status(500).json({ message });
     }
+});
+
+// Get user skills
+router.get('/:userId/skills', async (req: Request, res: Response) => {
+  const { userId } = req.params;
+  try {
+    const result = await query(
+      `SELECT s.id, s.name, s.slug
+       FROM skills s
+       JOIN user_skills us ON s.id = us.skill_id
+       WHERE us.user_id = $1
+       ORDER BY s.name`,
+      [userId]
+    );
+    res.json(result.rows);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to fetch user skills';
+    console.error(error);
+    res.status(500).json({ message });
+  }
 });
 
 export default router;

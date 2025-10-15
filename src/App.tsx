@@ -13,6 +13,8 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import TelegramAuth from "./pages/TelegramAuth";
 import Profile from "./pages/Profile";
+import PublicProfile from "./pages/PublicProfile";
+import Notifications from "./pages/Notifications";
 import MyOrders from "./pages/MyOrders";
 import OrderDetail from "./pages/OrderDetail";
 import CreateOrder from "./pages/CreateOrder";
@@ -71,6 +73,8 @@ const App = () => (
               <Route path="/register" element={<Register />} />
               <Route path="/auth/telegram" element={<TelegramAuth />} />
               <Route path="/profile" element={<Profile />} />
+              <Route path="/profile/:userId" element={<PublicProfile />} />
+              <Route path="/notifications" element={<Notifications />} />
               <Route path="/my-orders" element={<MyOrders />} />
               <Route path="/my-services" element={<MyServices />} />
               <Route path="/create-service" element={<CreateService />} />

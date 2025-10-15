@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 
 export type UserRole = 'client' | 'performer' | 'admin';
 
@@ -23,6 +23,7 @@ interface AuthContextType {
   logout: () => void;
   telegramLogin: (telegramData: any) => Promise<void>;
   fetchUser: () => Promise<void>;
+  refetchUser: () => Promise<void>;
   switchRole: (role: UserRole) => void;
   activatePerformerMode: () => Promise<void>;
 }
@@ -33,6 +34,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [activeRole, setActiveRole] = useState<UserRole>('client');
+  const initRef = useRef(false);
   const API_BASE = '/v1';
 
   // Встановлюємо activeRole при зміні користувача
@@ -55,43 +57,80 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     console.log('AuthContext: Role switched, new activeRole:', role);
   };
 
-  const logout = () => {
+  const logout = useCallback(() => {
     setUser(null);
     localStorage.removeItem('user');
     localStorage.removeItem('token');
     localStorage.removeItem('activeRole');
     setActiveRole('client');
-  };
+  }, []);
 
-  const fetchUser = async () => {
+  const fetchUser = useCallback(async () => {
     const token = localStorage.getItem('token');
+    console.log('fetchUser called, token exists:', !!token);
+    
     if (!token) {
       setIsLoading(false);
+      initRef.current = true;
       return;
     }
+    
+    // Don't fetch if already loading to prevent race conditions
     setIsLoading(true);
+    
     try {
+      console.log('Fetching user profile from API...');
       const res = await fetch(`${API_BASE}/users/profile`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
+      
+      console.log('API response status:', res.status);
+      
       if (!res.ok) {
-        if (res.status === 401) logout();
+        // Only logout on 401, don't logout on network errors
+        if (res.status === 401) {
+          console.warn('Token expired or invalid (401), logging out');
+          logout();
+        } else {
+          console.error('Failed to fetch user profile:', res.status);
+        }
+        setIsLoading(false);
+        initRef.current = true;
         return;
       }
+      
       const userData: User = await res.json();
+      console.log('User data fetched successfully:', userData.id, userData.name);
       const updatedUser = { ...userData, telegramId: userData.telegramId || undefined };
       setUser(updatedUser);
       localStorage.setItem('user', JSON.stringify(updatedUser));
+      initRef.current = true;
     } catch (error) {
-      console.error("Failed to fetch user", error);
-      logout();
+      console.error("Network error while fetching user", error);
+      // Don't logout on network errors, only on 401
+      // Try to load user from localStorage as fallback
+      const cachedUser = localStorage.getItem('user');
+      if (cachedUser) {
+        try {
+          const parsedUser = JSON.parse(cachedUser);
+          console.log('Using cached user data:', parsedUser.id, parsedUser.name);
+          setUser(parsedUser);
+          initRef.current = true;
+        } catch (e) {
+          console.error('Failed to parse cached user');
+        }
+      }
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [API_BASE, logout]);
 
   useEffect(() => {
-    fetchUser();
+    // Only fetch user once on mount
+    if (!initRef.current) {
+      fetchUser();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const login = async (email: string, password: string) => {
@@ -109,12 +148,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const data = await res.json();
       const token = data.token;
       localStorage.setItem('token', token);
+      initRef.current = false; // Reset init flag to allow fetchUser to run
       await fetchUser();
     } catch (error: any) {
-      logout();
-      throw error;
-    } finally {
       setIsLoading(false);
+      throw error;
     }
   };
 
@@ -133,12 +171,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const data = await res.json();
       const token = data.token;
       localStorage.setItem('token', token);
+      initRef.current = false; // Reset init flag to allow fetchUser to run
       await fetchUser();
     } catch (error: any) {
-      logout();
-      throw error;
-    } finally {
       setIsLoading(false);
+      throw error;
     }
   };
 
@@ -157,12 +194,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const data = await res.json();
       const token = data.token;
       localStorage.setItem('token', token);
+      initRef.current = false; // Reset init flag to allow fetchUser to run
       await fetchUser();
     } catch (error) {
-      logout();
-      throw error;
-    } finally {
       setIsLoading(false);
+      throw error;
     }
   };
 
@@ -200,8 +236,62 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Force refetch user (ignores initRef)
+  const refetchUser = useCallback(async () => {
+    const token = localStorage.getItem('token');
+    console.log('refetchUser called (force), token exists:', !!token);
+    
+    if (!token) {
+      setIsLoading(false);
+      return;
+    }
+    
+    setIsLoading(true);
+    
+    try {
+      console.log('Force fetching user profile from API...');
+      const res = await fetch(`${API_BASE}/users/profile`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      
+      console.log('API response status:', res.status);
+      
+      if (!res.ok) {
+        if (res.status === 401) {
+          console.warn('Token expired or invalid (401), logging out');
+          logout();
+        } else {
+          console.error('Failed to fetch user profile:', res.status);
+        }
+        setIsLoading(false);
+        return;
+      }
+      
+      const userData: User = await res.json();
+      console.log('User data refetched successfully:', userData.id, userData.name);
+      const updatedUser = { ...userData, telegramId: userData.telegramId || undefined };
+      setUser(updatedUser);
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+    } catch (error) {
+      console.error("Network error while refetching user", error);
+      // Try to load user from localStorage as fallback
+      const cachedUser = localStorage.getItem('user');
+      if (cachedUser) {
+        try {
+          const parsedUser = JSON.parse(cachedUser);
+          console.log('Using cached user data:', parsedUser.id, parsedUser.name);
+          setUser(parsedUser);
+        } catch (e) {
+          console.error('Failed to parse cached user');
+        }
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  }, [API_BASE, logout]);
+
   return (
-    <AuthContext.Provider value={{ user, isLoading, activeRole, login, register, logout, telegramLogin, fetchUser, switchRole, activatePerformerMode }}>
+    <AuthContext.Provider value={{ user, isLoading, activeRole, login, register, logout, telegramLogin, fetchUser, refetchUser, switchRole, activatePerformerMode }}>
       {children}
     </AuthContext.Provider>
   );

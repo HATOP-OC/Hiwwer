@@ -75,9 +75,7 @@ export default function Navbar() {
                 <Link to="/services">{t('navbar.createOrder')}</Link>
               </Button>
               
-              <div className="hidden md:flex">
-                <NotificationMenu />
-              </div>
+              <NotificationMenu />
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

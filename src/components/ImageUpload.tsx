@@ -22,23 +22,23 @@ export default function ImageUpload({
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const validateFile = (file: File): string | null => {
-    // Check file type
-    if (!file.type.startsWith('image/')) {
-      return t('imageUpload.errors.notImage');
-    }
-
-    // Check file size
-    const maxSizeBytes = maxSizeMB * 1024 * 1024;
-    if (file.size > maxSizeBytes) {
-      return t('imageUpload.errors.tooLarge', { size: maxSizeMB });
-    }
-
-    return null;
-  };
-
   const handleFiles = useCallback((files: FileList | null) => {
     if (!files) return;
+
+    const validateFile = (file: File): string | null => {
+      // Check file type
+      if (!file.type.startsWith('image/')) {
+        return t('imageUpload.errors.notImage');
+      }
+
+      // Check file size
+      const maxSizeBytes = maxSizeMB * 1024 * 1024;
+      if (file.size > maxSizeBytes) {
+        return t('imageUpload.errors.tooLarge', { size: maxSizeMB });
+      }
+
+      return null;
+    };
 
     const newFiles: File[] = [];
     const newPreviews: string[] = [];

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import Layout from '@/components/Layout/Layout';
@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -21,55 +20,63 @@ import {
   User, 
   Mail, 
   Star, 
-  Camera, 
   Edit3, 
-  Shield, 
-  Calendar,
-  MapPin,
-  Phone,
-  Globe,
   Save,
   X,
   Briefcase
 } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
 import TelegramIntegration from '@/components/Profile/TelegramIntegration';
-import { useTranslation } from 'react-i18next';
+import SkillsManagement from '@/components/Profile/SkillsManagement';
 
 export default function Profile() {
-  const { t } = useTranslation();
-  const { user, logout, activatePerformerMode } = useAuth();
+  const { user, isLoading, refetchUser, activatePerformerMode } = useAuth();
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
+  const [isManagingSkills, setIsManagingSkills] = useState(false);
   const [isActivatingPerformer, setIsActivatingPerformer] = useState(false);
   const [formData, setFormData] = useState({
     name: user?.name || '',
     email: user?.email || '',
     bio: user?.bio || '',
-    phone: '',
-    location: '',
-    website: '',
     avatar: user?.avatar || '/placeholder.svg'
   });
 
-  if (!user) {
-    return (
-      <Layout>
-        <div className="container max-w-4xl py-16">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold">{t('profilePage.pleaseLogin')}</h1>
-          </div>
-        </div>
-      </Layout>
-    );
-  }
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        name: user.name || '',
+        email: user.email || '',
+        bio: user.bio || '',
+        avatar: user.avatar || '/placeholder.svg'
+      });
+    }
+  }, [user]);
 
   const handleSave = async () => {
     try {
-      toast.success(t('profilePage.updateSuccess'));
+      const response = await fetch('/v1/users/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          bio: formData.bio,
+          avatar: formData.avatar
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update profile');
+      }
+
+      await refetchUser();
+      toast.success('Профіль успішно оновлено');
       setIsEditing(false);
     } catch (error) {
-      toast.error(t('profilePage.updateError'));
+      toast.error('Помилка оновлення профілю');
     }
   };
 
@@ -78,9 +85,6 @@ export default function Profile() {
       name: user?.name || '',
       email: user?.email || '',
       bio: user?.bio || '',
-      phone: '',
-      location: '',
-      website: '',
       avatar: user?.avatar || '/placeholder.svg'
     });
     setIsEditing(false);
@@ -95,13 +99,37 @@ export default function Profile() {
     }
   };
 
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="container max-w-4xl py-16">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold">Завантаження...</h1>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (!user) {
+    return (
+      <Layout>
+        <div className="container max-w-4xl py-16">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold">Будь ласка, увійдіть для перегляду профілю</h1>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
   return (
     <Layout>
       <div className="container max-w-4xl py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground">{t('profilePage.title')}</h1>
+          <h1 className="text-3xl font-bold text-foreground">Мій профіль</h1>
           <p className="text-muted-foreground mt-2">
-            {t('profilePage.subtitle')}
+            Керуйте налаштуваннями акаунту та публічним профілем
           </p>
         </div>
 
@@ -110,34 +138,23 @@ export default function Profile() {
             <Card>
               <CardContent className="pt-6">
                 <div className="flex flex-col items-center space-y-4">
-                  <div className="relative">
-                    <Avatar className="h-24 w-24">
-                      <AvatarImage src={formData.avatar} alt={user.name} />
-                      <AvatarFallback className="text-lg">
-                        {user.name.split(' ').map(n => n[0]).join('')}
-                      </AvatarFallback>
-                    </Avatar>
-                    {isEditing && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full p-0"
-                      >
-                        <Camera className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
+                  <Avatar className="h-24 w-24">
+                    <AvatarImage src={formData.avatar} alt={user.name} />
+                    <AvatarFallback className="text-lg">
+                      {user.name.split(' ').map(n => n[0]).join('')}
+                    </AvatarFallback>
+                  </Avatar>
                   
                   <div className="text-center space-y-2">
                     <h2 className="text-xl font-semibold">{user.name}</h2>
                     <Badge variant="outline" className={getRoleColor(user.role)}>
-                      {t(`profilePage.roles.${user.role}`)}
+                      {user.role}
                     </Badge>
                     
                     {user.rating && (
                       <div className="flex items-center justify-center space-x-1">
                         <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                        <span className="text-sm font-medium">{user.rating.toFixed(1)}</span>
+                        <span className="text-sm font-medium">{Number(user.rating).toFixed(1)}</span>
                       </div>
                     )}
                   </div>
@@ -147,87 +164,109 @@ export default function Profile() {
                   <div className="w-full space-y-3">
                     <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                       <Mail className="h-4 w-4" />
-                      <span>{user.email}</span>
+                      <span className="truncate">{user.email}</span>
                     </div>
-                    
-                    <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                      <Calendar className="h-4 w-4" />
-                      <span>{t('profilePage.memberSince', { year: '2024' })}</span>
-                    </div>
-                    
-                    {formData.location && (
-                      <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                        <MapPin className="h-4 w-4" />
-                        <span>{formData.location}</span>
-                      </div>
-                    )}
-                    
-                    {formData.website && (
-                      <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                        <Globe className="h-4 w-4" />
-                        <span className="truncate">{formData.website}</span>
-                      </div>
-                    )}
                   </div>
                   
                   <Separator />
                   
-                  <Button
-                    variant="outline"
-                    className="w-full"
-                    onClick={() => setIsEditing(!isEditing)}
-                  >
-                    <Edit3 className="h-4 w-4 mr-2" />
-                    {isEditing ? t('profilePage.cancelEdit') : t('profilePage.editProfile')}
-                  </Button>
+                  <div className="w-full space-y-2">
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => setIsEditing(!isEditing)}
+                    >
+                      <Edit3 className="h-4 w-4 mr-2" />
+                      {isEditing ? 'Скасувати' : 'Редагувати'}
+                    </Button>
+                    
+                    <Button
+                      variant="ghost"
+                      className="w-full"
+                      onClick={() => navigate(`/profile/${user.id}`)}
+                    >
+                      <User className="h-4 w-4 mr-2" />
+                      Публічний профіль
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
-            
-            <Card className="mt-6">
+          </div>
+          
+          <div className="md:col-span-2 space-y-6">
+            <Card>
               <CardHeader>
-                <CardTitle>{t('profilePage.quickActions')}</CardTitle>
+                <CardTitle>Особиста інформація</CardTitle>
                 <CardDescription>
-                  {t('profilePage.quickActionsDesc')}
+                  Оновіть свої особисті дані та публічну інформацію профілю
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <Button 
-                  variant="default"
-                  className="w-full justify-start"
-                  onClick={() => navigate('/services')}
-                >
-                  🛍️ {t('profilePage.browseServices')}
-                </Button>
-                <Button 
-                  variant="outline" 
-                  className="w-full justify-start"
-                  onClick={() => navigate('/my-orders')}
-                >
-                  📋 {t('profilePage.myOrders')}
-                </Button>
-                {user.isPerformer && (
-                  <Button 
-                    variant="outline" 
-                    className="w-full justify-start"
-                    onClick={() => navigate('/my-services')}
-                  >
-                    💼 {t('profilePage.performerDashboard')}
-                  </Button>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Повне ім'я</Label>
+                  <Input
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    disabled={!isEditing}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    value={formData.email}
+                    disabled
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="bio">Про себе</Label>
+                  <Textarea
+                    id="bio"
+                    value={formData.bio || ''}
+                    onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                    disabled={!isEditing}
+                    placeholder="Розкажіть трохи про себе..."
+                    rows={4}
+                  />
+                </div>
+                
+                {isEditing && (
+                  <div className="flex gap-2">
+                    <Button onClick={handleSave}>
+                      <Save className="h-4 w-4 mr-2" />
+                      Зберегти
+                    </Button>
+                    <Button variant="outline" onClick={handleCancel}>
+                      <X className="h-4 w-4 mr-2" />
+                      Скасувати
+                    </Button>
+                  </div>
                 )}
               </CardContent>
             </Card>
-
-            {/* Activate Performer Mode Card */}
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Telegram інтеграція</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <TelegramIntegration />
+              </CardContent>
+            </Card>
+            
             {!user.isPerformer && user.role !== 'admin' && (
-              <Card className="mt-6 border-primary">
+              <Card className="border-primary">
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
                     <Briefcase className="h-5 w-5" />
-                    <span>{t('profilePage.becomePerformer')}</span>
+                    <span>Стати виконавцем</span>
                   </CardTitle>
                   <CardDescription>
-                    {t('profilePage.becomePerformerDesc')}
+                    Пропонуйте свої послуги та заробляйте на платформі
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -239,170 +278,47 @@ export default function Profile() {
                       setIsActivatingPerformer(true);
                       try {
                         await activatePerformerMode();
-                        toast.success(t('profilePage.performerActivated'));
+                        toast.success('Режим виконавця активовано!');
                       } catch (error) {
-                        toast.error(t('profilePage.performerActivationError'));
+                        toast.error('Помилка активації режиму виконавця');
                       } finally {
                         setIsActivatingPerformer(false);
                       }
                     }}
                   >
-                    {isActivatingPerformer ? t('profilePage.activating') : t('profilePage.activatePerformerMode')}
+                    {isActivatingPerformer ? 'Активація...' : 'Активувати режим виконавця'}
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+            
+            {user.isPerformer && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Навички</CardTitle>
+                  <CardDescription>
+                    Вкажіть ваші професійні навички
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsManagingSkills(true)}
+                  >
+                    Керувати навичками
                   </Button>
                 </CardContent>
               </Card>
             )}
           </div>
-
-          <div className="md:col-span-2 space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <User className="h-5 w-5" />
-                  <span>{t('profilePage.personalInfo')}</span>
-                </CardTitle>
-                <CardDescription>
-                  {t('profilePage.personalInfoDesc')}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">{t('profilePage.fullNameLabel')}</Label>
-                    <Input
-                      id="name"
-                      value={formData.name}
-                      onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                      disabled={!isEditing}
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="email">{t('profilePage.emailLabel')}</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                      disabled={!isEditing}
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">{t('profilePage.phoneLabel')}</Label>
-                    <Input
-                      id="phone"
-                      value={formData.phone}
-                      onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                      disabled={!isEditing}
-                      placeholder={t('profilePage.phonePlaceholder')}
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="location">{t('profilePage.locationLabel')}</Label>
-                    <Input
-                      id="location"
-                      value={formData.location}
-                      onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
-                      disabled={!isEditing}
-                      placeholder={t('profilePage.locationPlaceholder')}
-                    />
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="website">{t('profilePage.websiteLabel')}</Label>
-                  <Input
-                    id="website"
-                    value={formData.website}
-                    onChange={(e) => setFormData(prev => ({ ...prev, website: e.target.value }))}
-                    disabled={!isEditing}
-                    placeholder={t('profilePage.websitePlaceholder')}
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="bio">{t('profilePage.bioLabel')}</Label>
-                  <Textarea
-                    id="bio"
-                    value={formData.bio}
-                    onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
-                    disabled={!isEditing}
-                    placeholder={t('profilePage.bioPlaceholder')}
-                    className="min-h-[100px]"
-                  />
-                </div>
-                
-                {isEditing && (
-                  <div className="flex space-x-2 pt-4">
-                    <Button onClick={handleSave} className="flex-1">
-                      <Save className="h-4 w-4 mr-2" />
-                      {t('profilePage.saveChanges')}
-                    </Button>
-                    <Button variant="outline" onClick={handleCancel} className="flex-1">
-                      <X className="h-4 w-4 mr-2" />
-                      {t('profilePage.cancel')}
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            <TelegramIntegration />
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Shield className="h-5 w-5" />
-                  <span>{t('profilePage.accountSettings')}</span>
-                </CardTitle>
-                <CardDescription>
-                  {t('profilePage.accountSettingsDesc')}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label>{t('profilePage.accountTypeLabel')}</Label>
-                  <RadioGroup value={user.role} disabled>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="client" id="client" />
-                      <Label htmlFor="client">{t('profilePage.accountTypeClient')}</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="performer" id="performer" />
-                      <Label htmlFor="performer">{t('profilePage.accountTypePerformer')}</Label>
-                    </div>
-                  </RadioGroup>
-                </div>
-                
-                <Separator />
-                
-                <div className="space-y-2">
-                  <Button variant="outline" className="w-full justify-start">
-                    {t('profilePage.changePassword')}
-                  </Button>
-                  <Button variant="outline" className="w-full justify-start">
-                    {t('profilePage.twoFactorAuth')}
-                  </Button>
-                  <Button variant="outline" className="w-full justify-start">
-                    {t('profilePage.privacySettings')}
-                  </Button>
-                </div>
-                
-                <Separator />
-                
-                <Button 
-                  variant="destructive" 
-                  className="w-full"
-                  onClick={logout}
-                >
-                  {t('profilePage.signOut')}
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
         </div>
+        
+        {isManagingSkills && user && (
+          <SkillsManagement
+            userId={user.id}
+            onClose={() => setIsManagingSkills(false)}
+          />
+        )}
       </div>
     </Layout>
   );

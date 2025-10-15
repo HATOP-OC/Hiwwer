@@ -28,6 +28,7 @@ import paymentsRouter from './routes/payments';
 import reviewsRouter from './routes/reviews';
 import disputesRouter from './routes/disputes';
 import policiesRouter from './routes/policies';
+import skillsRouter from './routes/skills';
 
 const app = express();
 const httpServer = createServer(app);
@@ -129,6 +130,7 @@ app.get('/v1/file-types', async (req: Request, res: Response) => {
 
 // Protected routes
 app.use('/v1/users', usersRouter);
+app.use('/v1/skills', skillsRouter);
 app.use('/v1/performers', performersRouter);
 app.use('/v1/notifications', notificationsRouter);
 
