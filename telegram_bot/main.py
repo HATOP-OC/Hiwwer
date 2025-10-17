@@ -15,6 +15,7 @@ from telegram.ext import (
 
 import handlers
 import api
+from notification_service import NotificationService
 
 # Load environment variables
 load_dotenv()
@@ -141,6 +142,24 @@ def main() -> None:
 
     # Add error handler
     application.add_error_handler(handlers.error_handler)
+
+    # Initialize and start notification service
+    # Використовуємо BACKEND_INTERNAL_URL для локальних запитів без аутентифікації
+    backend_url = os.getenv("BACKEND_INTERNAL_URL", "http://localhost:3000/v1")
+    notification_service = NotificationService(application.bot, backend_url)
+    
+    async def start_notification_service(app):
+        """Start notification service after bot initialization"""
+        await notification_service.start()
+        logger.info("Notification service initialized")
+    
+    async def stop_notification_service(app):
+        """Stop notification service on shutdown"""
+        await notification_service.stop()
+        logger.info("Notification service stopped")
+    
+    application.post_init = start_notification_service
+    application.post_shutdown = stop_notification_service
 
     # Start the Bot
     application.run_polling()
