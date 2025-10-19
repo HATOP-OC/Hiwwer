@@ -42,6 +42,22 @@ CREATE TABLE tags (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Skills Table
+CREATE TABLE skills (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name VARCHAR(100) NOT NULL UNIQUE,
+    slug VARCHAR(100) NOT NULL UNIQUE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- User Skills Table
+CREATE TABLE user_skills (
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    skill_id UUID NOT NULL REFERENCES skills(id) ON DELETE CASCADE,
+    PRIMARY KEY (user_id, skill_id)
+);
+
 -- Services Table
 CREATE TABLE services (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -162,14 +178,57 @@ CREATE TABLE message_attachments (
 -- Reviews Table
 CREATE TABLE reviews (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    order_id UUID NOT NULL UNIQUE REFERENCES orders(id),
+    order_id UUID NOT NULL REFERENCES orders(id),
     client_id UUID NOT NULL REFERENCES users(id),
     performer_id UUID NOT NULL REFERENCES users(id),
+    reviewer_id UUID REFERENCES users(id),
+    review_type VARCHAR(50) CHECK (review_type IN ('client_to_performer', 'performer_to_client')),
     rating INT NOT NULL CHECK (rating >= 1 AND rating <= 5),
     comment TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE (order_id, reviewer_id)
 );
+
+-- Create a function to update user and service ratings
+CREATE OR REPLACE FUNCTION update_ratings()
+RETURNS TRIGGER AS $$
+DECLARE
+  avg_rating DECIMAL;
+  total_reviews INT;
+BEGIN
+  -- If the review is from a client to a performer
+  IF NEW.review_type = 'client_to_performer' THEN
+    -- Update the performer's rating
+    SELECT AVG(rating), COUNT(rating) INTO avg_rating, total_reviews
+    FROM reviews
+    WHERE performer_id = NEW.performer_id AND review_type = 'client_to_performer';
+
+    UPDATE users SET rating = avg_rating WHERE id = NEW.performer_id;
+
+    -- Update the service's rating
+    UPDATE services SET rating = avg_rating, review_count = total_reviews
+    WHERE id = (SELECT service_id FROM orders WHERE id = NEW.order_id);
+
+  -- If the review is from a performer to a client
+  ELSIF NEW.review_type = 'performer_to_client' THEN
+    -- Update the client's rating
+    SELECT AVG(rating) INTO avg_rating
+    FROM reviews
+    WHERE client_id = NEW.client_id AND review_type = 'performer_to_client';
+
+    UPDATE users SET rating = avg_rating WHERE id = NEW.client_id;
+  END IF;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create a trigger to call the update_ratings function
+CREATE TRIGGER trigger_update_ratings
+AFTER INSERT ON reviews
+FOR EACH ROW
+EXECUTE FUNCTION update_ratings();
 
 -- Notifications Table
 CREATE TABLE notifications (
@@ -179,8 +238,14 @@ CREATE TABLE notifications (
     content TEXT NOT NULL,
     read BOOLEAN NOT NULL DEFAULT false,
     related_id UUID, -- can be order_id, message_id, etc.
+    telegram_sent BOOLEAN DEFAULT FALSE,
+    telegram_sent_at TIMESTAMPTZ,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- Comments for notifications table
+COMMENT ON COLUMN notifications.telegram_sent IS 'Чи було сповіщення відправлено в Telegram';
+COMMENT ON COLUMN notifications.telegram_sent_at IS 'Час відправки сповіщення в Telegram';
 
 -- Payments Table
 CREATE TABLE payments (
@@ -260,6 +325,11 @@ CREATE INDEX idx_orders_category_id ON orders (category_id);
 CREATE INDEX idx_messages_order_id ON messages (order_id);
 CREATE INDEX idx_notifications_user_id ON notifications (user_id);
 
+-- Index for telegram notifications
+CREATE INDEX idx_notifications_telegram_pending 
+ON notifications(user_id, telegram_sent, created_at)
+WHERE telegram_sent = FALSE;
+
 -- WebSocket-specific indexes for performance optimization
 CREATE INDEX idx_websocket_connections_user_id ON websocket_connections(user_id);
 CREATE INDEX idx_websocket_connections_socket_id ON websocket_connections(socket_id);
@@ -283,6 +353,10 @@ CREATE INDEX idx_messages_sender_id ON messages(sender_id);
 CREATE INDEX idx_messages_created_at ON messages(created_at);
 CREATE INDEX idx_messages_updated_at ON messages(updated_at);
 CREATE INDEX idx_messages_deleted ON messages(deleted) WHERE deleted = false;
+
+-- Indexes for user_skills
+CREATE INDEX idx_user_skills_user_id ON user_skills (user_id);
+CREATE INDEX idx_user_skills_skill_id ON user_skills (skill_id);
 
 -- Create functions to update updated_at automatically
 CREATE OR REPLACE FUNCTION update_updated_at_column()
