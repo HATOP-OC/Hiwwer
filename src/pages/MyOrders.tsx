@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { getAvatarSrc } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Card,
@@ -193,7 +194,7 @@ export default function MyOrders() {
               ) : otherParty ? (
                 <>
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src={otherParty.avatar || '/placeholder.svg'} alt={otherParty.name} />
+                    <AvatarImage src={getAvatarSrc(otherParty.avatar)} alt={otherParty.name} />
                     <AvatarFallback>
                       {otherParty.name.split(' ').map(n => n[0]).join('')}
                     </AvatarFallback>

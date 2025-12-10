@@ -13,6 +13,7 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Package } from 'lucide-react';
+import { getImageUrl } from '@/lib/api';
 import { useTranslation } from 'react-i18next';
 
 export default function CreateOrder() {
@@ -269,11 +270,17 @@ export default function CreateOrder() {
                 ) : (
                   <>
                     <div className="flex items-start space-x-4">
-                      <img 
-                        src={service?.images?.[0] || '/placeholder.svg'} 
-                        alt={service?.title}
-                        className="w-16 h-16 rounded-lg object-cover"
-                      />
+                      {service?.images?.[0] && !service.images[0].includes('placeholder') ? (
+                        <img
+                          src={getImageUrl(service.images[0])}
+                          alt={service?.title}
+                          className="w-16 h-16 rounded-lg object-cover"
+                        />
+                      ) : (
+                        <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center">
+                          <Package className="h-6 w-6 text-muted-foreground" />
+                        </div>
+                      )}
                       <div>
                         <h3 className="font-semibold text-lg">{service?.title}</h3>
                         <p className="text-sm text-muted-foreground">{service?.description}</p>

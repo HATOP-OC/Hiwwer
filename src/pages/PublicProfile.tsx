@@ -4,6 +4,7 @@ import Layout from '@/components/Layout/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { getAvatarSrc } from '@/lib/utils';
 import { Star, User, MessageSquare } from 'lucide-react';
 
 interface Skill {
@@ -84,7 +85,7 @@ export default function PublicProfile() {
               <CardContent className="pt-6">
                 <div className="flex flex-col items-center space-y-4">
                   <Avatar className="h-24 w-24">
-                    <AvatarImage src={profile.avatar} alt={profile.name} />
+                    <AvatarImage src={getAvatarSrc(profile.avatar)} alt={profile.name} />
                     <AvatarFallback className="text-lg">
                       {profile.name.split(' ').map(n => n[0]).join('')}
                     </AvatarFallback>
@@ -142,7 +143,7 @@ export default function PublicProfile() {
                     <div key={review.id} className="border-b pb-4 last:border-b-0">
                       <div className="flex items-start space-x-3">
                         <Avatar className="h-10 w-10">
-                          <AvatarImage src={review.reviewerAvatar} alt={review.reviewerName} />
+                          <AvatarImage src={getAvatarSrc(review.reviewerAvatar)} alt={review.reviewerName} />
                           <AvatarFallback>
                             {review.reviewerName.split(' ').map(n => n[0]).join('')}
                           </AvatarFallback>

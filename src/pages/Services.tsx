@@ -13,6 +13,7 @@ import { Separator } from '@/components/ui/separator';
 import { Link } from 'react-router-dom';
 import { Star, Search, Filter as FilterIcon, ChevronDown, ChevronUp, Palette, Code, PenSquare, TrendingUp, Film, Music, Briefcase, BookOpen, Package } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { getAvatarSrc } from '@/lib/utils';
 import { fetchServices, fetchServiceCategories, Service, ServiceCategory, getImageUrl } from '@/lib/api';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '@/hooks/use-toast';
@@ -448,7 +449,7 @@ export default function Services() {
                       <div className="flex items-center mb-3 pt-3 border-t">
                         <div className="mr-2">
                           <Avatar className="h-6 w-6">
-                            <AvatarImage src={service.performer?.avatar_url || undefined} />
+                            <AvatarImage src={getAvatarSrc(service.performer?.avatar_url)} />
                             <AvatarFallback>
                               {service.performer?.name?.split(' ').map(n => n[0]).join('').toUpperCase() || '?'}
                             </AvatarFallback>

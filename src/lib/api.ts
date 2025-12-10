@@ -5,8 +5,8 @@
 const API_BASE = '/v1';
 
 // Helper function to get full image URL
-export function getImageUrl(imagePath: string | null | undefined): string {
-  if (!imagePath) return '/placeholder.png'; // Default placeholder
+export function getImageUrl(imagePath: string | null | undefined): string | undefined {
+  if (!imagePath) return undefined; // No image available
   // If path already starts with http/https, return as is
   if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
     return imagePath;

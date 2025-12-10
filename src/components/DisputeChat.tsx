@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { getAvatarSrc } from '@/lib/utils';
 import { Send, AlertTriangle, Paperclip, X, Download, FileText, FileImage, FileVideo, FileAudio, FileArchive, FileCode } from 'lucide-react';
 import { useWebSocket } from '@/hooks/useWebSocket';
 import { useAuth } from '@/contexts/AuthContext';
@@ -370,7 +371,7 @@ export default function DisputeChat({
                 >
                   <div className={`flex space-x-2 max-w-[70%] ${isOwn ? 'flex-row-reverse space-x-reverse' : ''}`}>
                     <Avatar className="h-8 w-8 flex-shrink-0">
-                      <AvatarImage src={sender?.avatar} />
+                      <AvatarImage src={getAvatarSrc(sender?.avatar)} />
                       <AvatarFallback className={
                         senderRole === t('disputeChat.roles.moderator') ? 'bg-purple-100 text-purple-600' :
                         senderRole === t('disputeChat.roles.client') ? 'bg-blue-100 text-blue-600' :

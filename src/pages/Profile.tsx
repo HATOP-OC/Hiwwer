@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { getAvatarSrc } from '@/lib/utils';
 import {
   Card,
   CardContent,
@@ -43,7 +44,7 @@ export default function Profile() {
     name: user?.name || '',
     email: user?.email || '',
     bio: user?.bio || '',
-    avatar: user?.avatar || '/placeholder.svg'
+    avatar: user?.avatar || undefined
   });
 
   useEffect(() => {
@@ -52,7 +53,7 @@ export default function Profile() {
         name: user.name || '',
         email: user.email || '',
         bio: user.bio || '',
-        avatar: user.avatar || '/placeholder.svg'
+        avatar: user.avatar || undefined
       });
     }
   }, [user]);
@@ -89,7 +90,7 @@ export default function Profile() {
       name: user?.name || '',
       email: user?.email || '',
       bio: user?.bio || '',
-      avatar: user?.avatar || '/placeholder.svg'
+      avatar: user?.avatar || undefined
     });
     setIsEditing(false);
   };
@@ -143,7 +144,7 @@ export default function Profile() {
               <CardContent className="pt-6">
                 <div className="flex flex-col items-center space-y-4">
                   <Avatar className="h-24 w-24">
-                    <AvatarImage src={formData.avatar} alt={user.name} />
+                    <AvatarImage src={getAvatarSrc(formData.avatar)} alt={user.name} />
                     <AvatarFallback className="text-lg">
                       {user.name.split(' ').map(n => n[0]).join('')}
                     </AvatarFallback>

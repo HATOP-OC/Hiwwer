@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { getAvatarSrc } from '@/lib/utils';
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -399,7 +400,7 @@ export default function OrderChat({ orderId, participants }: OrderChatProps) {
                 >
                   <div className={`flex space-x-2 max-w-[70%] ${isOwn ? 'flex-row-reverse space-x-reverse' : ''}`}>
                     <Avatar className="h-8 w-8 flex-shrink-0">
-                      <AvatarImage src={sender?.avatar} />
+                      <AvatarImage src={getAvatarSrc(sender?.avatar)} />
                       <AvatarFallback>
                         {sender?.name?.charAt(0)?.toUpperCase() || '?'}
                       </AvatarFallback>

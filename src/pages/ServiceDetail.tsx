@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { getAvatarSrc } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Star, ArrowLeft, ShoppingCart, Clock, DollarSign, User, Package, CheckCircle } from 'lucide-react';
@@ -193,7 +194,7 @@ export default function ServiceDetail() {
                   <h3 className="font-semibold mb-3">{t('serviceDetailPage.aboutPerformer')}</h3>
                   <div className="flex items-center gap-3 p-4 border rounded-lg">
                     <Avatar className="h-12 w-12">
-                      <AvatarImage src={service.performer?.avatar_url} />
+                      <AvatarImage src={getAvatarSrc(service.performer?.avatar_url)} />
                       <AvatarFallback>
                         {service.performer?.name?.charAt(0)?.toUpperCase()}
                       </AvatarFallback>
