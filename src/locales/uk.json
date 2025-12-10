@@ -1233,5 +1233,8 @@
     "errors": {
       "generateCode": "Помилка генерації коду"
     }
+  },
+  "toast": {
+    "errorTitle": "Помилка"
   }
 }

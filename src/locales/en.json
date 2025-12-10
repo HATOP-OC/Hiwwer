@@ -310,6 +310,7 @@
     "deleteConfirmation": "Are you sure you want to delete the service \"{{title}}\"?",
     "deleteSuccessToast": "Service deleted successfully",
     "deleteErrorToast": "Failed to delete service",
+    "deleteErrorForeignKey": "Cannot delete service because there are active orders for it.",
     "fetchError": "Failed to fetch services"
   },
   "login": {
@@ -1396,5 +1397,8 @@
         "description": "Code files (JS, TS, Python, Java, C++, and others)"
       }
     }
+  },
+  "toast": {
+    "errorTitle": "Error"
   }
 }
