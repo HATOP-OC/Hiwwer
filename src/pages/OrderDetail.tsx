@@ -245,6 +245,8 @@ export default function OrderDetail() {
         }
       }, 500);
       return () => clearTimeout(timer);
+    } else {
+      window.scrollTo(0, 0);
     }
 
     // If we explicitly asked to clear the hash, remove it from URL to prevent future navigations from auto-scrolling
