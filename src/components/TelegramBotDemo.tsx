@@ -33,7 +33,17 @@ export default function TelegramBotDemo() {
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    // Always scroll the chat container directly — this avoids causing the
+    // whole document to jump when new messages appear or buttons are clicked
+    // near the bottom of the viewport.
+    const container = chatContainerRef.current;
+    if (!container) return;
+    try {
+      container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+    } catch (e) {
+      // Fallback for environments without smooth scroll support
+      container.scrollTop = container.scrollHeight;
+    }
   };
 
   useEffect(() => {
@@ -328,7 +338,10 @@ export default function TelegramBotDemo() {
                     <button
                       key={button.id}
                       onClick={() => handleButtonClick(button.action)}
+                      onMouseDown={(e) => e.preventDefault()} // prevent focus scroll
                       className="bg-[#182533] hover:bg-[#1f2e3f] text-white px-4 py-3 rounded-lg transition-all duration-200 flex items-center justify-start shadow-md hover:shadow-lg"
+                      // add tabIndex so keyboard users can still focus via keyboard
+                      tabIndex={0}
                     >
                       <span className="text-xl mr-2">{button.icon}</span>
                       <span className="text-sm font-medium">{button.text}</span>
@@ -344,6 +357,7 @@ export default function TelegramBotDemo() {
                     <button
                       key={index}
                       onClick={() => handleAssistantQuestion(question)}
+                      onMouseDown={(e) => e.preventDefault()} // prevent focus scroll
                       className="w-full bg-[#182533] hover:bg-[#1f2e3f] text-white px-4 py-2 rounded-lg transition-all duration-200 text-sm text-left shadow-md hover:shadow-lg"
                     >
                       {question}
@@ -351,6 +365,7 @@ export default function TelegramBotDemo() {
                   ))}
                   <button
                     onClick={handleMainMenu}
+                    onMouseDown={(e) => e.preventDefault()}
                     className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium shadow-md hover:shadow-lg"
                   >
                     ⬅️ {t('telegramDemo.backToMenu')}
@@ -365,6 +380,7 @@ export default function TelegramBotDemo() {
                     <button
                       key={lang.code}
                       onClick={() => handleLanguageChange(lang.code)}
+                      onMouseDown={(e) => e.preventDefault()} // prevent focus scroll
                       className={`w-full bg-[#182533] hover:bg-[#1f2e3f] text-white px-4 py-2 rounded-lg transition-all duration-200 text-sm flex items-center shadow-md hover:shadow-lg ${
                         i18n.language === lang.code ? 'ring-2 ring-blue-500' : ''
                       }`}
@@ -384,6 +400,7 @@ export default function TelegramBotDemo() {
                 <div className="mt-4 animate-fade-in">
                   <button
                     onClick={handleMainMenu}
+                    onMouseDown={(e) => e.preventDefault()}
                     className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium shadow-md hover:shadow-lg"
                   >
                     ⬅️ {t('telegramDemo.backToMenu')}
