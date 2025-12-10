@@ -11,7 +11,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Link } from 'react-router-dom';
-import { Star, Search, Filter as FilterIcon, ChevronDown, ChevronUp, Palette, Code, PenSquare, TrendingUp, Film, Music, Briefcase, BookOpen } from 'lucide-react';
+import { Star, Search, Filter as FilterIcon, ChevronDown, ChevronUp, Palette, Code, PenSquare, TrendingUp, Film, Music, Briefcase, BookOpen, Package } from 'lucide-react';
 import { fetchServices, fetchServiceCategories, Service, ServiceCategory, getImageUrl } from '@/lib/api';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '@/hooks/use-toast';
@@ -406,11 +406,17 @@ export default function Services() {
                   <Card key={service.id} className="overflow-hidden hover-card border group transition-all duration-300 hover:shadow-lg h-full flex flex-col">
                     <Link to={`/services/${service.id}`}>
                       <div className="aspect-video relative overflow-hidden">
-                        <img
-                          src={getImageUrl(service.images[0])}
-                          alt={service.title}
-                          className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
-                        />
+                        {service.images && service.images.length > 0 ? (
+                          <img
+                            src={getImageUrl(service.images[0])}
+                            alt={service.title}
+                            className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-muted flex items-center justify-center">
+                            <Package className="h-12 w-12 text-muted-foreground" />
+                          </div>
+                        )}
                         <div className="absolute bottom-2 right-2">
                           <Badge className="bg-brand-teal hover:bg-brand-teal text-white">
                             {service.price} {service.currency}
