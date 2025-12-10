@@ -14,12 +14,14 @@ import { Link } from 'react-router-dom';
 import { Star, Search, Filter as FilterIcon, ChevronDown, ChevronUp, Palette, Code, PenSquare, TrendingUp, Film, Music, Briefcase, BookOpen } from 'lucide-react';
 import { fetchServices, fetchServiceCategories, Service, ServiceCategory, getImageUrl } from '@/lib/api';
 import { useTranslation } from 'react-i18next';
+import { useToast } from '@/hooks/use-toast';
 
 export default function Services() {
   const { t } = useTranslation();
+  const { toast } = useToast();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, activeRole } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [allServices, setAllServices] = useState<Service[]>([]);
   const [services, setServices] = useState<Service[]>([]);
@@ -139,22 +141,45 @@ export default function Services() {
     setSelectedRating(null);
   };
 
-  const handleOrderService = (serviceId: string, e: React.MouseEvent) => {
+  const handleOrderService = (service: Service, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     
     if (!user) {
-      navigate('/login', { state: { returnTo: `/create-order/${serviceId}` } });
+      navigate('/login', { state: { returnTo: `/create-order/${service.id}` } });
       return;
     }
-    navigate(`/create-order/${serviceId}`);
+
+    if (service.performer.id === user.id) {
+      // Cannot order own service
+      toast({
+        title: t('servicesPage.cannotOrderOwnService'),
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    navigate(`/create-order/${service.id}`);
   };
 
   if (loading) {
     return (
-      <div className="text-center py-12">
-        <p>{t('servicesPage.loading')}</p>
-      </div>
+      <Layout>
+        <div className="text-center py-12">
+          <p>{t('servicesPage.loading')}</p>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (activeRole === 'performer') {
+    return (
+      <Layout>
+        <div className="py-12 text-center">
+          <h1 className="text-2xl font-bold text-red-600">{t('myServicesPage.accessDenied')}</h1>
+          <p className="mt-2">{t('servicesPage.onlyForClients')}</p>
+        </div>
+      </Layout>
     );
   }
 
@@ -434,7 +459,7 @@ export default function Services() {
                         <Button 
                           size="sm" 
                           className="flex-1"
-                          onClick={(e) => handleOrderService(service.id, e)}
+                          onClick={(e) => handleOrderService(service, e)}
                         >
                           {user ? t('servicesPage.order') : t('servicesPage.loginAndOrder')}
                         </Button>

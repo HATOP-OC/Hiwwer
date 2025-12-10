@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { fetchOrders, Order } from '@/lib/api';
 import { useQuery } from '@tanstack/react-query';
@@ -41,21 +41,42 @@ import { useTranslation } from 'react-i18next';
 export default function MyOrders() {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+
+  // Redirect to login if not authenticated
+  if (!user) {
+    navigate('/login', { state: { returnTo: '/my-orders' } });
+    return null;
+  }
   
-  const { data: orders = [], isLoading } = useQuery({
+  const { data: orders = [], isLoading, error } = useQuery({
     queryKey: ['orders', statusFilter, searchTerm],
     queryFn: () => fetchOrders({ status: statusFilter, search: searchTerm }),
     enabled: !!user
   });
 
-  if (!user) {
+  if (isLoading) {
     return (
       <Layout>
         <div className="container max-w-4xl py-16">
           <div className="text-center">
-            <h1 className="text-2xl font-bold">{t('myOrdersPage.pleaseLogin')}</h1>
+            <h1 className="text-2xl font-bold">{t('myOrdersPage.loading')}</h1>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (error) {
+    console.error('MyOrders error:', error);
+    return (
+      <Layout>
+        <div className="container max-w-4xl py-16">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-red-600">Помилка завантаження замовлень</h1>
+            <p className="mt-2">{error.message}</p>
           </div>
         </div>
       </Layout>

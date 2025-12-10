@@ -10,49 +10,47 @@ interface ErrorBoundaryProps {
   children: React.ReactNode;
 }
 
-const ErrorBoundary: React.FC<ErrorBoundaryProps> = ({ children }) => {
-  const { t } = useTranslation();
-  const [state, setState] = React.useState<ErrorBoundaryState>({ hasError: false });
+class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
+    super(props);
+    this.state = { hasError: false };
+  }
 
-  const componentDidCatch = (error: Error, errorInfo: React.ErrorInfo) => {
-    console.error('ErrorBoundary caught an error:', error, errorInfo);
-  };
-
-  const getDerivedStateFromError = (error: Error): ErrorBoundaryState => {
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
     return { hasError: true, error };
-  };
+  }
 
-  try {
-    if (state.hasError) {
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error('ErrorBoundary caught an error:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
       return (
         <div className="min-h-screen bg-background flex items-center justify-center p-4">
           <div className="max-w-md w-full bg-card border rounded-lg p-6 text-center">
             <h1 className="text-2xl font-bold text-destructive mb-4">
-              {t('errorBoundary.title')}
+              Сталася помилка
             </h1>
             <p className="text-muted-foreground mb-4">
-              {t('errorBoundary.subtitle')}
+              Щось пішло не так. Спробуйте перезавантажити сторінку.
             </p>
             <p className="text-sm text-muted-foreground mb-4">
-              {state.error?.message}
+              {this.state.error?.message}
             </p>
             <button
               onClick={() => window.location.reload()}
               className="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90"
             >
-              {t('errorBoundary.reloadButton')}
+              Перезавантажити
             </button>
           </div>
         </div>
       );
     }
-    return <>{children}</>;
-  } catch (error) {
-    const derivedState = getDerivedStateFromError(error as Error);
-    setState(derivedState);
-    componentDidCatch(error as Error, { componentStack: '' });
-    return null;
+
+    return this.props.children;
   }
-};
+}
 
 export default ErrorBoundary;

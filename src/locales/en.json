@@ -153,7 +153,9 @@
       "subtitle": "Try changing your search parameters or filters",
       "createCustomOrder": "Create custom order",
       "customOrderDesc": "Didn't find what you were looking for? Create your own order with your requirements"
-    }
+    },
+    "onlyForClients": "This page is only available to clients.",
+    "cannotOrderOwnService": "You cannot order your own service."
   },
   "serviceDetailPage": {
     "loading": "Loading...",
@@ -181,7 +183,8 @@
     "professionalExecution": "Professional execution of work",
     "supportDuringExecution": "Support during execution",
     "possibilityOfRevision": "Possibility of revision",
-    "qualityGuarantee": "Quality guarantee"
+    "qualityGuarantee": "Quality guarantee",
+    "cannotOrderOwnService": "You cannot order your own service."
   },
   "createOrderPage": {
     "pleaseLoginTitle": "Please log in to create an order",

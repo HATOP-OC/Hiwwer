@@ -4,7 +4,7 @@ import Layout from '@/components/Layout/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Star, Edit, Trash2, Plus, Eye } from 'lucide-react';
+import { Star, Edit, Trash2, Plus, Eye, Package } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Service } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
@@ -12,7 +12,7 @@ import { useTranslation } from 'react-i18next';
 
 export default function MyServices() {
   const { t } = useTranslation();
-  const { user } = useAuth();
+  const { user, activeRole } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
@@ -27,7 +27,7 @@ export default function MyServices() {
       const data = await res.json();
       return data.services;
     },
-    enabled: !!user && user.role === 'performer',
+    enabled: activeRole === 'performer',
   });
 
   const deleteMutation = useMutation({
@@ -50,9 +50,13 @@ export default function MyServices() {
       });
     },
     onError: (error: Error) => {
+      let message = error.message;
+      if (message.includes('violates foreign key constraint')) {
+        message = t('myServicesPage.deleteErrorForeignKey');
+      }
       toast({
         title: t('toast.errorTitle'),
-        description: error.message,
+        description: message,
         variant: 'destructive',
       });
     },
@@ -64,7 +68,7 @@ export default function MyServices() {
     }
   };
 
-  if (user?.role !== 'performer') {
+  if (activeRole !== 'performer') {
     return (
       <Layout>
         <div className="py-12 text-center">
@@ -159,7 +163,7 @@ export default function MyServices() {
                     <div className="flex items-center space-x-1">
                       <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                       <span className="text-sm">
-                        {service.rating ? service.rating.toFixed(1) : '0.0'}
+                        {typeof service.rating === 'number' ? service.rating.toFixed(1) : '0.0'}
                       </span>
                     </div>
                   </div>

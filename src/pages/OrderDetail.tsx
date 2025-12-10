@@ -21,6 +21,17 @@ export default function OrderDetail() {
   const location = useLocation();
   const queryClient = useQueryClient();
   const { user } = useAuth();
+
+  console.log('OrderDetail component start, id:', id);
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    console.log('OrderDetail useEffect auth check, user:', !!user, 'token:', !!localStorage.getItem('token'));
+    if (!user && !localStorage.getItem('token')) {
+      navigate('/login', { state: { returnTo: `/order/${id}` } });
+      return;
+    }
+  }, [user, id, navigate]);
   
   const [messageContent, setMessageContent] = useState('');
   const [msgFileUrl, setMsgFileUrl] = useState('');
@@ -39,25 +50,42 @@ export default function OrderDetail() {
   const { data: order, isLoading, error } = useQuery<Order>({
     queryKey: ['order', id],
     queryFn: () => fetchOrderById(id!),
-    enabled: !!id
+    enabled: !!id && !!user
   });
+
+  console.log('OrderDetail render:', { id, isLoading, error, order, user });
+
+  // Temporary debug render
+  return (
+    <div style={{ padding: '20px', backgroundColor: 'lightblue', minHeight: '100vh' }}>
+      <h1>OrderDetail Component Debug</h1>
+      <p>Компонент завантажився успішно!</p>
+      <div style={{ backgroundColor: 'white', padding: '10px', margin: '10px 0', borderRadius: '5px' }}>
+        <p><strong>ID:</strong> {id}</p>
+        <p><strong>Loading:</strong> {isLoading ? 'true' : 'false'}</p>
+        <p><strong>Error:</strong> {error ? error.message : 'none'}</p>
+        <p><strong>Order:</strong> {order ? 'exists' : 'null'}</p>
+        <p><strong>User:</strong> {user ? user.email : 'null'}</p>
+      </div>
+    </div>
+  );
   
   const { data: messages = [] } = useQuery<Message[]>({
     queryKey: ['messages', id],
     queryFn: () => fetchMessages(id!),
-    enabled: !!id && !!order
+    enabled: !!id && !!order && !!user
   });
   
   const { data: options = [] } = useQuery<AdditionalOption[]>({
     queryKey: ['options', id],
     queryFn: () => fetchAdditionalOptions(id!),
-    enabled: !!id && !!order
+    enabled: !!id && !!order && !!user
   });
   
   const { data: payments = [] } = useQuery<Payment[]>({
     queryKey: ['payments', id],
     queryFn: () => fetchPayments(id!),
-    enabled: !!id && !!order
+    enabled: !!id && !!order && !!user
   });
   
   const { data: review, refetch: refetchReview } = useQuery<Review>({
@@ -72,7 +100,7 @@ export default function OrderDetail() {
         throw error;
       }
     },
-    enabled: !!id && !!order && order.status === 'completed',
+    enabled: !!id && !!order && order.status === 'completed' && !!user,
     retry: false,
     refetchOnWindowFocus: false,
     staleTime: 5 * 60 * 1000,
@@ -90,7 +118,7 @@ export default function OrderDetail() {
         throw error;
       }
     },
-    enabled: !!id && !!order,
+    enabled: !!id && !!order && !!user,
     retry: false,
     refetchOnWindowFocus: false,
     staleTime: 2 * 60 * 1000,
@@ -226,8 +254,21 @@ export default function OrderDetail() {
     }
   }, [location.hash, order]);
 
-  if (isLoading) return <Layout><div className="py-12 text-center">{t('orderDetailPage.loading')}</div></Layout>;
-  if (error || !order) return <Layout><div className="py-12 text-center text-red-500">{t('orderDetailPage.notFound')}</div></Layout>;
+  if (isLoading) {
+    console.log('OrderDetail: showing loading');
+    return <Layout><div className="py-12 text-center">{t('orderDetailPage.loading')}</div></Layout>;
+  }
+  if (error || !order) {
+    console.error('OrderDetail error:', error);
+    console.log('OrderDetail: showing error/not found');
+    return <Layout><div className="py-12 text-center text-red-500">
+      <h2 className="text-xl font-bold mb-2">{t('orderDetailPage.notFound')}</h2>
+      {error && <p className="text-sm">Помилка: {error.message}</p>}
+      <p className="text-sm mt-2">ID замовлення: {id}</p>
+    </div></Layout>;
+  }
+
+  console.log('OrderDetail: rendering order content', order);
 
   const statusOptions = ['pending', 'in_progress', 'revision', 'completed', 'canceled', 'disputed'];
   const isClient = user?.id === order.client.id;

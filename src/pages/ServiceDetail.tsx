@@ -9,15 +9,17 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
-import { Star, ArrowLeft, ShoppingCart, Clock, DollarSign, User, Package } from 'lucide-react';
+import { Star, ArrowLeft, ShoppingCart, Clock, DollarSign, User, Package, CheckCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
 
 export default function ServiceDetail() {
   const { t } = useTranslation();
   const { serviceId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { toast } = useToast();
 
   // Перевірка чи це UUID
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -39,13 +41,20 @@ export default function ServiceDetail() {
       navigate('/login', { state: { returnTo: `/create-order/${serviceId}` } });
       return;
     }
+    if (service && service.performer.id === user.id) {
+      toast({
+        title: t('serviceDetailPage.cannotOrderOwnService', 'You cannot order your own service.'),
+        variant: 'destructive',
+      });
+      return;
+    }
     navigate(`/create-order/${serviceId}`);
   };
 
   if (isLoading) {
     return (
       <Layout>
-        <div className="container max-w-6xl py-8">
+        <div className="container max-w-6xl py-8 px-4 sm:px-6 lg:px-8">
           <div className="text-center py-16">
             <h1 className="text-2xl font-bold">{t('serviceDetailPage.loading')}</h1>
           </div>
@@ -57,9 +66,15 @@ export default function ServiceDetail() {
   if (error || !service) {
     return (
       <Layout>
-        <div className="container max-w-6xl py-8">
+        <div className="container max-w-6xl py-8 px-4 sm:px-6 lg:px-8">
           <div className="text-center py-16">
-            <h1 className="text-2xl font-bold">{t('serviceDetailPage.serviceNotFound')}</h1>
+            <h1 className="text-2xl font-bold text-red-600">
+              {error ? 'Помилка завантаження послуги' : t('serviceDetailPage.serviceNotFound')}
+            </h1>
+            <p className="mt-2 text-muted-foreground">
+              {error ? `Сталася помилка: ${error.message}` : 'Послуга не знайдена або недоступна.'}
+            </p>
+            <p className="mt-2 text-sm">Service ID: {serviceId}</p>
             <Button className="mt-4" onClick={() => navigate('/services')}>
               <ArrowLeft className="mr-2 h-4 w-4" />
               {t('serviceDetailPage.backToServices')}
@@ -72,7 +87,7 @@ export default function ServiceDetail() {
 
   return (
     <Layout>
-      <div className="container max-w-6xl py-8">
+      <div className="container max-w-6xl py-8 px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
           <Button variant="outline" onClick={() => navigate(-1)} className="mb-4">
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -94,7 +109,7 @@ export default function ServiceDetail() {
                           <div className="aspect-video relative overflow-hidden rounded-t-lg">
                             <img
                               src={getImageUrl(image)}
-                              alt={`${service.title} - ${index + 1}`}
+                              alt={`${service.title} ${index + 1}`}
                               className="object-cover w-full h-full"
                             />
                           </div>
@@ -114,35 +129,57 @@ export default function ServiceDetail() {
               <Card>
                 <CardContent className="p-0">
                   <div className="aspect-video relative overflow-hidden rounded-t-lg bg-muted flex items-center justify-center">
-                    <Package className="h-16 w-16 text-muted-foreground" />
+                    <Package className="h-12 w-12 text-muted-foreground" />
                   </div>
                 </CardContent>
               </Card>
             )}
 
-            {/* Опис */}
+            {/* Інформація про послугу */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-2xl">{service.title}</CardTitle>
-                <div className="flex items-center space-x-4">
-                  <div className="flex items-center">
-                    <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-                    <span className="ml-1 font-medium">{service.rating?.toFixed(1) || '0.0'}</span>
-                    <span className="ml-1 text-muted-foreground">{t('serviceDetailPage.reviews', { count: service.review_count || 0 })}</span>
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <CardTitle className="text-2xl mb-2">{service.title}</CardTitle>
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
+                      <div className="flex items-center gap-1">
+                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                        <span>{service.rating}</span>
+                        <span>({service.review_count} відгуків)</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Clock className="h-4 w-4" />
+                        <span>{service.delivery_time} {t('serviceDetailPage.days')}</span>
+                      </div>
+                    </div>
                   </div>
-                  <Badge>{service.category?.name}</Badge>
+                  <div className="text-right">
+                    <div className="text-3xl font-bold text-green-600">
+                      ${service.price}
+                    </div>
+                    <div className="text-sm text-muted-foreground">{service.currency}</div>
+                  </div>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-muted-foreground leading-relaxed">
-                  {service.description}
-                </p>
+              <CardContent className="space-y-6">
+                {/* Опис */}
+                <div>
+                  <h3 className="font-semibold mb-2">{t('serviceDetailPage.description')}</h3>
+                  <p className="text-muted-foreground whitespace-pre-line">{service.description}</p>
+                </div>
 
+                {/* Категорія */}
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium">{t('serviceDetailPage.category')}:</span>
+                  <Badge variant="secondary">{service.category?.name}</Badge>
+                </div>
+
+                {/* Теги */}
                 {service.tags && service.tags.length > 0 && (
-                  <div className="space-y-2">
-                    <h4 className="font-medium">{t('serviceDetailPage.tags')}</h4>
+                  <div>
+                    <h3 className="font-semibold mb-2">{t('serviceDetailPage.tags')}</h3>
                     <div className="flex flex-wrap gap-2">
-                      {service.tags.map((tag: any) => (
+                      {service.tags.map(tag => (
                         <Badge key={tag.id} variant="outline">
                           {tag.name}
                         </Badge>
@@ -150,40 +187,32 @@ export default function ServiceDetail() {
                     </div>
                   </div>
                 )}
-              </CardContent>
-            </Card>
 
-            {/* Інформація про виконавця */}
-            <Card>
-              <CardHeader>
-                <CardTitle>{t('serviceDetailPage.aboutPerformer')}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-start space-x-4">
-                  <Avatar className="h-16 w-16">
-                    <AvatarImage 
-                      src={service.performer?.avatar_url || '/placeholder.svg'} 
-                      alt={service.performer?.name} 
-                    />
-                    <AvatarFallback>
-                      {service.performer?.name?.substring(0, 2).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 space-y-2">
-                    <h3 className="font-semibold text-lg">{service.performer?.name}</h3>
-                    <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                      <div className="flex items-center">
-                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
-                        {service.rating?.toFixed(1) || '0.0'}
+                {/* Інформація про виконавця */}
+                <div>
+                  <h3 className="font-semibold mb-3">{t('serviceDetailPage.aboutPerformer')}</h3>
+                  <div className="flex items-center gap-3 p-4 border rounded-lg">
+                    <Avatar className="h-12 w-12">
+                      <AvatarImage src={service.performer?.avatar_url} />
+                      <AvatarFallback>
+                        {service.performer?.name?.charAt(0)?.toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-medium">{service.performer?.name}</span>
+                        <Badge variant="outline" className="text-xs">
+                          {t('serviceDetailPage.experiencedPerformer')}
+                        </Badge>
                       </div>
-                      <div className="flex items-center">
-                        <User className="h-4 w-4 mr-1" />
-                        {t('serviceDetailPage.experiencedPerformer')}
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-1">
+                          <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                          <span>{service.performer?.rating || 0}</span>
+                        </div>
+                        <span>{t('serviceDetailPage.professionalOnPlatform')}</span>
                       </div>
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                      {t('serviceDetailPage.professionalOnPlatform')}
-                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -192,7 +221,7 @@ export default function ServiceDetail() {
 
           {/* Панель замовлення */}
           <div className="space-y-6">
-            <Card className="sticky top-8">
+            <Card className="lg:sticky lg:top-8">
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   <span>{t('serviceDetailPage.orderService')}</span>
@@ -207,50 +236,22 @@ export default function ServiceDetail() {
               <CardContent className="space-y-4">
                 <div className="space-y-3">
                   <div className="flex items-center justify-between text-sm">
-                    <div className="flex items-center">
-                      <Clock className="h-4 w-4 mr-2 text-muted-foreground" />
-                      <span>{t('serviceDetailPage.executionTime')}</span>
-                    </div>
-                    <span className="font-medium">{t('serviceDetailPage.days', { count: service.delivery_time })}</span>
-                  </div>
-                  
-                  <div className="flex items-center justify-between text-sm">
-                    <div className="flex items-center">
-                      <DollarSign className="h-4 w-4 mr-2 text-muted-foreground" />
-                      <span>{t('serviceDetailPage.currency')}</span>
-                    </div>
-                    <span className="font-medium">{service.currency}</span>
-                  </div>
-
-                  <div className="flex items-center justify-between text-sm">
-                    <div className="flex items-center">
-                      <Package className="h-4 w-4 mr-2 text-muted-foreground" />
-                      <span>{t('serviceDetailPage.category')}</span>
-                    </div>
-                    <span className="font-medium">{service.category?.name}</span>
-                  </div>
-                </div>
-
-                <Separator />
-
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
                     <span>{t('serviceDetailPage.serviceCost')}</span>
                     <span>${service.price}</span>
                   </div>
-                  <div className="flex justify-between text-sm">
+                  <div className="flex items-center justify-between text-sm">
                     <span>{t('serviceDetailPage.platformFee')}</span>
                     <span>$0</span>
                   </div>
                   <Separator />
-                  <div className="flex justify-between font-bold">
+                  <div className="flex items-center justify-between font-bold">
                     <span>{t('serviceDetailPage.totalAmount')}</span>
                     <span>${service.price}</span>
                   </div>
                 </div>
 
-                <Button 
-                  className="w-full" 
+                <Button
+                  className="w-full"
                   size="lg"
                   onClick={handleCreateOrder}
                 >
@@ -272,20 +273,20 @@ export default function ServiceDetail() {
                 <CardTitle className="text-sm">{t('serviceDetailPage.whatIsIncluded')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2 text-sm">
-                <div className="flex items-center">
-                  <div className="w-2 h-2 bg-green-500 rounded-full mr-3" />
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-600" />
                   <span>{t('serviceDetailPage.professionalExecution')}</span>
                 </div>
-                <div className="flex items-center">
-                  <div className="w-2 h-2 bg-green-500 rounded-full mr-3" />
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-600" />
                   <span>{t('serviceDetailPage.supportDuringExecution')}</span>
                 </div>
-                <div className="flex items-center">
-                  <div className="w-2 h-2 bg-green-500 rounded-full mr-3" />
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-600" />
                   <span>{t('serviceDetailPage.possibilityOfRevision')}</span>
                 </div>
-                <div className="flex items-center">
-                  <div className="w-2 h-2 bg-green-500 rounded-full mr-3" />
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-600" />
                   <span>{t('serviceDetailPage.qualityGuarantee')}</span>
                 </div>
               </CardContent>

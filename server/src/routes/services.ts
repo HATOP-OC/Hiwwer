@@ -254,9 +254,10 @@ router.get('/:id', async (req: Request, res: Response) => {
 router.post('/', authenticate, async (req: Request, res: Response) => {
   try {
     const userId = req.user!.id;
-    const userRole = req.user!.role;
     
-    if (userRole !== 'performer') {
+    // Перевірка чи користувач є performer'ом
+    const userResult = await query('SELECT is_performer FROM users WHERE id = $1', [userId]);
+    if (userResult.rowCount === 0 || !userResult.rows[0].is_performer) {
       return res.status(403).json({ message: 'Only performers can create services' });
     }
 

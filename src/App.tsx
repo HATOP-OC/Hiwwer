@@ -22,6 +22,7 @@ import ServiceDetail from "./pages/ServiceDetail";
 import MyServices from "./pages/MyServices";
 import CreateService from "./pages/CreateService";
 import NotFound from "./pages/NotFound";
+import DashboardRedirect from "./pages/DashboardRedirect";
 
 // Сторінки для клієнтів
 import Services from "./pages/Services";
@@ -75,6 +76,7 @@ const App = () => (
               <Route path="/profile" element={<Profile />} />
               <Route path="/profile/:userId" element={<PublicProfile />} />
               <Route path="/notifications" element={<Notifications />} />
+              <Route path="/dashboard" element={<DashboardRedirect />} />
               <Route path="/my-orders" element={<MyOrders />} />
               <Route path="/my-services" element={<MyServices />} />
               <Route path="/create-service" element={<CreateService />} />

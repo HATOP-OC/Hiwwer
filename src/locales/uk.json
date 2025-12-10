@@ -153,7 +153,9 @@
       "subtitle": "Спробуйте змінити параметри пошуку або фільтри",
       "createCustomOrder": "Створити власне замовлення",
       "customOrderDesc": "Не знайшли те, що шукали? Створіть власне замовлення з вашими вимогами"
-    }
+    },
+    "onlyForClients": "Ця сторінка доступна тільки для клієнтів.",
+    "cannotOrderOwnService": "Ви не можете замовити власну послугу."
   },
   "serviceDetailPage": {
     "loading": "Завантаження...",
@@ -181,7 +183,8 @@
     "professionalExecution": "Професійне виконання роботи",
     "supportDuringExecution": "Підтримка під час виконання",
     "possibilityOfRevision": "Можливість доопрацювання",
-    "qualityGuarantee": "Гарантія якості"
+    "qualityGuarantee": "Гарантія якості",
+    "cannotOrderOwnService": "Ви не можете замовити власну послугу."
   },
   "createOrderPage": {
     "pleaseLoginTitle": "Увійдіть, щоб створити замовлення",
@@ -307,6 +310,7 @@
     "deleteConfirmation": "Ви впевнені, що хочете видалити послугу \"{{title}}\"?",
     "deleteSuccessToast": "Послугу успішно видалено",
     "deleteErrorToast": "Не вдалося видалити послугу",
+    "deleteErrorForeignKey": "Неможливо видалити послугу, оскільки є активні замовлення на неї.",
     "fetchError": "Не вдалося завантажити послуги"
   },
   "login": {

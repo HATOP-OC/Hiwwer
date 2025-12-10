@@ -474,11 +474,16 @@ export interface Dispute {
 
 /** Fetch list of orders with optional filters */
 export async function fetchOrders(params?: { status?: string; search?: string }): Promise<Order[]> {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+  
   const query = new URLSearchParams();
   if (params?.status) query.append('status', params.status);
   if (params?.search) query.append('search', params.search);
   const res = await fetch(`${API_BASE}/orders?${query.toString()}`, {
-    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+    headers: { 'Authorization': `Bearer ${token}` }
   });
   if (!res.ok) throw new Error(`Failed to fetch orders: ${res.status}`);
   const data = await res.json();
@@ -491,8 +496,13 @@ export async function fetchOrders(params?: { status?: string; search?: string })
 
 /** Fetch single order by id */
 export async function fetchOrderById(id: string): Promise<Order> {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+  
   const res = await fetch(`${API_BASE}/orders/${id}`, {
-    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+    headers: { 'Authorization': `Bearer ${token}` }
   });
   if (!res.ok) throw new Error(`Failed to fetch order: ${res.status}`);
   const data = await res.json();
