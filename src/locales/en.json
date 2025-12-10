@@ -1416,5 +1416,64 @@
   },
   "toast": {
     "errorTitle": "Error"
+  },
+  "telegramDemo": {
+    "startPrompt": "Click the button below to start the demonstration",
+    "startButton": "Start /start",
+    "welcome": "Welcome to Hiwwer Bot! 👋\n\nI'm your personal assistant for managing orders and services on the Hiwwer platform.",
+    "helpText": "Choose one of the options below to get started:",
+    "mainMenuPrompt": "Main menu. Choose an action:",
+    "backToMenu": "Back to main menu",
+    "inputPlaceholder": "Write a message...",
+    "defaultResponse": "Thank you for your message! Choose an option from the menu below.",
+    "status": {
+      "online": "Online"
+    },
+    "buttons": {
+      "marketplace": "Open marketplace",
+      "orders": "My orders",
+      "messages": "Messages",
+      "assistant": "Assistant",
+      "commands": "Command menu",
+      "language": "Change language",
+      "about": "About bot"
+    },
+    "assistant": {
+      "intro": "🤖 Hello! I'm the Hiwwer AI assistant.\n\nI can help you with:",
+      "capabilities": "• Finding services and performers\n• Creating and tracking orders\n• Answering questions about the platform\n• Advice on choosing a performer\n• Information about payment and security",
+      "questions": {
+        "q1": "How to create an order?",
+        "q2": "How is payment processed?",
+        "q3": "How to choose a reliable performer?"
+      },
+      "answers": {
+        "a1": "To create an order:\n\n1. Click 'Open marketplace'\n2. Choose the service or category you need\n3. Fill in the order details\n4. Confirm and wait for offers from performers\n\nYou can also create a custom order through our website.",
+        "a2": "Payment on Hiwwer is maximally secure:\n\n• Funds are held on the platform until work is completed\n• Payment is made only after confirmation of completion\n• Support for various payment methods\n• Ability to open a dispute in case of problems\n\nYour funds are protected at every stage!",
+        "a3": "Tips for choosing a performer:\n\n✓ Check ratings and reviews\n✓ Pay attention to the number of completed orders\n✓ Review the portfolio of work\n✓ Read the service description carefully\n✓ Contact the performer before ordering\n\nA reliable performer always has good reviews and an active history!"
+      },
+      "defaultAnswer": "Interesting question! I'm here to help. Choose one of the suggested questions or return to the main menu."
+    },
+    "orders": {
+      "checking": "🔍 Checking your active orders...",
+      "noActive": "You have no active orders.\n\nWould you like to create a new order?",
+      "requestId": "📝 Please send the Notification ID for the new order:",
+      "processing": "⚙️ Processing your request...",
+      "success": "✅ Order created successfully!\n\nYou will receive notifications when performers start sending offers."
+    },
+    "messages": {
+      "noNew": "📭 You have no new messages.\n\nAll messages from performers will appear here."
+    },
+    "about": {
+      "description": "ℹ️ Hiwwer is a modern platform for ordering digital services.\n\n🌟 Our advantages:\n• Verified performers\n• Secure payments\n• Telegram integration\n• 24/7 support\n• Rating and review system\n\nBot version: 2.0\nWebsite: hiwwer.com"
+    },
+    "commands": {
+      "list": "📋 Available commands:\n\n/start - Main menu\n/orders - My orders\n/marketplace - View services\n/messages - Messages\n/assistant - AI assistant\n/language - Change language\n/help - Help\n/about - About platform"
+    },
+    "language": {
+      "changed": "✅ Language changed successfully!"
+    },
+    "marketplace": {
+      "info": "🛍 Hiwwer Marketplace\n\nHere you'll find thousands of services:\n• Design and creative\n• Web development\n• Marketing and SEO\n• Copywriting\n• Translation\n• Video and audio\n• And much more!\n\nOpen the full catalog at hiwwer.com"
+    }
   }
 }

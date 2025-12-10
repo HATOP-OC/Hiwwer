@@ -1,0 +1,61 @@
+{
+  "telegramDemo": {
+    "startPrompt": "Kliknij przycisk poniżej, aby rozpocząć demonstrację",
+    "startButton": "Start /start",
+    "welcome": "Witamy w Hiwwer Bot! 👋\n\nJestem twoim osobistym asystentem do zarządzania zamówieniami i usługami na platformie Hiwwer.",
+    "helpText": "Wybierz jedną z poniższych opcji, aby zacząć:",
+    "mainMenuPrompt": "Menu główne. Wybierz akcję:",
+    "backToMenu": "Powrót do menu głównego",
+    "inputPlaceholder": "Napisz wiadomość...",
+    "defaultResponse": "Dziękujemy za wiadomość! Wybierz opcję z menu poniżej.",
+    "status": {
+      "online": "Online"
+    },
+    "buttons": {
+      "marketplace": "Otwórz marketplace",
+      "orders": "Moje zamówienia",
+      "messages": "Wiadomości",
+      "assistant": "Asystent",
+      "commands": "Menu poleceń",
+      "language": "Zmień język",
+      "about": "O bocie"
+    },
+    "assistant": {
+      "intro": "🤖 Witaj! Jestem asystentem AI Hiwwer.\n\nMogę ci pomóc z:",
+      "capabilities": "• Wyszukiwaniem usług i wykonawców\n• Tworzeniem i śledzeniem zamówień\n• Odpowiadaniem na pytania o platformę\n• Poradami dotyczącymi wyboru wykonawcy\n• Informacjami o płatnościach i bezpieczeństwie",
+      "questions": {
+        "q1": "Jak utworzyć zamówienie?",
+        "q2": "Jak przebiega płatność?",
+        "q3": "Jak wybrać niezawodnego wykonawcę?"
+      },
+      "answers": {
+        "a1": "Aby utworzyć zamówienie:\n\n1. Kliknij 'Otwórz marketplace'\n2. Wybierz potrzebną usługę lub kategorię\n3. Wypełnij szczegóły zamówienia\n4. Potwierdź i czekaj na oferty od wykonawców\n\nMożesz również utworzyć niestandardowe zamówienie przez naszą stronę internetową.",
+        "a2": "Płatność na Hiwwer jest maksymalnie bezpieczna:\n\n• Środki są przechowywane na platformie do zakończenia pracy\n• Płatność następuje tylko po potwierdzeniu zakończenia\n• Wsparcie dla różnych metod płatności\n• Możliwość otwarcia sporu w przypadku problemów\n\nTwoje środki są chronione na każdym etapie!",
+        "a3": "Wskazówki dotyczące wyboru wykonawcy:\n\n✓ Sprawdź oceny i recenzje\n✓ Zwróć uwagę na liczbę ukończonych zamówień\n✓ Przejrzyj portfolio prac\n✓ Uważnie przeczytaj opis usługi\n✓ Skontaktuj się z wykonawcą przed zamówieniem\n\nNiezawodny wykonawca zawsze ma dobre recenzje i aktywną historię!"
+      },
+      "defaultAnswer": "Ciekawe pytanie! Jestem tutaj, aby pomóc. Wybierz jedno z sugerowanych pytań lub wróć do menu głównego."
+    },
+    "orders": {
+      "checking": "🔍 Sprawdzam twoje aktywne zamówienia...",
+      "noActive": "Nie masz aktywnych zamówień.\n\nCzy chcesz utworzyć nowe zamówienie?",
+      "requestId": "📝 Proszę wysłać Notification ID dla nowego zamówienia:",
+      "processing": "⚙️ Przetwarzam twoje żądanie...",
+      "success": "✅ Zamówienie zostało utworzone pomyślnie!\n\nOtrzymasz powiadomienia, gdy wykonawcy zaczną wysyłać oferty."
+    },
+    "messages": {
+      "noNew": "📭 Nie masz nowych wiadomości.\n\nWszystkie wiadomości od wykonawców pojawią się tutaj."
+    },
+    "about": {
+      "description": "ℹ️ Hiwwer to nowoczesna platforma do zamawiania usług cyfrowych.\n\n🌟 Nasze zalety:\n• Zweryfikowani wykonawcy\n• Bezpieczne płatności\n• Integracja z Telegram\n• Wsparcie 24/7\n• System ocen i recenzji\n\nWersja bota: 2.0\nStrona internetowa: hiwwer.com"
+    },
+    "commands": {
+      "list": "📋 Dostępne polecenia:\n\n/start - Menu główne\n/orders - Moje zamówienia\n/marketplace - Przeglądaj usługi\n/messages - Wiadomości\n/assistant - Asystent AI\n/language - Zmień język\n/help - Pomoc\n/about - O platformie"
+    },
+    "language": {
+      "changed": "✅ Język został zmieniony pomyślnie!"
+    },
+    "marketplace": {
+      "info": "🛍 Marketplace Hiwwer\n\nTutaj znajdziesz tysiące usług:\n• Design i kreatywność\n• Tworzenie stron internetowych\n• Marketing i SEO\n• Copywriting\n• Tłumaczenia\n• Wideo i audio\n• I wiele więcej!\n\nOtwórz pełny katalog na hiwwer.com"
+    }
+  }
+}

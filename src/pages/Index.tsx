@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Search, CheckCircle, ArrowRight, Star, Palette, Code, PenSquare, TrendingUp, Film, Music, Briefcase, BookOpen, ClipboardList, Smartphone } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import TelegramBotDemo from '@/components/TelegramBotDemo';
 
 const iconMap: { [key: string]: React.ElementType } = {
   design: Palette,
@@ -247,86 +248,43 @@ export default function Index() {
       </section>
 
       {/* Telegram Integration Section */}
-      <section className="py-16 bg-brand-blue text-white">
+      <section className="py-16 bg-gradient-to-br from-[#0e1621] to-[#17212b] text-white">
         <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center">
-            <div className="md:w-1/2 mb-8 md:mb-0">
-              <h2 className="text-3xl font-bold mb-4">{t('telegram.title')}</h2>
+          <div className="flex flex-col lg:flex-row items-center gap-8">
+            <div className="lg:w-1/2 mb-8 lg:mb-0">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">{t('telegram.title')}</h2>
               <p className="text-lg mb-6 opacity-90">
                 {t('telegram.subtitle')}
               </p>
               
               <ul className="space-y-3 mb-8">
                 <li className="flex items-center">
-                  <CheckCircle className="mr-2 h-5 w-5 text-brand-amber" />
+                  <CheckCircle className="mr-2 h-5 w-5 text-brand-amber flex-shrink-0" />
                   <span>{t('telegram.feature1')}</span>
                 </li>
                 <li className="flex items-center">
-                  <CheckCircle className="mr-2 h-5 w-5 text-brand-amber" />
+                  <CheckCircle className="mr-2 h-5 w-5 text-brand-amber flex-shrink-0" />
                   <span>{t('telegram.feature2')}</span>
                 </li>
                 <li className="flex items-center">
-                  <CheckCircle className="mr-2 h-5 w-5 text-brand-amber" />
+                  <CheckCircle className="mr-2 h-5 w-5 text-brand-amber flex-shrink-0" />
                   <span>{t('telegram.feature3')}</span>
                 </li>
                 <li className="flex items-center">
-                  <CheckCircle className="mr-2 h-5 w-5 text-brand-amber" />
+                  <CheckCircle className="mr-2 h-5 w-5 text-brand-amber flex-shrink-0" />
                   <span>{t('telegram.feature4')}</span>
                 </li>
               </ul>
               
-              <Button size="lg" asChild className="bg-brand-amber hover:bg-brand-amber/90 text-white">
-                <Link to="https://t.me/hiwwer_bot" target="_blank">
+              <Button size="lg" asChild className="bg-brand-amber hover:bg-brand-amber/90 text-black font-semibold">
+                <a href="https://t.me/hiwwer_bot" target="_blank" rel="noopener noreferrer">
                   {t('telegram.connect')}
-                </Link>
+                </a>
               </Button>
             </div>
             
-            <div className="md:w-1/2 md:pl-8">
-              <div className="bg-white/10 backdrop-blur-md rounded-lg p-6 border border-white/20">
-                <div className="flex items-center mb-4">
-                  <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center">
-                    <span className="text-xl">🤖</span>
-                  </div>
-                  <div className="ml-3">
-                    <div className="font-bold">Hiwwer Bot</div>
-                    <div className="text-xs opacity-70">Онлайн</div>
-                  </div>
-                </div>
-                
-                {/* Презентаційний чат */}
-                <div className="space-y-3 mb-4">
-                  <div className="flex flex-col">
-                    <div className="bg-blue-600 text-white p-2 rounded-t-lg rounded-r-lg self-start max-w-[80%]">
-                      {t('telegram.botWelcome')}
-                    </div>
-                    <span className="text-xs opacity-50 mt-1">Hiwwer Bot, 10:45</span>
-                  </div>
-                  
-                  <div className="flex flex-col">
-                    <div className="bg-white/20 p-2 rounded-t-lg rounded-l-lg self-end max-w-[80%]">
-                      {t('telegram.userMessage')}
-                    </div>
-                    <span className="text-xs opacity-50 mt-1 self-end">Ви, 10:46</span>
-                  </div>
-                  
-                  <div className="flex flex-col">
-                    <div className="bg-blue-600 text-white p-2 rounded-t-lg rounded-r-lg self-start max-w-[80%]">
-                      {t('telegram.botResponse')}
-                    </div>
-                    <span className="text-xs opacity-50 mt-1">Hiwwer Bot, 10:47</span>
-                  </div>
-                </div>
-                
-                <div className="flex">
-                  <Input 
-                    type="text" 
-                    placeholder={t('telegram.messagePlaceholder')}
-                    className="mr-2 bg-white/10 border-white/20 placeholder:text-white/50 text-white"
-                  />
-                  <Button size="sm" className="bg-brand-amber hover:bg-brand-amber/90">{t('telegram.send')}</Button>
-                </div>
-              </div>
+            <div className="lg:w-1/2 w-full flex justify-center">
+              <TelegramBotDemo />
             </div>
           </div>
         </div>
