@@ -48,7 +48,7 @@ export default function TelegramBotDemo() {
   const addMessage = (type: MessageType, text: string, delay = 0) => {
     setTimeout(() => {
       const newMessage: Message = {
-        id: Date.now().toString() + Math.random(),
+        id: crypto.randomUUID(),
         type,
         text,
         timestamp: getCurrentTime(),
@@ -100,11 +100,16 @@ export default function TelegramBotDemo() {
     addMessage('user', question, 0);
     await showTypingIndicator(2000);
     
-    if (question.includes(t('telegramDemo.assistant.questions.q1')) || question.toLowerCase().includes('order') || question.toLowerCase().includes('замовлення')) {
+    // Match based on the translated question keys for better maintainability
+    const q1 = t('telegramDemo.assistant.questions.q1');
+    const q2 = t('telegramDemo.assistant.questions.q2');
+    const q3 = t('telegramDemo.assistant.questions.q3');
+    
+    if (question.includes(q1) || question === q1) {
       addMessage('bot', t('telegramDemo.assistant.answers.a1'), 100);
-    } else if (question.includes(t('telegramDemo.assistant.questions.q2')) || question.toLowerCase().includes('payment') || question.toLowerCase().includes('оплат')) {
+    } else if (question.includes(q2) || question === q2) {
       addMessage('bot', t('telegramDemo.assistant.answers.a2'), 100);
-    } else if (question.includes(t('telegramDemo.assistant.questions.q3')) || question.toLowerCase().includes('performer') || question.toLowerCase().includes('виконавц')) {
+    } else if (question.includes(q3) || question === q3) {
       addMessage('bot', t('telegramDemo.assistant.answers.a3'), 100);
     } else {
       addMessage('bot', t('telegramDemo.assistant.defaultAnswer'), 100);
