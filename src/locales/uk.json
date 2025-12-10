@@ -165,6 +165,7 @@
   },
   "serviceDetailPage": {
     "loading": "Завантаження...",
+    "description": "Опис",
     "serviceNotFound": "Послугу не знайдено",
     "backToServices": "Повернутися до послуг",
     "back": "Назад",

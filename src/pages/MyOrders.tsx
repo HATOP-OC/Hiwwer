@@ -37,6 +37,7 @@ import {
   PlusCircle,
   Loader2
 } from 'lucide-react';
+import { formatCurrency } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 
 export default function MyOrders() {
@@ -46,17 +47,17 @@ export default function MyOrders() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
-  // Redirect to login if not authenticated
-  if (!user) {
-    navigate('/login', { state: { returnTo: '/my-orders' } });
-    return null;
-  }
-  
   const { data: orders = [], isLoading, error } = useQuery({
     queryKey: ['orders', statusFilter, searchTerm],
     queryFn: () => fetchOrders({ status: statusFilter, search: searchTerm }),
     enabled: !!user
   });
+
+  // Redirect to login if not authenticated
+  if (!user) {
+    navigate('/login', { state: { returnTo: '/my-orders' } });
+    return null;
+  }
 
   if (isLoading) {
     return (
@@ -159,10 +160,7 @@ export default function MyOrders() {
             </div>
             <div className="ml-4 text-right">
               <div className="text-2xl font-bold">
-                ${order.price}
-              </div>
-              <div className="text-sm text-muted-foreground">
-                {order.currency}
+                  {formatCurrency(Number(order.price), order.currency)}
               </div>
             </div>
           </div>

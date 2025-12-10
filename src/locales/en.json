@@ -165,6 +165,7 @@
   },
   "serviceDetailPage": {
     "loading": "Loading...",
+    "description": "Description",
     "serviceNotFound": "Service not found",
     "backToServices": "Back to services",
     "back": "Back",

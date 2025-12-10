@@ -14,3 +14,12 @@ export function getAvatarSrc(avatar?: string | null): string | undefined {
   if (avatar.includes('placeholder')) return undefined;
   return avatar;
 }
+
+export function formatCurrency(amount: number, currency: string | undefined) {
+  try {
+    if (!currency) return amount.toFixed(2);
+    return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(amount);
+  } catch (e) {
+    return `${currency} ${amount.toFixed(2)}`;
+  }
+}

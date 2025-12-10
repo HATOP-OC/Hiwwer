@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { getAvatarSrc } from '@/lib/utils';
+import { getAvatarSrc, formatCurrency } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Star, ArrowLeft, ShoppingCart, Clock, DollarSign, User, Package, CheckCircle } from 'lucide-react';
@@ -150,15 +150,14 @@ export default function ServiceDetail() {
                       </div>
                       <div className="flex items-center gap-1">
                         <Clock className="h-4 w-4" />
-                        <span>{service.delivery_time} {t('serviceDetailPage.days')}</span>
+                        <span>{t('serviceDetailPage.days', { count: service.delivery_time })}</span>
                       </div>
                     </div>
                   </div>
                   <div className="text-right">
                     <div className="text-3xl font-bold text-green-600">
-                      ${service.price}
+                      {formatCurrency(service.price, service.currency)}
                     </div>
-                    <div className="text-sm text-muted-foreground">{service.currency}</div>
                   </div>
                 </div>
               </CardHeader>
@@ -171,7 +170,7 @@ export default function ServiceDetail() {
 
                 {/* Категорія */}
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium">{t('serviceDetailPage.category')}:</span>
+                  <span className="text-sm font-medium">{t('serviceDetailPage.category')}</span>
                   <Badge variant="secondary">{service.category?.name}</Badge>
                 </div>
 
@@ -227,7 +226,7 @@ export default function ServiceDetail() {
                 <CardTitle className="flex items-center justify-between">
                   <span>{t('serviceDetailPage.orderService')}</span>
                   <div className="text-2xl font-bold text-green-600">
-                    ${service.price}
+                    {formatCurrency(service.price, service.currency)}
                   </div>
                 </CardTitle>
                 <CardDescription>
@@ -238,16 +237,16 @@ export default function ServiceDetail() {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between text-sm">
                     <span>{t('serviceDetailPage.serviceCost')}</span>
-                    <span>${service.price}</span>
+                    <span>{formatCurrency(service.price, service.currency)}</span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span>{t('serviceDetailPage.platformFee')}</span>
-                    <span>$0</span>
+                    <span>{formatCurrency(0, service.currency)}</span>
                   </div>
                   <Separator />
                   <div className="flex items-center justify-between font-bold">
                     <span>{t('serviceDetailPage.totalAmount')}</span>
-                    <span>${service.price}</span>
+                    <span>{formatCurrency(service.price, service.currency)}</span>
                   </div>
                 </div>
 

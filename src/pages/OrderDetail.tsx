@@ -55,20 +55,7 @@ export default function OrderDetail() {
 
   console.log('OrderDetail render:', { id, isLoading, error, order, user });
 
-  // Temporary debug render
-  return (
-    <div style={{ padding: '20px', backgroundColor: 'lightblue', minHeight: '100vh' }}>
-      <h1>OrderDetail Component Debug</h1>
-      <p>Компонент завантажився успішно!</p>
-      <div style={{ backgroundColor: 'white', padding: '10px', margin: '10px 0', borderRadius: '5px' }}>
-        <p><strong>ID:</strong> {id}</p>
-        <p><strong>Loading:</strong> {isLoading ? 'true' : 'false'}</p>
-        <p><strong>Error:</strong> {error ? error.message : 'none'}</p>
-        <p><strong>Order:</strong> {order ? 'exists' : 'null'}</p>
-        <p><strong>User:</strong> {user ? user.email : 'null'}</p>
-      </div>
-    </div>
-  );
+  // Debug logs above — normal render below
   
   const { data: messages = [] } = useQuery<Message[]>({
     queryKey: ['messages', id],

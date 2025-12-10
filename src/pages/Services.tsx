@@ -15,6 +15,7 @@ import { Star, Search, Filter as FilterIcon, ChevronDown, ChevronUp, Palette, Co
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getAvatarSrc } from '@/lib/utils';
 import { fetchServices, fetchServiceCategories, Service, ServiceCategory, getImageUrl } from '@/lib/api';
+import { formatCurrency } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '@/hooks/use-toast';
 
@@ -421,7 +422,7 @@ export default function Services() {
                           )}
                         <div className="absolute bottom-2 right-2">
                           <Badge className="bg-brand-teal hover:bg-brand-teal text-white">
-                            {service.price} {service.currency}
+                            {formatCurrency(service.price, service.currency)}
                           </Badge>
                         </div>
                       </div>
