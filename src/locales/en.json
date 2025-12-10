@@ -1073,6 +1073,7 @@
     "greeting": "Hello! How can I help you?",
     "placeholder": "Ask a question...",
     "connectionError": "Sorry, there was a connection problem. Please try again later.",
+    "rateLimited": "Assistant is rate limited. Please try again in {{seconds}} seconds.",
     "clearHistoryConfirmation": "Are you sure you want to clear the chat history?"
   },
   "disputeChat": {

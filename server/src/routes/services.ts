@@ -60,11 +60,12 @@ router.get('/', async (req: Request, res: Response) => {
       : { rows: [] };
     
     // Group images by service_id
-    const imagesByService = imagesResult.rows.reduce((acc, img) => {
-      if (!acc[img.service_id]) acc[img.service_id] = [];
-      acc[img.service_id].push(img.image_url);
-      return acc;
-    }, {} as Record<string, string[]>);
+    const imagesByService: Record<string, string[]> = {};
+    for (const img of (imagesResult.rows as any[])) {
+      const sid = img.service_id as string;
+      if (!imagesByService[sid]) imagesByService[sid] = [];
+      imagesByService[sid].push(img.image_url as string);
+    }
     
     // Fetch images and tags separately or return minimal
     const services = result.rows.map(r => ({

@@ -232,17 +232,13 @@ export default function MyOrders() {
           </div>
 
           <div className="flex space-x-2">
-            <Button variant="outline" size="sm" className="flex-1" asChild>
-              <Link to={`/order/${order.id}`}>
+              <Button variant="outline" size="sm" className="flex-1" onClick={() => { console.debug('Navigating to details for order', order.id); navigate({ pathname: `/order/${order.id}`, hash: '' }, { state: { clearChat: true }, replace: true }); setTimeout(() => { try { window.history.replaceState({}, '', `/order/${order.id}`); } catch (e) { /* ignore */ } }, 20); }}>
                 <Eye className="h-4 w-4 mr-2" />
                 {t('myOrdersPage.orderCard.details')}
-              </Link>
-            </Button>
-            <Button variant="outline" size="sm" className="flex-1" asChild>
-              <Link to={`/order/${order.id}#chat`}>
-                <MessageSquare className="h-4 w-4 mr-2" />
-                {t('myOrdersPage.orderCard.chat')}
-              </Link>
+              </Button>
+            <Button variant="outline" size="sm" className="flex-1" onClick={() => { console.debug('Navigating to chat for order', order.id); navigate({ pathname: `/order/${order.id}`, hash: '#chat' }, { state: { openChat: true }, replace: true }); setTimeout(() => { try { window.history.replaceState({}, '', `/order/${order.id}#chat`); } catch (e) { /* ignore */ } }, 20); }}>
+              <MessageSquare className="h-4 w-4 mr-2" />
+              {t('myOrdersPage.orderCard.chat')}
             </Button>
           </div>
         </CardContent>

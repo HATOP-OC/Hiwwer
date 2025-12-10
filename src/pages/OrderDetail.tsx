@@ -230,7 +230,14 @@ export default function OrderDetail() {
   });
 
   useEffect(() => {
-    if (location.hash === '#chat' && order) {
+    if (!order) return;
+    const locState = (location.state || {}) as any;
+    console.debug('OrderDetail: location.hash, location.state, orderId:', location.hash, locState, order.id);
+    // Prefer explicit state.openChat over hash, because browsers may persist hashes across navigation
+    // Only open chat explicitly if location.state.openChat === true.
+    // We avoid relying on URL hash to prevent accidental chat opens due to preserved URL state.
+    const shouldOpenChat = locState?.openChat === true;
+    if (shouldOpenChat) {
       const timer = setTimeout(() => {
         const chatElement = document.getElementById('order-chat');
         if (chatElement) {
@@ -239,7 +246,13 @@ export default function OrderDetail() {
       }, 500);
       return () => clearTimeout(timer);
     }
-  }, [location.hash, order]);
+
+    // If we explicitly asked to clear the hash, remove it from URL to prevent future navigations from auto-scrolling
+    if (locState?.clearChat && window.location.hash) {
+      const url = window.location.pathname + window.location.search;
+      window.history.replaceState({}, '', url);
+    }
+  }, [location.hash, location.state, order]);
 
   if (isLoading) {
     console.log('OrderDetail: showing loading');

@@ -19,6 +19,8 @@ const AssistantChat: React.FC = () => {
   const [inputValue, setInputValue] = useState('');
   const [sessionId, setSessionId] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [cooldownUntil, setCooldownUntil] = useState<number | null>(null);
+  const [cooldownLeft, setCooldownLeft] = useState<number>(0);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
@@ -64,6 +66,22 @@ const AssistantChat: React.FC = () => {
     }
   }, [messages]);
 
+  useEffect(() => {
+    let interval: any = null;
+    if (cooldownUntil) {
+      interval = setInterval(() => {
+        const left = Math.max(0, Math.ceil((cooldownUntil - Date.now()) / 1000));
+        setCooldownLeft(left);
+        if (left <= 0) {
+          setCooldownUntil(null);
+          setCooldownLeft(0);
+          clearInterval(interval);
+        }
+      }, 1000);
+    }
+    return () => { if (interval) clearInterval(interval); };
+  }, [cooldownUntil]);
+
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputValue.trim() || isLoading) return;
@@ -83,6 +101,22 @@ const AssistantChat: React.FC = () => {
       });
 
       if (!response.ok) {
+        // If we received rate limit info from server, show cooldown
+        if (response.status === 429) {
+          try {
+            const data = await response.json();
+            const retryAfter = data?.retryAfter || data?.retryAfterSec || 30;
+            const until = Date.now() + (Number(retryAfter) * 1000);
+            setCooldownUntil(until);
+            setCooldownLeft(Math.ceil((until - Date.now()) / 1000));
+            // Show feedback message
+            setMessages(prev => [...prev, { sender: 'assistant', text: t('assistantChat.rateLimited', { seconds: retryAfter }) }]);
+          } catch (err) {
+            setMessages(prev => [...prev, { sender: 'assistant', text: t('assistantChat.connectionError') }]);
+          }
+          setIsLoading(false);
+          return;
+        }
         throw new Error('Failed to get a response from the assistant');
       }
 
@@ -178,9 +212,9 @@ const AssistantChat: React.FC = () => {
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
                   placeholder={t('assistantChat.placeholder')}
-                  disabled={isLoading}
+                  disabled={isLoading || !!cooldownUntil}
                 />
-                <Button type="submit" size="icon" disabled={isLoading}>
+                <Button type="submit" size="icon" disabled={isLoading || !!cooldownUntil}>
                   {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                 </Button>
               </form>
