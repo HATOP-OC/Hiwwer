@@ -20,6 +20,12 @@
     "performer": "Performer Mode",
     "becomePerformerHint": "Become a performer to switch"
   },
+  "roles": {
+    "admin": "Administrator",
+    "Administrator": "Administrator",
+    "performer": "Performer",
+    "client": "Client"
+  },
   "imageUpload": {
     "dragDrop": "Drag and drop images here",
     "orClick": "or click to select files",
@@ -350,6 +356,7 @@
     "errorToast": "Failed to register"
   },
   "profilePage": {
+    "loading": "Loading...",
     "pleaseLogin": "Please log in to view your profile",
     "updateSuccess": "Profile updated successfully",
     "updateError": "Error updating profile",
@@ -381,6 +388,13 @@
     "bioLabel": "Bio",
     "bioPlaceholder": "Tell us about yourself...",
     "saveChanges": "Save Changes",
+    "publicProfile": "Public profile",
+    "telegramIntegration": "Telegram integration",
+    "skills": {
+      "title": "Skills",
+      "description": "Specify your professional skills",
+      "manage": "Manage skills"
+    },
     "cancel": "Cancel",
     "accountSettings": "Account Settings",
     "accountSettingsDesc": "Manage your account security and preferences",

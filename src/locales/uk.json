@@ -20,6 +20,12 @@
     "performer": "Режим виконавця",
     "becomePerformerHint": "Станьте виконавцем для перемикання"
   },
+  "roles": {
+    "admin": "Адміністратор",
+    "Administrator": "Адміністратор",
+    "performer": "Виконавець",
+    "client": "Клієнт"
+  },
   "imageUpload": {
     "dragDrop": "Перетягніть зображення сюди",
     "orClick": "або натисніть для вибору файлів",
@@ -350,6 +356,7 @@
     "errorToast": "Не вдалося зареєструватися"
   },
   "profilePage": {
+    "loading": "Завантаження...",
     "pleaseLogin": "Будь ласка, увійдіть для перегляду профілю",
     "updateSuccess": "Профіль успішно оновлено",
     "updateError": "Помилка оновлення профілю",
@@ -381,6 +388,13 @@
     "bioLabel": "Про себе",
     "bioPlaceholder": "Розкажіть трохи про себе...",
     "saveChanges": "Зберегти зміни",
+    "publicProfile": "Публічний профіль",
+    "telegramIntegration": "Telegram інтеграція",
+    "skills": {
+      "title": "Навички",
+      "description": "Вкажіть ваші професійні навички",
+      "manage": "Керувати навичками"
+    },
     "cancel": "Скасувати",
     "accountSettings": "Налаштування акаунту",
     "accountSettingsDesc": "Керуйте безпекою та налаштуваннями вашого акаунту",

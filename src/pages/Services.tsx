@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Link } from 'react-router-dom';
 import { Star, Search, Filter as FilterIcon, ChevronDown, ChevronUp, Palette, Code, PenSquare, TrendingUp, Film, Music, Briefcase, BookOpen, Package } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { fetchServices, fetchServiceCategories, Service, ServiceCategory, getImageUrl } from '@/lib/api';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '@/hooks/use-toast';
@@ -405,18 +406,18 @@ export default function Services() {
                 {services.map(service => (
                   <Card key={service.id} className="overflow-hidden hover-card border group transition-all duration-300 hover:shadow-lg h-full flex flex-col">
                     <Link to={`/services/${service.id}`}>
-                      <div className="aspect-video relative overflow-hidden">
-                        {service.images && service.images.length > 0 ? (
-                          <img
-                            src={getImageUrl(service.images[0])}
-                            alt={service.title}
-                            className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-muted flex items-center justify-center">
-                            <Package className="h-12 w-12 text-muted-foreground" />
-                          </div>
-                        )}
+                        <div className="aspect-video relative overflow-hidden">
+                          {service.images && service.images.length > 0 && service.images[0] && !service.images[0].includes('placeholder') ? (
+                            <img
+                              src={getImageUrl(service.images[0])}
+                              alt={service.title}
+                              className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-muted flex items-center justify-center">
+                              <Package className="h-12 w-12 text-muted-foreground" />
+                            </div>
+                          )}
                         <div className="absolute bottom-2 right-2">
                           <Badge className="bg-brand-teal hover:bg-brand-teal text-white">
                             {service.price} {service.currency}
@@ -445,8 +446,13 @@ export default function Services() {
                         ))}
                       </div>
                       <div className="flex items-center mb-3 pt-3 border-t">
-                        <div className="w-6 h-6 rounded-full overflow-hidden mr-2">
-                          <img src={service.performer?.avatar_url || '/placeholder.svg'} alt={service.performer?.name} className="w-full h-full object-cover" />
+                        <div className="mr-2">
+                          <Avatar className="h-6 w-6">
+                            <AvatarImage src={service.performer?.avatar_url || undefined} />
+                            <AvatarFallback>
+                              {service.performer?.name?.split(' ').map(n => n[0]).join('').toUpperCase() || '?'}
+                            </AvatarFallback>
+                          </Avatar>
                         </div>
                         <span className="text-sm">{service.performer?.name}</span>
                       </div>

@@ -28,10 +28,14 @@ import {
 import { toast } from '@/components/ui/sonner';
 import TelegramIntegration from '@/components/Profile/TelegramIntegration';
 import SkillsManagement from '@/components/Profile/SkillsManagement';
+import { useTranslation } from 'react-i18next';
 
 export default function Profile() {
   const { user, isLoading, refetchUser, activatePerformerMode } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  
+  // console.log('Role:', user?.role, 'Translated:', t('roles.' + user?.role));
   const [isEditing, setIsEditing] = useState(false);
   const [isManagingSkills, setIsManagingSkills] = useState(false);
   const [isActivatingPerformer, setIsActivatingPerformer] = useState(false);
@@ -73,10 +77,10 @@ export default function Profile() {
       }
 
       await refetchUser();
-      toast.success('Профіль успішно оновлено');
+      toast.success(t('profilePage.updateSuccess'));
       setIsEditing(false);
     } catch (error) {
-      toast.error('Помилка оновлення профілю');
+      toast.error(t('profilePage.updateError'));
     }
   };
 
@@ -104,7 +108,7 @@ export default function Profile() {
       <Layout>
         <div className="container max-w-4xl py-16">
           <div className="text-center">
-            <h1 className="text-2xl font-bold">Завантаження...</h1>
+            <h1 className="text-2xl font-bold">{t('profilePage.loading')}</h1>
           </div>
         </div>
       </Layout>
@@ -116,7 +120,7 @@ export default function Profile() {
       <Layout>
         <div className="container max-w-4xl py-16">
           <div className="text-center">
-            <h1 className="text-2xl font-bold">Будь ласка, увійдіть для перегляду профілю</h1>
+            <h1 className="text-2xl font-bold">{t('profilePage.pleaseLogin')}</h1>
           </div>
         </div>
       </Layout>
@@ -127,9 +131,9 @@ export default function Profile() {
     <Layout>
       <div className="container max-w-4xl py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground">Мій профіль</h1>
+          <h1 className="text-3xl font-bold text-foreground">{t('profilePage.title')}</h1>
           <p className="text-muted-foreground mt-2">
-            Керуйте налаштуваннями акаунту та публічним профілем
+            {t('profilePage.subtitle')}
           </p>
         </div>
 
@@ -148,7 +152,7 @@ export default function Profile() {
                   <div className="text-center space-y-2">
                     <h2 className="text-xl font-semibold">{user.name}</h2>
                     <Badge variant="outline" className={getRoleColor(user.role)}>
-                      {user.role}
+                      {t('roles.' + user.role, user.role)}
                     </Badge>
                     
                     {user.rating && (
@@ -177,7 +181,7 @@ export default function Profile() {
                       onClick={() => setIsEditing(!isEditing)}
                     >
                       <Edit3 className="h-4 w-4 mr-2" />
-                      {isEditing ? 'Скасувати' : 'Редагувати'}
+                      {isEditing ? t('profilePage.cancelEdit') : t('profilePage.editProfile')}
                     </Button>
                     
                     <Button
@@ -186,7 +190,7 @@ export default function Profile() {
                       onClick={() => navigate(`/profile/${user.id}`)}
                     >
                       <User className="h-4 w-4 mr-2" />
-                      Публічний профіль
+                      {t('profilePage.publicProfile')}
                     </Button>
                   </div>
                 </div>
@@ -197,14 +201,12 @@ export default function Profile() {
           <div className="md:col-span-2 space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Особиста інформація</CardTitle>
-                <CardDescription>
-                  Оновіть свої особисті дані та публічну інформацію профілю
-                </CardDescription>
+                <CardTitle>{t('profilePage.personalInfo')}</CardTitle>
+                <CardDescription>{t('profilePage.personalInfoDesc')}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Повне ім'я</Label>
+                  <Label htmlFor="name">{t('profilePage.fullNameLabel')}</Label>
                   <Input
                     id="name"
                     value={formData.name}
@@ -214,7 +216,7 @@ export default function Profile() {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email">{t('profilePage.emailLabel')}</Label>
                   <Input
                     id="email"
                     value={formData.email}
@@ -223,26 +225,26 @@ export default function Profile() {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="bio">Про себе</Label>
+                  <Label htmlFor="bio">{t('profilePage.bioLabel')}</Label>
                   <Textarea
                     id="bio"
                     value={formData.bio || ''}
                     onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
                     disabled={!isEditing}
-                    placeholder="Розкажіть трохи про себе..."
+                    placeholder={t('profilePage.bioPlaceholder')}
                     rows={4}
                   />
                 </div>
                 
                 {isEditing && (
                   <div className="flex gap-2">
-                    <Button onClick={handleSave}>
+                      <Button onClick={handleSave}>
                       <Save className="h-4 w-4 mr-2" />
-                      Зберегти
+                      {t('profilePage.saveChanges')}
                     </Button>
                     <Button variant="outline" onClick={handleCancel}>
                       <X className="h-4 w-4 mr-2" />
-                      Скасувати
+                      {t('profilePage.cancel')}
                     </Button>
                   </div>
                 )}
@@ -250,9 +252,9 @@ export default function Profile() {
             </Card>
             
             <Card>
-              <CardHeader>
-                <CardTitle>Telegram інтеграція</CardTitle>
-              </CardHeader>
+                <CardHeader>
+                  <CardTitle>{t('profilePage.telegramIntegration')}</CardTitle>
+                </CardHeader>
               <CardContent>
                 <TelegramIntegration />
               </CardContent>
@@ -263,10 +265,10 @@ export default function Profile() {
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
                     <Briefcase className="h-5 w-5" />
-                    <span>Стати виконавцем</span>
+                    <span>{t('profilePage.becomePerformer')}</span>
                   </CardTitle>
                   <CardDescription>
-                    Пропонуйте свої послуги та заробляйте на платформі
+                    {t('profilePage.becomePerformerDesc')}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -278,15 +280,15 @@ export default function Profile() {
                       setIsActivatingPerformer(true);
                       try {
                         await activatePerformerMode();
-                        toast.success('Режим виконавця активовано!');
+                        toast.success(t('profilePage.performerActivated'));
                       } catch (error) {
-                        toast.error('Помилка активації режиму виконавця');
+                        toast.error(t('profilePage.performerActivationError'));
                       } finally {
                         setIsActivatingPerformer(false);
                       }
                     }}
                   >
-                    {isActivatingPerformer ? 'Активація...' : 'Активувати режим виконавця'}
+                    {isActivatingPerformer ? t('profilePage.activating') : t('profilePage.activatePerformerMode')}
                   </Button>
                 </CardContent>
               </Card>
@@ -295,17 +297,15 @@ export default function Profile() {
             {user.isPerformer && (
               <Card>
                 <CardHeader>
-                  <CardTitle>Навички</CardTitle>
-                  <CardDescription>
-                    Вкажіть ваші професійні навички
-                  </CardDescription>
+                  <CardTitle>{t('profilePage.skills.title')}</CardTitle>
+                  <CardDescription>{t('profilePage.skills.description')}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Button
                     variant="outline"
                     onClick={() => setIsManagingSkills(true)}
                   >
-                    Керувати навичками
+                    {t('profilePage.skills.manage')}
                   </Button>
                 </CardContent>
               </Card>
